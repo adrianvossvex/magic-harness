@@ -1,0 +1,10 @@
+[
+  "@anthropic-ai/sdk",
+  "@stablelib/base64",
+  "balanced-match",
+  "brace-expansion",
+  "fast-sha256",
+  "minimatch",
+  "openai",
+  "standardwebhooks"
+]

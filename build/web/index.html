@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="color-scheme" content="light">
+    <title>magic</title>
+    <link rel="stylesheet" href="/style.css">
+    <script type="module" src="/client.js"></script>
+  </head>
+  <body>
+    <button id="sidebar-backdrop" class="backdrop" type="button" aria-label="关闭会话侧栏" hidden></button>
+    <aside class="sidebar" id="sidebar">
+      <div class="brand-row">
+        <a class="brand" href="/" aria-label="magic 首页">magic</a>
+        <button id="close-sidebar" class="icon-button" type="button" aria-label="收起会话侧栏"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </div>
+      <button class="new-chat" id="new-session" type="button" title="新建会话 · ⌘/Ctrl + Shift + O">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M11 4H5a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2h13a2 2 0 0 0 2-2v-6M16 3l5 5M10 14l1-5 8-8 4 4-8 8Z"/></svg>新建会话
+        <span class="shortcut" aria-hidden="true">⇧ ⌘ O</span>
+      </button>
+      <label class="search-wrap">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10.5" cy="10.5" r="6.5"/><path d="m16 16 4 4"/></svg>
+        <input id="session-search" type="search" placeholder="搜索会话" aria-label="搜索会话">
+        <kbd aria-hidden="true">⌘ K</kbd>
+      </label>
+      <div class="sidebar-heading">会话</div>
+      <nav id="sessions" aria-label="选择会话"></nav>
+      <button class="sidebar-footer" id="choose-workspace" type="button" aria-label="选择工作文件夹" aria-haspopup="dialog" aria-controls="folder-dialog">
+        <span class="workspace-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3Z"/></svg></span>
+        <span class="workspace-label"><strong id="folder-name">本地工作区</strong><span id="connection">正在连接…</span></span>
+        <span class="connection-dot" id="connection-dot"></span>
+      </button>
+    </aside>
+
+    <main class="workspace is-empty">
+      <header class="topbar">
+        <button id="toggle-sidebar" class="icon-button" type="button" aria-label="切换会话侧栏" aria-controls="sidebar" aria-expanded="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>
+        </button>
+        <div class="page-heading"><h1 id="title">新会话</h1></div>
+        <button id="toggle-trace" class="trace-button" type="button" aria-controls="trace-panel" aria-expanded="false">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5h14M5 12h14M5 19h14"/><circle cx="8" cy="5" r="2"/><circle cx="16" cy="12" r="2"/><circle cx="10" cy="19" r="2"/></svg>
+          <span>调用记录</span>
+        </button>
+      </header>
+
+      <div class="conversation" id="conversation">
+        <div class="chat-column">
+          <section class="welcome" id="empty">
+            <h2>开始一个新任务</h2>
+          </section>
+          <div id="timeline" role="log" aria-label="聊天消息" aria-live="polite" aria-relevant="additions"></div>
+        </div>
+      </div>
+
+      <div class="composer-area">
+        <button id="jump-latest" class="jump-latest" type="button" hidden><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m-6-6 6 6 6-6"/></svg>回到最新消息</button>
+        <div id="busy-notice" class="busy-notice" hidden></div>
+        <div id="composer-error" class="notice" role="alert" hidden></div>
+        <form id="composer" class="composer">
+          <label class="sr-only" for="message">消息</label>
+          <textarea id="message" rows="2" maxlength="400000" placeholder="给 magic 发送消息…" title="Enter 发送，Shift + Enter 换行" aria-describedby="composer-hint"></textarea>
+          <div class="composer-toolbar">
+            <div class="composer-context">
+              <label class="mode-picker" title="工作模式 · /plan 或 /execute"><span class="sr-only">工作模式</span><select id="mode"><option value="execute">执行</option><option value="plan">Plan</option></select></label>
+              <button class="model-chip" id="choose-model" type="button" aria-haspopup="dialog" aria-controls="model-dialog" title="选择模型 · /model"><span id="model-name">模型</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
+              <button class="icon-button settings-button" id="open-settings" type="button" aria-haspopup="dialog" aria-controls="settings-dialog" title="Settings · /settings" aria-label="Open settings"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
+              <label class="effort-picker" id="effort-picker" title="思考强度 · /effort · 从下一轮生效"><span>Effort</span><select id="effort" aria-label="思考强度（Effort）"><option value="default">默认</option></select></label>
+              <span class="context-chip" id="context-chip" role="status" title="Context usage" hidden><span class="context-chip-label">Context</span><span id="context-usage"></span></span>
+              <span class="context-divider"></span>
+              <button class="project-chip" id="choose-folder" type="button" aria-label="选择工作文件夹" aria-haspopup="dialog" aria-controls="folder-dialog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 7a2 2 0 0 1 2-2h5l2 2h7a2 2 0 0 1 2 2v10H3Z"/></svg><span id="project-name">本地工作区</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
+            </div>
+            <button id="send" class="send-button" type="submit" aria-label="发送消息" title="发送消息 · Enter" disabled>
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 19V5m-6 6 6-6 6 6"/></svg>
+            </button>
+            <button id="stop" class="send-button stop-button" type="button" aria-label="停止生成" title="停止生成" hidden><span></span></button>
+          </div>
+        </form>
+        <p id="composer-hint" class="composer-hint" hidden>Enter 发送 · Shift + Enter 换行</p>
+      </div>
+    </main>
+
+    <button id="trace-backdrop" class="backdrop trace-backdrop" type="button" aria-label="收起调用记录" hidden></button>
+    <aside id="trace-panel" class="trace-panel" hidden aria-label="调用记录">
+      <header>
+        <button id="trace-toggle-sidebar" class="icon-button" type="button" aria-label="切换会话侧栏" aria-controls="sidebar" aria-expanded="true">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="16" rx="3"/><path d="M9 4v16"/></svg>
+        </button>
+        <strong>调用记录</strong><span id="trace-session-title"></span>
+        <button id="export-trace" class="text-button" type="button" disabled>导出 JSONL</button>
+        <button id="expand-trace" class="trace-expand" type="button" aria-label="展开到主界面" aria-pressed="false" aria-keyshortcuts="Control+Shift+E Meta+Shift+E" title="展开到主界面 · ⌘/Ctrl + Shift + E">
+          <svg class="expand-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M14 4h6v6m0-6-7 7M10 20H4v-6m0 6 7-7"/></svg>
+          <svg class="restore-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 4l-7 7m0-6v6h6M4 20l7-7m0 6v-6H5"/></svg>
+          <span id="trace-layout-label">展开</span>
+        </button>
+        <button id="close-trace" class="icon-button" type="button" aria-label="关闭调用记录"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button>
+      </header>
+      <div class="trace-overview">
+        <span><span id="trace-turn-count">0</span> 轮对话</span>
+        <span><span id="trace-call-count">0</span> 次模型请求</span>
+        <span><span id="trace-tool-count">0</span> 个工具</span>
+      </div>
+      <div class="trace-scroll"><div class="trace-content"><p id="trace-empty" class="trace-empty">选择一个会话，按时间顺序查看模型输入、模型输出、工具调用和工具结果。</p><div id="trace-timeline"></div>
+        <div class="trace-debug">
+          <details id="raw-events" class="json-details raw-log"><summary>原始事件 · <span id="event-count">0</span></summary><p class="trace-debug-hint">非流式事件的完整数据。</p><pre></pre></details>
+          <details id="stream-events" class="json-details raw-log"><summary>完整流式事件 · <span id="stream-event-count">0</span></summary><pre></pre></details>
+        </div>
+      </div></div>
+    </aside>
+    <dialog id="model-dialog" class="model-dialog" aria-labelledby="model-dialog-title" aria-describedby="model-description">
+      <header><h2 id="model-dialog-title">选择模型</h2><button id="close-model" class="icon-button" type="button" aria-label="关闭模型设置"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <p id="model-description">从当前 API 获取可用模型，选择从下一轮生效。</p>
+      <p id="model-current-warning" class="model-help" hidden>之前选择的模型不在当前列表中，请重新选择。</p>
+      <div id="model-options" class="model-options" aria-label="模型列表"></div>
+      <p id="model-error" class="notice" role="alert" hidden></p>
+      <footer class="model-footer"><span id="model-status" role="status"></span><button id="refresh-models" class="text-button" type="button">刷新列表</button></footer>
+    </dialog>
+    <dialog id="folder-dialog" class="model-dialog folder-dialog" aria-labelledby="folder-dialog-title" aria-describedby="folder-description">
+      <header><h2 id="folder-dialog-title">选择工作文件夹</h2><button id="close-folder" class="icon-button" type="button" aria-label="关闭文件夹选择"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <p id="folder-description">新会话将在所选文件夹中运行。</p>
+      <div class="folder-location"><button id="folder-parent" class="text-button" type="button">上一级</button><span id="folder-location" aria-live="polite"></span><button id="folder-root" class="text-button" type="button">根目录</button></div>
+      <div id="folder-options" class="folder-options" aria-label="子文件夹"></div>
+      <p id="folder-status" class="model-help" role="status"></p>
+      <p id="folder-error" class="notice" role="alert" hidden></p>
+      <form id="create-folder" class="folder-create"><label class="sr-only" for="folder-name-input">新文件夹名称</label><input id="folder-name-input" placeholder="新文件夹名称" maxlength="255" autocomplete="off"><button id="create-folder-button" class="text-button" type="submit">创建并使用</button></form>
+      <footer class="model-footer"><span class="model-help">文件操作和命令使用此目录</span><button id="use-folder" class="plan-approve" type="button">使用此文件夹</button></footer>
+    </dialog>
+    <dialog id="settings-dialog" class="model-dialog settings-dialog" aria-labelledby="settings-dialog-title">
+      <header><h2 id="settings-dialog-title">Settings</h2><button id="close-settings" class="icon-button" type="button" aria-label="Close settings"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m6 6 12 12M18 6 6 18"/></svg></button></header>
+      <section class="settings-section"><h3>Providers</h3><div id="settings-providers" class="settings-list" aria-label="Providers"></div><p class="model-help">Keys are read from the environment or ~/.magic/providers.json when the Loop starts; this page never handles them.</p></section>
+      <section class="settings-section"><h3>Model</h3><div class="settings-row"><span id="settings-model"></span><button id="settings-choose-model" class="text-button" type="button">Choose model…</button></div></section>
+      <section class="settings-section"><h3>Effort</h3><div class="settings-row"><label class="sr-only" for="settings-effort">Effort</label><select id="settings-effort"></select><span id="settings-effort-note" class="model-help"></span></div></section>
+      <section class="settings-section"><h3>Tools</h3><div id="settings-tools" class="settings-list" aria-label="Tool switches"></div><p id="settings-tools-hint" class="model-help" hidden>Plan mode needs Write or Edit to save the plan file.</p></section>
+      <section class="settings-section"><h3>Context</h3><dl id="settings-context" class="settings-dl"></dl></section>
+      <p id="settings-error" class="notice" role="alert" hidden></p>
+      <footer class="model-footer"><span class="model-help" role="status">Changes apply from the next turn and are saved to .magic/settings.json</span></footer>
+    </dialog>
+    <div id="toast" class="toast" role="status" hidden></div>
+  </body>
+</html>
