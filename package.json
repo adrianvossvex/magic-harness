@@ -2,8 +2,27 @@
   "name": "magic-harness",
   "version": "0.1.0",
   "description": "A small, observable coding-agent harness: chat in the terminal or a local web page while the model drives Claude Code-style tools through the Claude, OpenAI, Kimi, DeepSeek or GLM API.",
+  "keywords": [
+    "coding-agent",
+    "harness",
+    "claude",
+    "openai",
+    "kimi",
+    "deepseek",
+    "glm",
+    "cli",
+    "agent"
+  ],
   "author": "adrianvossvex",
   "license": "SEE LICENSE IN LICENSE",
+  "homepage": "https://github.com/adrianvossvex/magic-harness#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/adrianvossvex/magic-harness.git"
+  },
+  "bugs": {
+    "url": "https://github.com/adrianvossvex/magic-harness/issues"
+  },
   "type": "module",
   "bin": {
     "magic": "build/cli.js"

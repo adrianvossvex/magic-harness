@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/logo.png" width="120" alt="magic logo">
+  <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/logo.png" width="120" alt="magic logo">
 </p>
 
 <h1 align="center">magic</h1>
@@ -25,18 +25,19 @@ magic runs Claude Code-style tools (Read, Write, Edit, Bash, Glob, Grep, WebSear
 **Your tools, your rules.** Drop a JavaScript file into `.magic/tools/` and the model can use it on the next turn; switch any tool off with one click. A harness should not let one person decide how everyone else works.
 
 <p align="center">
-  <img src="assets/demo-models.gif" width="720" alt="Choosing a model and inspecting the call log">
+  <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/demo-models.gif" width="720" alt="Choosing a model and inspecting the call log">
 </p>
 <p align="center"><sub>Pick a model, send a task, open the call log: every request and tool call is there.</sub></p>
 
 <p align="center">
-  <img src="assets/demo-custom-tool.gif" width="720" alt="A custom tool defined in the project and used by the model">
+  <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/demo-custom-tool.gif" width="720" alt="A custom tool defined in the project and used by the model">
 </p>
 <p align="center"><sub>A tool defined in <code>.magic/tools/</code>, used by the model, and switchable in settings.</sub></p>
 
 ## Features
 
 - Terminal chat and a local web UI (localhost only) sharing the same sessions
+- UI in English, 简体中文, 日本語, 한국어, Español, Português (Brasil), Deutsch and Français; switch it in settings or with `/language`
 - Eight built-in tools plus your own, all switchable; Write and Edit stay inside the project folder
 - Five providers through one interface, with the Anthropic message format as the common ground and a translator for OpenAI's Responses API
 - Per-model thinking effort (default, low, medium, high, xhigh, max)
@@ -89,12 +90,13 @@ One environment variable per provider, or a file at `~/.magic/providers.json` (`
 | `/model` | Pick a model, grouped by provider; `/model provider/id` switches directly |
 | `/effort` | Thinking effort for the current model |
 | `/tools` | List the tool switches; `/tools Bash off` turns a tool off from the next turn |
-| `/settings` | Settings dialog in the web UI: providers, model, effort, tools, context |
+| `/settings` | Settings dialog in the web UI: language, providers, model, effort, tools, context |
+| `/language` | List the UI languages; `/language ja` switches the terminal and the web page |
 | `/compact` | Summarize the conversation to free up context |
 | `/plan`, `/execute`, `/approve` | Switch modes; approve a submitted plan |
 | `/new`, `/exit` | New session; quit. `Ctrl+C` cancels the running task |
 
-Settings and session logs live in `.magic/` inside your project. Model, effort and tool changes apply from the next turn.
+Settings and session logs live in `.magic/` inside your project. Model, effort and tool changes apply from the next turn. The UI language is personal, so it is kept in `~/.magic/preferences.json`; `MAGIC_LANG=de` overrides it for one run, and without either magic follows your locale.
 
 ## Custom tools
 
