@@ -1,7 +1,7 @@
 {
   "name": "magic-harness",
   "version": "0.1.0",
-  "description": "A small, observable coding-agent harness: chat in the terminal or a local web page while the model drives Claude Code-style tools through the Claude, OpenAI, Kimi, DeepSeek or GLM API.",
+  "description": "A small, observable coding-agent harness: you choose the model, every call is on record, and your own tools load from a folder.",
   "keywords": [
     "coding-agent",
     "harness",

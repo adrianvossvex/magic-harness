@@ -21,13 +21,14 @@
   <a href="LICENSE"><img alt="license" src="https://img.shields.io/badge/license-free%20to%20use-7C3AED"></a>
 </p>
 
-magic runs Claude Code-style tools (Read, Write, Edit, Bash, Glob, Grep, WebSearch, WebFetch) in your project while you chat from the terminal or a local web page. It talks to the Claude, OpenAI, Kimi, DeepSeek and GLM APIs directly, with nothing in between.
+magic is a local coding-agent harness built on one idea: the person at the keyboard stays in control. You choose which model handles each turn, and nothing reroutes it behind your back. Every request, response and tool call is written to a per-session log you can open from the UI. Your own tools are plain JavaScript files in a folder; the model can use them on the next turn, and any tool can be switched off with a click. Chat in the terminal or a local web page, run several sessions at once, and plan before anything changes.
 
 ## Why
 
-**You choose the model. Nothing routes behind your back.** Pick any model from any configured provider, switch between turns, and see exactly which one answered. Every request magic sends is on record: the system prompt, the declared tools, the messages, the model's reply and the tool results, in a timeline you can open at any time.
-
-**Your tools, your rules.** Drop a JavaScript file into `.magic/tools/` and the model can use it on the next turn; switch any tool off with one click. A harness should not let one person decide how everyone else works.
+- **Your model.** Several providers behind one interface; you decide which model runs each turn, and nothing reroutes it.
+- **Every call on record.** Each session keeps a log of every request, response, tool call and result, and the call log in the UI shows it all in order.
+- **Your tools, your rules.** A tool is one JavaScript file in a folder. The model uses it on the next turn; any tool can be switched off in settings.
+- **Terminal and web, side by side.** Both share the same sessions, tasks run in several sessions at once, plan mode keeps changes behind an explicit approval, and the UI speaks eight languages.
 
 <p align="center">
   <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/demo-models.gif" width="720" alt="Choosing a model and inspecting the call log">
