@@ -1,11 +1,7 @@
-<p align="center">
-  <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/logo.png" width="128" alt="magic logo">
-</p>
-
 <h1 align="center">
   <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/wordmark-dark.png">
-    <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/wordmark-light.png" width="200" alt="magic">
+    <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/logo-dark.png">
+    <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/logo.png" width="240" alt="magic">
   </picture>
 </h1>
 
