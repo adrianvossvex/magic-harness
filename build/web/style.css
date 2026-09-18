@@ -201,8 +201,6 @@ textarea::placeholder { color: #8a8a8a; }
 .jump-latest { position: absolute; bottom: calc(100% + 12px); left: 50%; transform: translateX(-50%); display: flex; align-items: center; gap: 6px; border: 1px solid #e5e5e5; border-radius: 20px; background: #fff; padding: 8px 11px; color: #777; font-size: 11px; white-space: nowrap; }
 .jump-latest svg { width: 12px; height: 12px; }
 .notice { margin: 10px 0; padding: 10px 12px; border-radius: 7px; background: #fbf5f3; color: #995c50; font-size: 12px; line-height: 1.7; white-space: pre-wrap; overflow-wrap: anywhere; }
-.busy-notice { font-size: 11px; color: var(--muted); padding: 0 4px 10px; }
-.busy-notice button { border: 0; background: transparent; color: #555; padding: 0; margin-left: 9px; text-decoration: underline; font-size: inherit; }
 .welcome { text-align: center; padding: 24px 0 26px; }
 .welcome h2 { font-size: 26px; font-weight: 500; letter-spacing: -.5px; margin: 0; }
 .workspace.is-empty .conversation { display: flex; align-items: flex-end; }

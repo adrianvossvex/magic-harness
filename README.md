@@ -37,6 +37,7 @@ magic runs Claude Code-style tools (Read, Write, Edit, Bash, Glob, Grep, WebSear
 ## Features
 
 - Terminal chat and a local web UI (localhost only) sharing the same sessions
+- Sessions run in parallel: each session runs one task at a time, and any number of sessions can run at once
 - UI in English, 简体中文, 日本語, 한국어, Español, Português (Brasil), Deutsch and Français; switch it in settings or with `/language`
 - Eight built-in tools plus your own, all switchable; Write and Edit stay inside the project folder
 - Five providers through one interface, with the Anthropic message format as the common ground and a translator for OpenAI's Responses API
@@ -94,7 +95,7 @@ One environment variable per provider, or a file at `~/.magic/providers.json` (`
 | `/language` | List the UI languages; `/language ja` switches the terminal and the web page |
 | `/compact` | Summarize the conversation to free up context |
 | `/plan`, `/execute`, `/approve` | Switch modes; approve a submitted plan |
-| `/new`, `/exit` | New session; quit. `Ctrl+C` cancels the running task |
+| `/new`, `/exit` | New session; quit. `Ctrl+C` cancels the terminal's running task |
 
 Settings and session logs live in `.magic/` inside your project. Model, effort and tool changes apply from the next turn. The UI language is personal, so it is kept in `~/.magic/preferences.json`; `MAGIC_LANG=de` overrides it for one run, and without either magic follows your locale.
 
@@ -166,7 +167,7 @@ WebSearch and WebFetch use Claude's built-in web tools or OpenAI's built-in sear
 
 ## How it works
 
-One loop: append your message, send the history and tool list to the model, run the tools it asks for, append the results, repeat until it answers. The loop writes every step to `.magic/sessions/<id>.jsonl`; the web page is a separate process that reads that log and sends commands over a local socket, so a stuck browser never stalls the model. Tools execute automatically, without permission prompts, which is why the log and the switches matter.
+One loop: append your message, send the history and tool list to the model, run the tools it asks for, append the results, repeat until it answers. The loop writes every step to `.magic/sessions/<id>.jsonl`; the web page is a separate process that reads that log and sends commands over a local socket, so a stuck browser never stalls the model. Tools execute automatically, without permission prompts, which is why the log and the switches matter. Each session has its own loop and its own log, so several sessions can run at the same time; within a session, one task runs at a time.
 
 ## License
 
