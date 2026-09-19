@@ -41,6 +41,7 @@ magic is a local coding-agent harness built on one idea: the person at the keybo
 - Terminal chat and a local web UI (localhost only) sharing the same sessions
 - Sessions run in parallel: each session runs one task at a time, and any number of sessions can run at once
 - UI in English, 简体中文, 日本語, 한국어, Español, Português (Brasil), Deutsch and Français; switch it in settings or with `/language`
+- Projects (experimental): a planner session writes a design and a task tree, a deterministic dispatcher runs the tasks in their own sessions with file scopes and acceptance commands
 - Eight built-in tools plus your own, all switchable; Write and Edit stay inside the project folder
 - Five providers through one interface, with the Anthropic message format as the common ground and a translator for OpenAI's Responses API
 - Per-model thinking effort (default, low, medium, high, xhigh, max)
@@ -95,6 +96,7 @@ One environment variable per provider, or a file at `~/.magic/providers.json` (`
 | `/tools` | List the tool switches; `/tools Bash off` turns a tool off from the next turn |
 | `/settings` | Settings dialog in the web UI: language, providers, model, effort, tools, context |
 | `/language` | List the UI languages; `/language ja` switches the terminal and the web page |
+| `/project` | Plan and run a long project as a task tree; see Projects below |
 | `/compact` | Summarize the conversation to free up context |
 | `/plan`, `/execute`, `/approve` | Switch modes; approve a submitted plan |
 | `/new`, `/exit` | New session; quit. `Ctrl+C` cancels the terminal's running task |
@@ -150,6 +152,28 @@ The contract:
 - A module may export one definition or an array, as `default` or as `tools`. A project tool replaces a personal one with the same name. Restart magic after editing a tool file.
 
 Custom tools run with your user's permissions, like everything else magic executes.
+
+## Projects (experimental)
+
+A single conversation is the wrong unit for a piece of work that takes days: compaction keeps the last few steps and loses the structure. A project keeps the structure in files and gives every task its own session.
+
+```text
+/project plan Build a small platformer: player, one level, enemies, a title screen
+/project run
+/project           # progress
+/project stop      # pause; running tasks go back to the queue
+/project replan Enemies should patrol instead of chasing
+```
+
+Three roles, one shared state:
+
+- **Planner** (a model session with read-only tools): explores the repository, writes `design.md`, and submits a task tree through `plan_write`. Every task has a spec, acceptance commands, dependencies, and the file globs it may change. The harness validates the tree and the planner fixes what it rejects. Later, `plan_update` revises the tree without touching tasks that ran.
+- **Dispatcher** (code, not a model): runs tasks whose dependencies are done, up to two at a time, never two with overlapping file scopes. Each task gets a fresh session with the brief, the design, the decisions so far and the reports of its dependencies. When the executor calls `task_report`, the dispatcher runs the acceptance commands; failures go back to the same session, up to the task's attempt budget and time limit. Milestones marked for user approval pause the project until you run it again. When tasks fail or report themselves blocked, the planner is asked for a revision; if that does not help, the project pauses and `/project run` retries the failed tasks.
+- **Executors** (ordinary sessions): Write and Edit are refused outside the task's file scope (symbolic links resolved), questions are off, and the turn ends with `task_report` (complete, or `blocked` with a reason), `task_split` for a task that turned out too large, or `task_note` for a decision worth recording. Stopping an executor session from the web page marks its task blocked until the next `/project run`; `/project stop` pauses everything and returns running tasks to the queue.
+
+Everything lives in `.magic/project/`: `project.json` (the tree and every attempt), `brief.md`, `design.md`, `decisions.md`, and `events.jsonl` with every dispatcher action. Executor sessions are normal sessions: they show up in the sidebar while they run and keep their full call log. The web API mirrors the commands: `GET /api/project` and `POST /api/project` with `{ action: "plan" | "run" | "stop" | "replan" }`.
+
+This is a test version: there is no project view in the web page yet, Bash commands are not confined to the file scope, review-only acceptance is accepted on the executor's word, and tasks run in the same working tree rather than in separate worktrees.
 
 ## Providers and effort
 
