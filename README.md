@@ -41,7 +41,7 @@ magic is a local coding-agent harness built on one idea: the person at the keybo
 - Terminal chat and a local web UI (localhost only) sharing the same sessions
 - Sessions run in parallel: each session runs one task at a time, and any number of sessions can run at once
 - UI in English, 简体中文, 日本語, 한국어, Español, Português (Brasil), Deutsch and Français; switch it in settings or with `/language`
-- Projects (experimental): a planner session writes a design and a task tree, a deterministic dispatcher runs the tasks in their own sessions with file scopes and acceptance commands; the terminal and the web page both drive it
+- Projects (experimental): a planner session writes a design and a task tree, a deterministic dispatcher runs the tasks in their own sessions with file scopes and acceptance commands; the terminal and the web page both drive it ([a game it built](https://adrianvossvex.github.io/starfall/))
 - Eight built-in tools plus your own, all switchable; Write and Edit stay inside the project folder
 - Five providers through one interface, with the Anthropic message format as the common ground and a translator for OpenAI's Responses API
 - Per-model thinking effort (default, low, medium, high, xhigh, max)
@@ -177,6 +177,15 @@ Everything lives in `.magic/project/`: `project.json` (the tree and every attemp
 In the web page, choose **Project** in the mode picker next to Execute and Plan (or click the Project entry in the sidebar, or open `/?view=project`). The transcript gives way to the task tree: the goal, the status, the milestones and every task with its attempts and a button to its session. The message box then starts a project from a goal, or sends a revision once one exists; the planner's session opens so its questions reach you; **Approve the plan and run**, **Continue** and **Stop** do what the terminal commands do, and `/project …` works in the message box too. The web API mirrors the commands: `GET /api/project` and `POST /api/project` with `{ action: "plan" | "run" | "stop" | "replan" }`. A finished project takes more work the same way: describe it, and the planner appends tasks (and can replace the design document) instead of starting over.
 
 This is a test version: Bash commands are not confined to the file scope, review-only acceptance is accepted on the executor's word, and tasks run in the same working tree rather than in separate worktrees.
+
+### What it built: STARFALL
+
+<p align="center">
+  <a href="https://adrianvossvex.github.io/starfall/"><img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/starfall.gif" width="720" alt="STARFALL, an arcade space-combat game written by the project system"></a>
+</p>
+<p align="center"><sub><a href="https://adrianvossvex.github.io/starfall/"><strong>Play it in your browser</strong></a> · <a href="https://github.com/adrianvossvex/starfall">source</a> · ten waves, a dreadnought boss, an upgrade shop, four enemy types, homing missiles, an EMP burst, radar, synthesized sound.</sub></p>
+
+One brief of 1,400 words, one command. The planner wrote a 12 KB design and a tree of 30 tasks in 4 milestones; the dispatcher ran them in 33 sessions over about 5 hours for roughly $9 of DeepSeek V4 Pro; the executors wrote 8,900 lines of plain JavaScript and 169 tests, and looked at their own work through a screenshot tool in the project's `.magic/tools/`. Nothing was hand-written, and every request is in the session logs.
 
 ## Compared with dsh
 
