@@ -1,0 +1,6 @@
+[a0b7ae7e] Glob
+[a0b7ae7e] Read
+[a0b7ae7e] Read
+[a0b7ae7e] Read
+[a0b7ae7e] Read
+project error: Error: The planner turn ended with status error: Expected double-quoted property name in JSON at position 16976 (line 1 column 16977)

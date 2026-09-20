@@ -1,0 +1,49 @@
+
+> library-system@0.1.0 test
+> node --test test/*.test.js
+
+✔ addBook creates a book with default copies and availability (2.553417ms)
+✔ addBook trims text and accepts an explicit copy count (0.609167ms)
+✔ book ids increment independently of other entities (0.914416ms)
+✔ addBook rejects missing title, author and invalid copies (0.497042ms)
+✔ listBooks returns every book (1.018459ms)
+✔ listBooks({ available: true }) hides fully checked-out books (2.559083ms)
+✔ books persist across reads (0.57675ms)
+✔ add-book prints the created book and exits 0 (53.295209ms)
+✔ add-member prints the created member (47.714541ms)
+✔ the data file is created on first use (47.548333ms)
+✔ --data selects an isolated file per invocation (93.198125ms)
+✔ a full checkout and return workflow works through the CLI (373.48475ms)
+✔ list-loans --overdue keeps only past-due active loans (234.86625ms)
+✔ business failures print an error object and exit 2 (47.760083ms)
+✔ unknown commands exit 1 (46.671417ms)
+✔ missing required options exit 1 (46.818542ms)
+✔ unknown options exit 1 (47.965625ms)
+✔ missing command exits 1 (46.433125ms)
+✔ checkout records out/due dates and consumes an available copy (3.840458ms)
+✔ checkout defaults to a 14 day loan (1.072291ms)
+✔ loan ids increment independently (1.181208ms)
+✔ checkout fails when no copy is available (1.044333ms)
+✔ checkout fails when the member already has 3 active loans (2.002416ms)
+✔ checkout fails for unknown book or member and bad inputs (0.733333ms)
+✔ returning on time leaves a zero fine and restores the copy (0.95425ms)
+✔ returning late charges 0.50 per day (0.826959ms)
+✔ the fine is capped at 20.00 (0.814042ms)
+✔ returning the same loan twice fails (0.881958ms)
+✔ returning an unknown loan fails (0.289583ms)
+✔ listLoans filters by member (0.999209ms)
+✔ listLoans({ overdue: true }) keeps only active past-due loans (1.031958ms)
+✔ report summarises books, members, loans and fines (1.315333ms)
+✔ addMember creates a member with an incrementing id (2.199625ms)
+✔ addMember trims the name (1.07725ms)
+✔ addMember rejects a missing or blank name (0.434959ms)
+✔ member ids are independent from book ids (0.893083ms)
+✔ listMembers returns all registered members (0.816417ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1153.060791

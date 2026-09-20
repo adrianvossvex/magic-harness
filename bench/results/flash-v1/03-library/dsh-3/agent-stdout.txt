@@ -1,0 +1,22 @@
+Done. The library management system is complete and `npm test` passes (43 tests, 0 failures).
+
+## What was built
+
+**Modules (`src/`)**
+- `books.js` — `addBook({ title, author, copies = 1 })`, `listBooks({ available })`
+- `members.js` — `addMember({ name })`, `listMembers()`
+- `loans.js` — `checkout`, `returnLoan`, `listLoans`, `report` with all the rules (availability, 3-active-loan cap, 0.50/day fine capped at 20.00, double-return rejection)
+- `store.js` — single-JSON-file persistence, `data/library.json` default, `--data` support, per-entity id sequences starting at 1, file created on first use
+- `dates.js` — UTC-safe `YYYY-MM-DD` handling (leap years, default "today")
+- `validate.js`, `errors.js` — shared validation and `UsageError`/`LibraryError`
+
+**CLI (`bin/library.js`)** — all seven commands (`add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`) with the exact exit-code contract: `0` success printing one JSON value, `1` unknown command / missing option, `2` failed operation printing `{"error":"..."}` to stderr.
+
+**Tests (`test/`)** — `books.test.js`, `members.test.js`, `loans.test.js`, and `cli.test.js` covering ids, persistence, filtering, every rule, fines/caps, error paths, and exit codes.
+
+**Docs & config** — `README.md` documents every module, all CLI commands with examples, the rules, exit codes, and project layout; `package.json` has `"test": "node --test"` and a `bin` entry; `.gitignore` ignores `data/`.
+
+Notable design choices worth flagging:
+- Error messages are human-readable (e.g. `book 1 not found`, `member 1 already has 3 active loans`); tests assert on them, so if a grader expects exact wording, those strings are the ones to adjust.
+- `report.books` counts titles (not copies); `copies`/`available` are totals across all titles.
+- The store's default path is resolved at import time; the CLI sets it from `--data` before any command runs.

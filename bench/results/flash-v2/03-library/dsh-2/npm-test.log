@@ -1,0 +1,48 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook stores a book with the default single copy (2.104208ms)
+✔ addBook assigns sequential ids per book (1.36325ms)
+✔ addBook records the requested number of copies (0.754458ms)
+✔ addBook trims surrounding whitespace (0.522916ms)
+✔ listBooks returns every book and defends against external mutation (0.750542ms)
+✔ listBooks with available keeps only books with a free copy (0.758542ms)
+✔ addBook rejects missing or invalid fields (0.453542ms)
+✔ add-book prints the created book and exits 0 (56.584292ms)
+✔ add-book uses a single copy by default and add-member prints the member (100.457625ms)
+✔ a full checkout/return/report flow works through the CLI (284.145209ms)
+✔ list-books --available hides fully checked-out books (285.38525ms)
+✔ the default data file is created relative to the current directory (47.298375ms)
+✔ an unknown command exits 1 with a JSON error on stderr (46.450666ms)
+✔ a missing required option exits 1 (47.36275ms)
+✔ a domain failure exits 2 with a JSON error on stderr (47.329416ms)
+✔ an invalid option value exits 1 (46.947209ms)
+✔ test/helpers.js (56.369084ms)
+✔ checkout creates a loan and reserves a copy (3.013917ms)
+✔ checkout honours a custom number of days (0.533416ms)
+✔ checkout assigns sequential loan ids (0.680167ms)
+✔ checkout fails when no copy is available (0.723542ms)
+✔ checkout fails for unknown books and members (0.512292ms)
+✔ a member may hold at most three active loans (1.024625ms)
+✔ returnLoan marks the loan returned and frees the copy (0.7035ms)
+✔ returning on the due date is free (0.526917ms)
+✔ a late return is charged 0.50 per day (0.514083ms)
+✔ the fine is capped at 20.00 (0.496667ms)
+✔ a loan cannot be returned twice (0.457875ms)
+✔ returnLoan rejects unknown loans (0.239417ms)
+✔ listLoans filters by member (0.614958ms)
+✔ listLoans overdue keeps only active loans past their due date (0.683334ms)
+✔ report summarises books, members, loans and fines (0.721292ms)
+✔ report on an empty library returns zeroes and creates the data file (0.252917ms)
+✔ addMember stores a member and assigns sequential ids (2.179166ms)
+✔ addMember trims surrounding whitespace (0.436208ms)
+✔ addMember rejects a missing or empty name (0.937375ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1041.472084

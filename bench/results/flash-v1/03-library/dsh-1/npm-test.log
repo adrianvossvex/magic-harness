@@ -1,0 +1,46 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook assigns sequential ids starting at 1 (1.965042ms)
+✔ addBook defaults copies to 1 and trims text (0.9295ms)
+✔ addBook validates its input (0.521042ms)
+✔ the data file is created on first use (0.400542ms)
+✔ listBooks returns all books and filters to available ones (1.355583ms)
+✔ add-book prints the new book and exits 0 (53.953667ms)
+✔ add-member prints the new member (48.07675ms)
+✔ checkout and return work end to end (190.453917ms)
+✔ list-books --available hides fully checked-out books (285.102416ms)
+✔ list-loans filters by member and overdue (426.833709ms)
+✔ report prints the summary object (192.503875ms)
+✔ an unknown command exits 1 with an error on stderr (46.347833ms)
+✔ a missing required option exits 1 (48.108292ms)
+✔ a missing option value exits 1 (46.894459ms)
+✔ domain failures exit 2 (94.258875ms)
+✔ an invalid option value exits 2 (47.67025ms)
+✔ --data selects an alternate data file (46.288375ms)
+✔ checkout creates a loan due 14 days later by default (3.80125ms)
+✔ checkout accepts a custom loan length (0.64075ms)
+✔ checkout fails for unknown books and members (1.787292ms)
+✔ checkout fails when no copy is available (0.710625ms)
+✔ a member can hold at most three active loans (0.929042ms)
+✔ returning on time sets no fine and frees the copy (0.908333ms)
+✔ returning late charges 0.50 per day (0.59175ms)
+✔ a late fine is capped at 20.00 (0.472917ms)
+✔ a loan cannot be returned twice (0.479666ms)
+✔ returning an unknown loan fails (0.268209ms)
+✔ listLoans filters by member and by overdue status (0.691834ms)
+✔ report summarises books, members, loans and fines (0.720375ms)
+✔ an empty library reports zeroes (0.2555ms)
+✔ addMember assigns sequential ids starting at 1 (1.898834ms)
+✔ addMember trims the name (0.386417ms)
+✔ addMember validates its input (0.396375ms)
+✔ listMembers returns every registered member (1.566958ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1596.308791

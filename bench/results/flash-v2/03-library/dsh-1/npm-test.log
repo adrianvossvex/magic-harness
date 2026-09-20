@@ -1,0 +1,42 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook creates a book with defaults (1.91075ms)
+✔ addBook honours an explicit copies value and increments ids (0.912625ms)
+✔ listBooks returns every book and can filter by availability (1.371042ms)
+✔ addBook rejects empty fields and invalid copies (0.36425ms)
+✔ the full command workflow writes JSON to stdout (334.223833ms)
+✔ list-books --available hides fully checked out books (276.775375ms)
+✔ list-loans supports --member and --overdue (372.365917ms)
+✔ unknown commands and bad usage exit 1 with a JSON error (183.679042ms)
+✔ domain failures exit 2 with a JSON error (94.216209ms)
+✔ data file defaults to data/library.json and is created on first use (91.757959ms)
+✔ checkout defaults to a 14 day loan and decrements availability (4.207125ms)
+✔ checkout honours custom days and defaults today to the current date (0.73225ms)
+✔ checkout fails when no copy is available (0.661875ms)
+✔ checkout fails when the member already has three active loans (0.708084ms)
+✔ checkout fails for unknown books and members (0.593667ms)
+✔ returning on time has no fine and restores availability (0.627917ms)
+✔ returning late charges 0.50 per day (0.507959ms)
+✔ the late fine is capped at 20.00 (0.487125ms)
+✔ a loan cannot be returned twice (0.537ms)
+✔ returning an unknown loan fails (0.412708ms)
+✔ invalid dates are rejected (0.400416ms)
+✔ listLoans filters by member and by overdue status (0.657167ms)
+✔ returned loans are never listed as overdue (0.503666ms)
+✔ report aggregates books, members, loans and fines (0.743125ms)
+✔ addMember creates members with sequential ids (1.976ms)
+✔ addMember rejects a missing or blank name (0.361958ms)
+✔ readData creates the file and its directory on first use (1.913292ms)
+✔ nextId assigns ids in order and independently per type (0.061125ms)
+✔ writeData/readData round-trips a database (0.427709ms)
+✔ setDataFile configures the default path used by modules (0.491875ms)
+ℹ tests 30
+ℹ suites 0
+ℹ pass 30
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1425.04925

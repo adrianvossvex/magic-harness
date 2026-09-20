@@ -1,0 +1,22 @@
+Done. The key-value store CLI is implemented and all tests pass.
+
+## What was built
+
+**`bin/kv.js`** — CLI entry point, run as `node bin/kv.js <command> [args] [--file <path>]`:
+- `set <key> <value...>` — joins remaining args with single spaces, prints nothing, exit 0; `--ttl <seconds>` records an absolute expiry.
+- `get <key>` — prints value + newline, exit 0; missing/expired prints `not found: <key>` to stderr, exit 1, and prunes the expired entry from disk.
+- `del <key>` — prints `deleted`, exit 0; missing prints `not found: <key>` to stderr, exit 1.
+- `list` — sorted non-expired keys, one per line, nothing for an empty store; prunes expired entries.
+- Key validation against `/^[A-Za-z0-9_.-]+$/` → `invalid key: <key>` stderr, exit 1.
+- Unknown command → usage on stderr, exit 2.
+- `--file` defaults to `.kv.json`; supports `--file path`, `--file=path`, and flags before/after the command.
+
+**`lib/store.js`** — JSON load/save with **atomic writes** (unique temp file + `rename`), plus expiry helpers (`isExpired`, `pruneExpired`).
+
+**`test/kv.test.js`** — 25 `node:test` tests spawning the CLI against temp files, covering every command, all error cases, invalid keys, default/custom `--file`, atomic writes, and TTL expiry (immediate TTL and pre-expired absolute timestamps).
+
+**`README.md`** — documents every command, option, exit code, key rules, and the on-disk format.
+
+**`package.json`** — added `"test": "node --test"` and a `bin` entry.
+
+Verification: `npm test` → **25 pass, 0 fail**.

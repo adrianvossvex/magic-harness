@@ -1,0 +1,24 @@
+Done. The key-value store CLI is implemented and all tests pass.
+
+## What was built
+
+**`bin/kv.js`** — dependency-free ES-module CLI:
+- `set <key> <value...> [--ttl <seconds>]` — joins remaining args with single spaces, prints nothing, exit 0. `--ttl` stores an absolute `expiresAt` in ms (`Date.now() + seconds*1000`); `--ttl=<s>` also accepted.
+- `get <key>` — prints value + newline, exit 0; missing/expired prints `not found: <key>` on stderr, exit 1. Expired entries are pruned and persisted on read.
+- `del <key>` — prints `deleted`, exit 0; missing prints `not found: <key>` on stderr, exit 1.
+- `list` — sorted non-expired keys, one per line; nothing when empty.
+- Key validation `/^[A-Za-z0-9_.-]+$/` → `invalid key: <key>` stderr exit 1.
+- Unknown/missing command → usage on stderr, exit 2.
+- `--file` selectable (default `.kv.json`), may appear anywhere; **atomic writes** via temp file + `renameSync` in the same directory.
+
+**`test/kv.test.js`** — 22 `node:test` cases spawning the CLI against temp files, covering every command, error cases, multi-word values, key validation, custom/default `--file`, unknown command, and TTL expiry using already-expired timestamps plus `--ttl 0` / `--ttl 0` forms. Also asserts atomicity (no leftover temp files).
+
+**`package.json`** — added `"test": "node --test"` and a `bin` entry.
+
+**`README.md`** — documents every command, options, exit codes, and the JSON file format.
+
+## Verification
+```
+npm test  →  22 pass, 0 fail
+```
+Manual smoke test confirmed output, exit codes (0/1/2), and clean atomic store files.

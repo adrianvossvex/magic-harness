@@ -1,0 +1,910 @@
+dsh: reasoning:
+Let me start by exploring the repository.
+dsh: reasoning:
+Let me plan the implementation.
+
+Structure:
+- src/storage.js — JSON file helpers (load/save, create on first use, id assignment)
+- src/books.js
+- src/members.js
+- src/loans.js
+- bin/library.js
+- test/*.test.js
+- README.md
+- package.json test script
+
+Let me think carefully about the data model and semantics.
+
+Storage file format. Single JSON file. It should hold books, members, loans and counters. Something like:
+```json
+{ "books": [], "members": [], "loans": [], "counters": { "book": 0, "member": 0, "loan": 0 } }
+```
+
+"Ids are integers assigned in order per entity type, starting at 1." So counters per entity type.
+
+"Create the file on first use." So every command should ensure the file exists. Probably `load()` creates default if missing, and maybe writes it. Let's create the file on first use — when any module is called? The module functions take no path in the spec... Hmm. The modules are `src/books.js: addBook({...})`, etc. They don't mention a path argument. But every command accepts `--data <path>`. How do modules know which file?
+
+We need a way to configure the data path. Options:
+1. Modules use a module-level default path settable via a `configure`/`setDataFile` function.
+2. Each module function accepts optional `data`/`file` param.
+
+The spec signatures show only the listed options; `--data` is a CLI concern. But tests use modules. Common design: storage module reads path from an env var or a settable module state, default `data/library.json`.
+
+I think a clean approach: `src/storage.js` exports functions that take an optional path, defaulting to a module-level current path that can be set via `setDataFile(path)` (or env `LIBRARY_DATA`). Then `books.js` etc. call storage with no path, using the configured default. CLI parses `--data` and calls `setDataFile(path)` before invoking. Tests can either call `setDataFile(tempFile)` or pass a path... But test isolation across files in node:test running concurrently could be an issue with global state. Node's test runner runs test files in separate processes by default (each file separate child process). Within a file, tests run sequentially by default. So a module-level path is fine per test file.
+
+But to be safe and flexible, I'll let each domain function accept an optional `data` path too, plus a global config. Actually simpler: create a storage "db" abstraction. But signatures specified exactly. Adding extra optional fields doesn't break.
+
+Let me design: `src/storage.js`:
+- `DEFAULT_DATA_FILE = 'data/library.json'`
+- `let currentPath = DEFAULT_DATA_FILE`
+- `setDataFile(path)` sets and returns path
+- `getDataFile()`
+- `readData(path = currentPath)`: if file doesn't exist, create directory recursively and write default `{books:[],members:[],loans:[],counters:{}}`? "Create the file on first use." I'll create it on read if missing (write empty db), returning empty.
+- `writeData(data, path)`.
+- `nextId(data, type)` increments counter.
+
+Actually maybe cleaner: domain modules take an options `data` field:
+`addBook({ title, author, copies = 1, data })`. That keeps functions pure-ish and testable. And when data is undefined, uses global current path. CLI calls `setDataFile(path)`.
+
+I'll support both: destructure data and pass `data ?? getDataFile()`.
+
+Hmm, but let's keep it simple and consistent. Let me write helper `resolveData(explicit)`.
+
+Validation:
+- addBook: title and author required non-empty strings; copies default 1, must be positive integer? Spec doesn't detail. I'll validate reasonable: title/author strings non-empty, copies positive integer >= 1. Throwing Error with message. CLI catches and prints error exit 2.
+- addMember: name non-empty string.
+- checkout: bookId/memberId integers, book exists, member exists, available copy, member active loans < 3. `available` computed. days default 14. today default current date.
+- returnLoan: loan exists, not already returned. Compute due, fine.
+- listLoans filters.
+- report.
+
+Book `available`: is it stored or computed? A book is `{ id, title, author, copies, available }`. On disk we can store `available` directly, decrement on checkout, increment on return. Or compute from active loans. Storing available is simpler. Let's store.
+
+Loan: `{ id, bookId, memberId, out, due, returned: null | date, fine }`. Fine computed on return. For active loans fine is presumably 0 or maybe current? Spec: "fine". report `finesOwed` is sum of fines of every returned loan. So fine is set on return. Active loans fine = 0 (or null). I'll set fine: 0 initially and update on return.
+
+Dates: `YYYY-MM-DD` strings. Default today = current date. Need local date, not UTC, to avoid timezone issues? Typically use local date. I'll implement `todayStr()` using local components. Fine per day late: 0.50 per day late, capped at 20.00. "returning a loan after its due date charges a fine of 0.50 per day late". Number of days late = difference in days between return date and due date. If returned after due date (return > due). Use date parsing to UTC midnight for difference to avoid DST. days = (Date.UTC(...) - Date.UTC(...))/86400000.
+
+Fine = min(0.5 * daysLate, 20). Round to 2 decimals. Use cents math to avoid float issues: fine = Math.min(daysLate * 50, 2000)/100.
+
+checkout due = out + days. Use UTC date add.
+
+`report`:
+- books: number of book titles? Or total copies? "books" likely number of book records. "copies" total copies, "available" total available copies. members count. activeLoans count (returned === null). overdue count (active and due < today). finesOwed sum of fines of returned loans.
+
+listBooks({ available }) — if available true, only books with available > 0? Or available === true? "--available" prints books that have at least one copy available. Filter books with `available > 0`. If `available` is `true`. Could also accept false meaning unavailable? Spec says `[--available]`. I'll implement: if options.available is true, only books with available > 0. If false/undefined, all.
+
+listLoans({ memberId, overdue, today }) — overdue keeps active loans whose due < today.
+
+CLI parsing. Need robust argument parsing. Commands:
+- add-book --title --author [--copies]
+- add-member --name
+- checkout --book --member [--days] [--today]
+- return --loan [--today]
+- list-books [--available]
+- list-loans [--member] [--overdue] [--today]
+- report [--today]
+
+Exit codes: success 0, print JSON. Failure prints `{"error": "<message>"}` on stderr exit 2. Unknown command or missing option: exit 1.
+
+What's "failure" vs "missing option"? Domain failures (validation, book not found, no copies, member limit) => exit 2. Missing required option (e.g. `add-book --title X` missing author) => exit 1. Unknown command => exit 1. Unknown option? Probably exit 1. Invalid option value parse? Could be exit 1 (missing option) or 2. I'll treat malformed/missing CLI options as exit 1 (usage), and runtime/domain errors (not found, no copies, already returned, invalid data values like non-positive copies?) as exit 2.
+
+Hmm, validation of e.g. copies non-numeric: that's a bad option value. I'll treat as exit 1 for argument parsing errors (integer parse failure) — actually the check function could throw and we catch as exit 2. Let me define:
+- exit 1: unknown command, missing required option, unknown option, missing option value.
+- exit 2: everything else thrown by module functions (domain errors), including invalid values passed to modules.
+
+For `--copies abc`: parse returns NaN. Should we error? I'll treat non-integer as a parse error => exit 1. Hmm, but spec only explicitly says exit 1 for "unknown command or missing option". Ambiguous. I'll be lenient: parse integer options; if invalid, throw usage error exit 1. Domain validation for positive etc => exit 2. That seems reasonable.
+
+Error output format: must be exactly `{ "error": "<message>" }` on stderr. Use `JSON.stringify({ error: message })`. The spec shows spaces: `{ "error": "<message>" }`. JSON.stringify gives `{"error":"..."}` without spaces. Likely fine — it says prints `{ "error": "<message>" }` as format illustration. I'll use JSON.stringify. Tests likely parse JSON. Good.
+
+Now, "every command accepts --data <path>". So parse --data anywhere, before/after command. We should remove it from args then process. Also allow `--data=path`? Not required. I'll support both `--data path` and maybe not. Keep simple with space form; maybe support `=`. I'll support space form primarily.
+
+Where is `--data` relative? "default `data/library.json` relative to the current directory". So relative to cwd. Fine.
+
+Let me also think about concurrency/atomic writes. Not required, but write atomically maybe. Keep simple: mkdir recursive, writeFileSync with JSON.
+
+Now let me create the files.
+
+Let me write storage.js.
+
+```js
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
+
+export const DEFAULT_DATA_FILE = 'data/library.json';
+
+let currentDataFile = DEFAULT_DATA_FILE;
+
+export function setDataFile(file) {
+  currentDataFile = file ?? DEFAULT_DATA_FILE;
+  return currentDataFile;
+}
+export function getDataFile() {
+  return currentDataFile;
+}
+
+function emptyData() {
+  return { books: [], members: [], loans: [], counters: {} };
+}
+
+export function readData(file = currentDataFile) {
+  if (!existsSync(file)) {
+    const data = emptyData();
+    writeData(data, file);
+    return data;
+  }
+  const raw = readFileSync(file, 'utf8').trim();
+  if (raw === '') {
+    const data = emptyData();
+    writeData(data, file);
+    return data;
+  }
+  const parsed = JSON.parse(raw);
+  // normalize
+  return {
+    books: parsed.books ?? [],
+    members: parsed.members ?? [],
+    loans: parsed.loans ?? [],
+    counters: parsed.counters ?? {},
+  };
+}
+```
+
+Wait — create file on read on first use. But `list-books` on fresh should create file too. Yes readData creates. Good.
+
+But creating a directory `data/` at repo root when tests run? Since tests will use temp data paths, not default. CLI tests we might run manually. The repo `.gitignore` only has node_modules and .magic. Should we gitignore `data/`? Probably add `data/` to .gitignore, since it's runtime data. But the task says create file on first use. I'll add data/ to .gitignore.
+
+Hmm, but the harness may check that `data/library.json` is created. That's runtime behavior. Fine.
+
+writeData:
+```js
+export function writeData(data, file = currentDataFile) {
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, JSON.stringify(data, null, 2) + '\n');
+}
+```
+
+Need to handle file with no dirname (e.g., "library.json" -> dirname "." fine).
+
+nextId:
+```js
+export function nextId(data, type) {
+  const next = (data.counters[type] ?? 0) + 1;
+  data.counters[type] = next;
+  return next;
+}
+```
+
+Now books.js:
+```js
+import { readData, writeData, getDataFile } from './storage.js';
+
+export function addBook({ title, author, copies = 1, data: dataFile } = {}) {
+  validate...
+  const file = dataFile ?? getDataFile();
+  const data = readData(file);
+  const book = { id: nextId(data, 'book'), title, author, copies, available: copies };
+  data.books.push(book);
+  writeData(data, file);
+  return book;
+}
+
+export function listBooks({ available, data: dataFile } = {}) {
+  const data = readData(dataFile ?? getDataFile());
+  if (available) return data.books.filter(b => b.available > 0);
+  return data.books;
+}
+```
+
+Wait, should listBooks return references that caller could mutate? Fine.
+
+Validation helper. Put in src/validate.js? Or inline. I'll create src/errors.js maybe. Let's keep a small `src/util.js` with dates and validation. Actually dates belong to loans. Let me create `src/dates.js`? Keep it in loans.js.
+
+Let me create `src/validation.js` with `assertNonEmptyString`, `assertPositiveInteger`. Or just inline in each module. I'll make a shared `src/errors.js` exporting `LibraryError` maybe. Domain error class to distinguish from parse errors in CLI.
+
+Design: `export class LibraryError extends Error {}`. Module functions throw LibraryError for domain issues. CLI catches LibraryError -> exit 2; UsageError -> exit 1. Actually CLI can define its own UsageError. Domain errors all exit 2 including validation. Good.
+
+Let me make `src/errors.js`:
+```js
+export class LibraryError extends Error {
+  constructor(message) { super(message); this.name = 'LibraryError'; }
+}
+```
+
+Books validation: title/author required strings. copies default 1. If copies provided must be integer >= 1.
+
+Members: name non-empty string.
+
+Loans:
+```js
+import { readData, writeData, getDataFile, nextId } from './storage.js';
+import { LibraryError } from './errors.js';
+
+const FINE_PER_DAY = 0.5;
+const FINE_CAP = 20;
+const LOAN_DAYS = 14;
+const MAX_ACTIVE_LOANS = 3;
+
+export function todayISO(date = new Date()) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth()+1).padStart(2,'0');
+  const d = String(date.getDate()).padStart(2,'0');
+  return `${y}-${m}-${d}`;
+}
+
+function parseDate(s) { // returns ms UTC
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(s);
+  if (!m) throw new LibraryError(`invalid date: ${s}`);
+  const [, y, mo, d] = m.map(Number);
+  const ms = Date.UTC(y, mo-1, d);
+  const dt = new Date(ms);
+  if (dt.getUTCFullYear() !== y || dt.getUTCMonth() !== mo-1 || dt.getUTCDate() !== d) {
+    throw new LibraryError(`invalid date: ${s}`);
+  }
+  return ms;
+}
+function addDays(s, n) {
+  const ms = parseDate(s) + n*86400000;
+  const dt = new Date(ms);
+  return todayISOUTC(dt);
+}
+function formatUTC(dt) {...}
+```
+
+Hmm using `todayISO(new Date(ms))` uses local getters which would shift. Better separate formatter using UTC:
+```js
+function formatDate(ms) {
+  const dt = new Date(ms);
+  const y = dt.getUTCFullYear();
+  ...
+}
+```
+
+checkout:
+```js
+export function checkout({ bookId, memberId, days = 14, today, data: dataFile } = {}) {
+  const file = dataFile ?? getDataFile();
+  const data = readData(file);
+  const bid = toInt(bookId, 'book id');
+  const mid = toInt(memberId, 'member id');
+  const nDays = toInt(days, 'days');
+  if (nDays < 1) throw new LibraryError('days must be a positive integer');
+  const book = data.books.find(b => b.id === bid);
+  if (!book) throw new LibraryError(`book ${bid} not found`);
+  const member = data.members.find(m => m.id === mid);
+  if (!member) throw new LibraryError(`member ${mid} not found`);
+  if (book.available < 1) throw new LibraryError(`no available copies of book ${bid}`);
+  const active = data.loans.filter(l => l.memberId === mid && l.returned === null).length;
+  if (active >= 3) throw new LibraryError(`member ${mid} already has 3 active loans`);
+  const out = today ?? todayISO();
+  parseDate(out); // validate
+  const due = addDays(out, nDays);
+  const loan = { id: nextId(data,'loan'), bookId: bid, memberId: mid, out, due, returned: null, fine: 0 };
+  book.available -= 1;
+  data.loans.push(loan);
+  writeData(data, file);
+  return loan;
+}
+```
+
+returnLoan:
+```js
+export function returnLoan({ loanId, today, data: dataFile } = {}) {
+  ...
+  const loan = data.loans.find(l => l.id === lid);
+  if (!loan) throw new LibraryError(`loan ${lid} not found`);
+  if (loan.returned !== null) throw new LibraryError(`loan ${lid} already returned`);
+  const returned = today ?? todayISO();
+  parseDate(returned);
+  const daysLate = Math.max(0, Math.round((parseDate(returned) - parseDate(loan.due)) / 86400000));
+  loan.returned = returned;
+  loan.fine = Math.min(daysLate * 50, 2000) / 100;
+  const book = data.books.find(b => b.id === loan.bookId);
+  if (book) book.available = Math.min(book.available + 1, book.copies);
+  writeData(data, file);
+  return loan;
+}
+```
+
+listLoans:
+```js
+export function listLoans({ memberId, overdue, today, data: dataFile } = {}) {
+  const data = readData(...);
+  let loans = data.loans;
+  if (memberId !== undefined) { const mid = toInt(memberId,...); loans = loans.filter(l=>l.memberId===mid); }
+  if (overdue) {
+    const t = today ?? todayISO();
+    parseDate(t);
+    loans = loans.filter(l => l.returned === null && parseDate(l.due) < parseDate(t));
+  }
+  return loans;
+}
+```
+
+report:
+```js
+export function report({ today, data: dataFile } = {}) {
+  const data = readData(...);
+  const t = today ?? todayISO();
+  parseDate(t);
+  const activeLoans = data.loans.filter(l => l.returned === null);
+  const overdue = activeLoans.filter(l => parseDate(l.due) < parseDate(t)).length;
+  const finesOwed = round2(data.loans.reduce((s,l)=> s + (l.returned !== null ? l.fine : 0), 0));
+  return {
+    books: data.books.length,
+    copies: sum copies,
+    available: sum available,
+    members: data.members.length,
+    activeLoans: activeLoans.length,
+    overdue,
+    finesOwed,
+  };
+}
+```
+
+Fines sum float: use cents. fine stored as number like 1.5. Sum then round2. Use `Math.round(x*100)/100`.
+
+Also `returned: null | date` — after return set date string. Fine initial 0. Some might expect fine null for active; report only sums returned. Fine.
+
+Now validation of `today` when overdue listLoans: if overdue false, today not needed. Fine.
+
+`toInt` helper:
+```js
+function toInt(value, name) {
+  if (typeof value === 'number' && Number.isInteger(value)) return value;
+  if (typeof value === 'string' && /^-?\d+$/.test(value.trim())) return Number(value.trim());
+  throw new LibraryError(`invalid ${name}: ${value}`);
+}
+```
+
+Now CLI.
+
+```js
+#!/usr/bin/env node
+import { addBook, listBooks } from '../src/books.js';
+import { addMember } from '../src/members.js';
+import { checkout, returnLoan, listLoans, report } from '../src/loans.js';
+import { setDataFile } from '../src/storage.js';
+import { LibraryError } from '../src/errors.js';
+
+class UsageError extends Error {}
+
+const COMMANDS = { ... };
+
+function parseArgs(argv) {
+  // returns { options: Map, positionals: [] }
+}
+```
+
+Let me implement a parser that handles known flags and values. Simpler: generic parser producing `{ flags: Set, values: Map }`. Each option either boolean or takes value. Define per command option specs.
+
+```js
+const SPECS = {
+  'add-book': { title: 'value', author: 'value', copies: 'int' },
+  'add-member': { name: 'value' },
+  'checkout': { book: 'int', member: 'int', days: 'int', today: 'value' },
+  'return': { loan: 'int', today: 'value' },
+  'list-books': { available: 'bool' },
+  'list-loans': { member: 'int', overdue: 'bool', today: 'value' },
+  'report': { today: 'value' },
+};
+```
+
+Global `--data` value can appear. Parse:
+```js
+function parse(argv) {
+  const command = argv[0];
+  if (!command || command.startsWith('-')) throw new UsageError(...);
+  const spec = SPECS[command];
+  if (!spec) throw new UsageError(`unknown command: ${command}`);
+  const opts = {};
+  const rest = argv.slice(1);
+  let data;
+  for (let i=0;i<rest.length;i++){
+    const arg = rest[i];
+    if (!arg.startsWith('--')) throw new UsageError(`unexpected argument: ${arg}`);
+    let key, inline;
+    const eq = arg.indexOf('=');
+    if (eq !== -1) { key = arg.slice(2, eq); inline = arg.slice(eq+1); }
+    else key = arg.slice(2);
+    if (key === 'data') {
+      data = inline !== undefined ? inline : rest[++i];
+      if (data === undefined) throw new UsageError('missing value for --data');
+      continue;
+    }
+    const type = spec[key];
+    if (!type) throw new UsageError(`unknown option: --${key}`);
+    if (type === 'bool') {
+      if (inline !== undefined) throw new UsageError(`option --${key} takes no value`);
+      opts[key] = true;
+    } else {
+      const val = inline !== undefined ? inline : rest[++i];
+      if (val === undefined || val.startsWith('--')) throw new UsageError(`missing value for --${key}`);
+      if (type === 'int') {
+        if (!/^-?\d+$/.test(val)) throw new UsageError(`invalid value for --${key}: ${val}`);
+        opts[key] = Number(val);
+      } else opts[key] = val;
+    }
+  }
+  return { command, opts, data };
+}
+```
+
+Hmm `--copies` with negative? parse allows, module validates >=1. Good. Should missing required option be detected. Required: add-book title, author; add-member name; checkout book, member; return loan. If missing -> UsageError exit 1.
+
+Wait, but `--title X --author Y` where title missing? Missing required option => exit 1.
+
+Main:
+```js
+function main() {
+  const argv = process.argv.slice(2);
+  let parsed;
+  try { parsed = parse(argv); } catch (e) { if (e instanceof UsageError) { fail(e.message, 1); } else throw e; }
+  ...
+}
+```
+
+Actually structure with try/catch:
+```js
+try {
+  const { command, opts, data } = parse(argv);
+  if (data !== undefined) setDataFile(data);
+  if (command === 'add-book') {
+    const book = addBook({ title: opts.title, author: opts.author, copies: opts.copies });
+    print(book);
+  } ...
+} catch (err) {
+  const code = err instanceof UsageError ? 1 : (err instanceof LibraryError ? 2 : 2);
+  printError(err.message, code);
+}
+```
+
+But required option check needs to happen within parse or after. I'll add required arrays:
+```js
+const REQUIRED = {
+ 'add-book': ['title','author'],
+ 'add-member': ['name'],
+ 'checkout': ['book','member'],
+ 'return': ['loan'],
+};
+```
+After parse, check and throw UsageError.
+
+Also `setDataFile(data)` should happen even before? For usage errors no. Fine.
+
+Data path default: `setDataFile(undefined)` leaves default. Actually only call if provided. But if CLI invoked multiple times in-process (tests), global path persists between runs. In test process calling main repeatedly may leak. Better: always call `setDataFile(data ?? DEFAULT_DATA_FILE)`. That resets each run. Do that.
+
+But how to test CLI? We can spawn `node bin/library.js` child processes. That avoids global leak and tests actual behavior. I'll write test/cli.test.js using child_process execFile with temp dirs. Good.
+
+Export main? Could export for tests. Let's make bin file export `run(argv, { cwd }?)`? Simpler to spawn. I'll still structure `run` to return exit code maybe. But process.exit needed. Let me just implement direct and test via spawn.
+
+Printing: `process.stdout.write(JSON.stringify(value) + '\n')`. Error stderr `process.stderr.write(JSON.stringify({error: message}) + '\n')` exit code.
+
+Careful: process.exit in tests via spawn is fine.
+
+Now tests. test/books.test.js, members.test.js, loans.test.js, storage.test.js maybe, cli.test.js. Each uses node:test and node:assert. Use temp dir per test file via `mkdtempSync(join(tmpdir(),'library-'))`. Use `setDataFile` to a temp path or pass `data` option. I'll pass `data` option in module tests for clarity, and test storage default creation separately.
+
+But the spec says modules tests in test/ using node:test — that's satisfied.
+
+Let me write tests covering rules:
+- books: add book with defaults, list all, list available filter, id increments.
+- members: add member id.
+- loans: checkout decrements available, due date = out + days, default days 14, no copies fails, 3 active limit, return fine 0 on time, fine per day, cap 20, double return fails, listLoans filters, report.
+- cli: each command end-to-end, error exit 2, unknown command exit 1, missing option exit 1, --data creates file, JSON on stdout.
+
+Let me now write everything. I'll first set up todo list.
+
+Also add package.json test script: `"scripts": { "test": "node --test" }`. Node 26 supports `node --test` auto-discovering test/ files. Good.
+
+README.md documenting modules, commands with examples, rules.
+
+Let me write the files.
+
+One consideration: `data/library.json` relative to cwd. In storage `readData` uses relative path resolved against process cwd naturally via fs. Good.
+
+Should `--data` create parent directories? Yes mkdirSync recursive.
+
+Let me now also handle JSON parse errors gracefully: if file corrupt, throw LibraryError? readData JSON.parse throws SyntaxError -> CLI catches as code 2 with message. Fine. Maybe wrap.
+
+Now the "fine" field for active loans. Let me consider tests that might check `loan.fine`. Initial fine 0. Fine.
+
+Also `available` per book when copies=1 and checkout then available 0. Return -> 1.
+
+Potential subtlety: `listBooks({available})` — maybe `available` means filter to books where available is truthy. If `available: false` explicitly, list all. Fine.
+
+Now, should `checkout` `today` default be current date and due computed from out. Yes.
+
+Edge: returning on due date -> no fine. daysLate = returned - due = 0. Good. Returning before due -> max(0, negative)=0.
+
+Let me create files.
+
+Let me also add `data/` to .gitignore.
+
+Let's write storage.js.
+dsh: reasoning:
+Now books.js and members.js.
+dsh: reasoning:
+Now loans.js. Let me think about date helpers carefully.
+
+I'll export helpers maybe not needed. Let me write.
+
+`todayISO()` uses local date. parseDate validates YYYY-MM-DD. formatUTC.
+
+Fine: daysLate * 0.5 capped 20 -> use integer cents.
+
+Also, what if `today` passed as Date? Spec says string. I'll accept string only.
+
+MAX_ACTIVE = 3.
+
+Return increments available but cap at copies.
+
+report and listLoans.
+
+Let me write.
+dsh: reasoning:
+Now the CLI. Let me write bin/library.js. I'll structure it to export `run` for potential testing but default execute.
+
+The main concern: for testability, use `process.exitCode` instead of process.exit? No, must exit codes. Use process.exit(code). Fine.
+
+Let me implement parse properly.
+
+One thing: the spec says "missing option: exit 1". So required missing => 1. Unknown option => 1. Non-integer value => I'll make UsageError exit 1.
+
+Also duplicate options? Last wins.
+
+Let me write.
+dsh: reasoning:
+The `isMain` check with `new URL('file://' + process.argv[1])` — on paths with spaces this breaks, and process.argv[1] may be relative. Better use `pathToFileURL`. Let me use node:url `pathToFileURL`. Also handle import.meta.url comparison after resolving symlinks? Good enough.
+
+Let me fix.
+dsh: reasoning:
+Now tests. Let me create test files.
+
+test/books.test.js, test/members.test.js, test/loans.test.js, test/storage.test.js, test/cli.test.js.
+
+For module tests, I'll use a temp file per test via helper. Create `test/helpers.js`? Test runner might treat helpers.js as a test file? `node --test` runs files matching test patterns: files named `*.test.js`, `*-test.js`, `test.js`, or under `test/` directory it runs all `.js`? Actually Node's test runner default: when no paths, it searches for `test` directories and files matching patterns. Specifically, it runs files: `**/*.test.{js,mjs,cjs}`, `**/*-test.{js,...}`, `**/test-*.{js}`, `**/test.{js}`, and files inside directories named `test`. Hmm — Node's default test file discovery matches files in `test` directories with any name? Let me recall.
+
+Node docs: If no path arguments, the test runner recursively searches the current directory for files matching:
+- `**/*.test.?(c|m)js`
+- `**/*-test.?(c|m)js`
+- `**/*_test.?(c|m)js`
+- `**/test-*.?(c|m)js`
+- `**/test.?(c|m)js`
+- `**/test/**/*.?(c|m)js` ? 
+
+Actually I recall newer Node: "files in test directories are run". Let me check. Node 20+: test runner execution model — by default, if no paths, searches for `test` directories and files with test patterns. There's a note: "matching files: **/*.test.?(c|m)js, **/*-test..., **/*_test..., **/test-*..., **/test.?(c|m)js, **/test/**/*.?(c|m)js". I believe the last pattern exists in some versions. To be safe, name helper `test/helpers.mjs`? If `test/**/*.js` is included, helpers.js would be loaded as a test file but having no tests is harmless (it just exports functions; node:test might warn/exit? An empty test file with no tests passes). Actually a file with no tests is fine. But importing helpers that imports node:test? If it doesn't import node:test, running it directly just defines functions — no tests -> test runner may report "no tests found"? It won't fail. Still, to be safe, I'll avoid a shared helper file and inline a small temp-path helper in each test file. Or name it `test/helpers.js` and put it outside the test dir? Could put helper in test/ and accept. Simpler: inline.
+
+Actually, better: create `test/_helpers.js`? If discovery includes test/**/*.js, underscore still. There's no exclude. Let me just inline a tiny function in each file.
+
+I'll use `mkdtempSync(join(tmpdir(), 'library-'))` and `join(dir,'library.json')`. Clean up with `rmSync(dir, {recursive:true, force:true})` maybe.
+
+Let me write books.test.js.
+
+Note node:test `describe`/`it` or `test`. I'll use `test` and `beforeEach`/`after`. Simpler: each test creates its own temp file via helper `freshFile()`.
+
+```js
+import { test } from 'node:test';
+import assert from 'node:assert/strict';
+import { mkdtempSync, rmSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { addBook, listBooks } from '../src/books.js';
+
+function tempFile() {
+  const dir = mkdtempSync(join(tmpdir(), 'library-books-'));
+  return { file: join(dir, 'library.json'), cleanup: () => rmSync(dir, {recursive:true, force:true}) };
+}
+```
+
+Each test: `const {file, cleanup} = tempFile(); try {...} finally {cleanup()}`.
+
+Maybe just not cleanup, tmp dirs. But cleaner. I'll use `t.after` hook? test callback gets t. Use `t.after(() => rmSync(...))`.
+
+Let me write tests.
+
+books.test.js:
+- addBook defaults: id 1, copies 1, available 1, title/author.
+- addBook explicit copies.
+- listBooks returns all, filtered available.
+- ids increment and persist.
+- missing title throws LibraryError.
+- invalid copies throws.
+
+members.test.js:
+- addMember returns id 1 name; second id 2; missing name throws.
+
+loans.test.js:
+- setup: add books/members with data:file.
+- checkout default days: due = out + 14, available decremented.
+- checkout with days and today.
+- no available copy fails.
+- member 3 active limit: need 3 books or one book with copies 3. checkout 3 times, 4th fails.
+- return on time fine 0, available restored, returned set.
+- return late fine 0.5/day.
+- cap 20: checkout with 14 days from 2024-01-01 => due 2024-01-15; return 2024-03-01 => 46 days late => 23 -> cap 20.
+- double return fails.
+- return unknown loan fails.
+- listLoans filter member/overdue.
+- report aggregates.
+- invalid date throws.
+
+For overdue: loan out 2024-01-01 days 14 due 2024-01-15; today 2024-01-16 => overdue. Active yes. Returned loan due before today should not count.
+
+report finesOwed sum of returned fines.
+
+cli.test.js: spawnSync node bin/library.js with cwd temp dir and --data path. Use execFileSync? spawnSync gives status/stdout/stderr without throwing. Use `spawnSync(process.execPath, [bin, ...args], {cwd, encoding:'utf8'})`.
+
+Bin path: `fileURLToPath(new URL('../bin/library.js', import.meta.url))`.
+
+Tests:
+- add-book prints JSON, exit 0; second add-book id 2.
+- add-member.
+- checkout prints loan, then list-books --available excludes.
+- return prints fine.
+- list-books, list-loans, report.
+- unknown command exit 1 and stderr JSON error.
+- missing option exit 1.
+- domain error (checkout nonexistent book) exit 2.
+- --data default creates data/library.json in cwd.
+- every successful command prints one JSON value.
+
+Let me write these. I'll be careful with `--data` and cwd: pass absolute temp file.
+
+One concern: the CLI `run` uses `setDataFile` global; child process fresh so fine.
+
+Now write test files.
+dsh: reasoning:
+Wait, my third test comment is confusing/wrong. Let me simplify and actually test the available filter properly by mutating via checkout. But checkout is in loans. I could test filter by directly editing storage? Better: use loans checkout in books test? That creates cross-module dependency but fine. Actually simpler: test the filter only where a book has 0 available. Since addBook always sets available=copies>0, no book will be unavailable through books module alone. I'll import checkout from loans to drain. Let me rewrite that test.
+
+Let me rewrite the whole books.test.js third test to use checkout.
+dsh: reasoning:
+Now members.test.js.
+dsh: reasoning:
+Now loans.test.js. This is the big one. Let me write carefully.
+
+Helper to seed: create file, add book(s) and member(s).
+
+```js
+function tempFile(t) {...}
+
+function seed(t, { copies = 1 } = {}) {
+  const data = tempFile(t);
+  const book = addBook({ title: 'Dune', author: 'Herbert', copies, data });
+  const member = addMember({ name: 'Ada', data });
+  return { data, book, member };
+}
+```
+
+Tests:
+
+1. checkout default days, due and available.
+```
+const loan = checkout({bookId:book.id, memberId:member.id, today:'2024-01-01', data});
+deepEqual(loan, {id:1,bookId:1,memberId:1,out:'2024-01-01',due:'2024-01-15',returned:null,fine:0});
+listBooks -> available 0
+```
+
+2. custom days: days 7 due 2024-01-08.
+
+3. checkout no available: copies 1, checkout once, second checkout fails.
+
+4. member limit: copies 3 book, checkout 3 times, 4th throws with "3 active".
+
+5. return on time: out 2024-01-01 days14 due15, return today 2024-01-15 fine 0, returned date, available back.
+
+6. return late: return 2024-01-18 => 3 days late => 1.5.
+
+7. cap: return 2024-03-01, daysLate 46 => 20.
+
+8. double return fails.
+
+9. unknown loan fails.
+
+10. listLoans member filter and overdue. Create two books/members maybe.
+
+11. report.
+
+Let me also test default `today` uses current date: checkout without today, then out === todayISO(). And due correct.
+
+Also invalid today string throws.
+
+Let's write.
+
+For report test:
+- book A copies 2, book B copies 1.
+- member1 checks out book A (active), member2 checks out book B, then returns late with fine.
+Wait member limit 3 fine.
+Seed: data, bookA copies2 id1, bookB id2, m1 id1, m2 id2.
+loan1 = checkout bookA m1 today 2024-01-01 (active, due 01-15)
+loan2 = checkout bookB m2 today 2024-01-01 (active)
+return loan2 today 2024-01-20 => daysLate 5 => 2.5, returned.
+report today 2024-02-01:
+books 2, copies 3, available: bookA 1 (2-1), bookB 1 (returned) => 2, members 2, activeLoans 1, overdue: loan1 due 01-15 < 02-01 and active => 1, finesOwed 2.5.
+
+Good.
+
+Also test report counts only returned fines. loan active fine 0.
+
+listLoans overdue test: loan active due 01-15, today 01-16 overdue; today 01-15 not overdue (strictly before); returned overdue not included.
+
+Let me write it.
+dsh: reasoning:
+The `todayISO(new Date(Date.now() + 7*86400000))` could fail around midnight/DST because todayISO uses local time and adding 7*24h from now may cross a DST boundary producing a different local date than adding 7 days to the local date. Better to compute via date arithmetic on local date. Actually since `checkout` computes due = addDays(out,7) using UTC-of-the-ISO-date, and out = todayISO() local, the due = local-date + 7 calendar days. My test computes todayISO(now + 7*24h). At DST transitions, local wall-clock could shift by an hour but the date is usually the same unless crossing at midnight. Edge-casey. Better test: compute expected using the same approach? That'd be circular. Instead just assert due - out = 7 days by parsing. Simpler: assert loan.due is a valid date and out equals todayISO(). And for default days test, I already test due with explicit today. Let me change that test to assert `loan.due` = todayISO(new Date(...)) but safer: compute expected via Date.UTC from out:
+
+```js
+const expected = (() => {
+  const [y,m,d] = loan.out.split('-').map(Number);
+  const dt = new Date(Date.UTC(y,m-1,d+7));
+  return dt.toISOString().slice(0,10);
+})();
+assert.equal(loan.due, expected);
+```
+
+That matches implementation's addDays. It's somewhat circular but validates the 7-day difference independent of timezone. Good. Let me update.
+
+Actually the checkout addDays uses parseDate + 7*MS_PER_DAY then format UTC — equivalent to Date.UTC(y,m-1,d+7) for 7 (no month overflow issue handled by Date). Yes.
+
+Let me replace.
+dsh: reasoning:
+Now storage.test.js: creating file on first use, default path maybe. Test readData creates file, id persistence, setDataFile. Also test the default data path creation without polluting repo: change cwd? We can't easily change process.chdir in tests safely but can and restore. Let me test:
+
+- `readData(file)` on nonexistent path creates file with empty structure.
+- `nextId` increments per type.
+- setDataFile/getDataFile.
+- addBook without `data` uses configured file (setDataFile to temp) and creates the file.
+
+Let me write.
+dsh: reasoning:
+Now cli.test.js. Use spawnSync. Let me write.
+
+```js
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { test } from 'node:test';
+
+const BIN = fileURLToPath(new URL('../bin/library.js', import.meta.url));
+
+function tempDir(t) {...}
+
+function run(cwd, args, data) {
+  const full = ['--data', data, ...args]; // hmm order
+}
+```
+
+I'll pass --data explicitly after command, but need flexibility for the default-data test. Let me make helper `cli(cwd, args)` returns spawnSync result. Then each test builds args including `--data file`.
+
+```js
+function cli(cwd, args) {
+  const result = spawnSync(process.execPath, [BIN, ...args], { cwd, encoding: 'utf8' });
+  return result;
+}
+```
+
+Test parse(stdout) JSON.
+
+Tests:
+1. full workflow:
+   - add-book -> id1 copies 2
+   - add-book second
+   - add-member -> id1
+   - checkout book1 member1 today 2024-01-01 -> loan due 01-15
+   - list-books --available -> includes both (copies2), after one checkout book1 available1. Actually both available.
+   - list-books returns array length2
+   - return loan today 2024-01-15 -> fine 0
+   - list-loans -> array length1 with returned set
+   - report -> check fields.
+   Each stdout is one JSON line? JSON.stringify of array no newline inside. `stdout.trim()` parse.
+
+2. unknown command exit 1, stderr JSON.
+3. missing required option exit 1.
+4. domain error exit 2: checkout nonexistent book.
+5. successful outputs exactly one JSON value: stdout ends with \n and one line. For arrays containing no newlines. Check `stdout.split('\n').filter(Boolean).length === 1`.
+6. default --data creates data/library.json relative to cwd.
+7. --overdue filter and --member filter.
+8. error JSON on stderr shape `{ error: msg }`.
+
+Let me also test `--copies` and `--days`.
+
+Write it.
+
+One concern: `spawnSync` status for exit code. Use `result.status`.
+
+Let's write.
+dsh: reasoning:
+Now package.json test script and README, .gitignore.
+
+package.json currently `{ name, version, type }`. Add scripts and maybe main/bin/description.
+
+Let me read then edit.
+dsh: reasoning:
+The fs-observation policy requires reading the file first. I read it via bash cat earlier, but the edit tool wants the read tool. Let me read it.
+dsh: reasoning:
+Now .gitignore. Read then edit.
+dsh: reasoning:
+Now README.md. Document modules, every command with example, and rules. Let me write a comprehensive README.
+
+I'll include:
+- Overview
+- Requirements / install
+- Data storage format & --data
+- Modules API with signatures and examples
+- CLI commands with examples
+- Rules
+- Testing
+
+Let me write it. Use fenced code blocks.
+
+Examples should show expected output.
+
+I'll write it now.
+dsh: reasoning:
+Now make bin executable (chmod) — not strictly needed but good since bin. Then run tests.
+
+Also there's a subtle bug: in `src/books.js`, `assertCopies` is called before resolving. If copies passed as string (CLI parses int). Fine.
+
+Let me update todos and run npm test.
+dsh: reasoning:
+The test seeds copies: 3 for a single book. After 3 checkouts, available = 0, so the 4th fails on "no available copies" before the member limit. To test the member limit specifically, seed multiple books or give more copies. Let me use 4 copies but the limit is checked after availability. With copies 4, available after 3 is 1, so the 4th reaches member-limit check. Use copies: 4. Update test.
+dsh: reasoning:
+Actually better to test with distinct books to be realistic. But copies 4 works. However, there's a subtle ordering concern: the rule says "checkout fails when the book has no available copy or the member already has 3 active loans". Order unspecified. Fine.
+
+Let me rerun tests.
+dsh: reasoning:
+All 30 pass. Now do a manual CLI smoke test in a temp dir, verify exit codes, and check the default data file. Also verify the CLI as `node bin/library.js` prints and exits properly. Let me run a sequence.
+dsh: reasoning:
+Everything works. The `[stderr]` shown is from `set -x` (bash trace goes to stderr), not actual errors from CLI. Good.
+
+Now let me double check a couple of edge scenarios / requirements:
+
+1. "Ids are integers assigned in order per entity type, starting at 1." Done.
+
+2. `listLoans({ memberId, overdue, today } = {})` — if `overdue` true and `today` omitted uses current date. Good.
+
+3. `report({ today })` — good.
+
+4. `returned: null | date` — good.
+
+5. CLI failure exit 2 for "failure". Unknown command/missing option exit 1. Good.
+
+6. Unknown option returns 1. Good.
+
+7. Every successful command prints one JSON value on stdout and exits 0. Good.
+
+Let me verify the tests run with `npm test` from a clean state (no data dir created in repo). The tests use temp dirs. But `npm test` at repo root—does any test create repo/data? No. Let me check git status to ensure no stray data dir.
+
+Also check `node --test` discovers all 5 test files: 30 tests total. books 4, members 2, loans 13, storage 4, cli 7? Let's count: books 4; members 2; loans: defaults, custom, no copy, 3 loans, unknown, on time, late, cap, twice, unknown loan, invalid dates, listLoans filter, returned never overdue, report = 14; storage 4; cli: full workflow, list-books available, list-loans filters, unknown/bad usage, domain failures, default data = 6. Total 4+2+14+4+6=30. Good.
+
+Now inspect git status and ensure README examples line lengths fine. Also confirm there's no leftover `data/` dir.
+
+Also a concern: the `.gitignore` now ignores `data/`, which is fine.
+
+Let me also reconsider the CLI `isMain` detection. Using `pathToFileURL(process.argv[1]).href` when process.argv[1] is relative: `pathToFileURL` resolves relative to cwd. If invoked as `node bin/library.js` from repo root, argv[1] = 'bin/library.js'? Actually Node sets process.argv[1] to the absolute resolved path of the script. So fine.
+
+One more: the task says "no dependencies". package.json has none. Good.
+
+Let me run a lint-ish syntax check on all files and git status. Also maybe test `--data=path` form works. Quick check.
+
+Let me also double check that when the JSON file contains invalid JSON, CLI exits 2 with error. Not required but fine.
+
+Let me check `git status` and file tree.
+dsh: reasoning:
+All good. Let me also test the `--data=path` form and a domain failure exit code 2 explicitly, plus verify that `list-books` with default data creates file (already tested). Let me do a final quick verification with `--data=` and invalid copies. Also verify unknown option message.
+
+Actually, I realize the CLI handles `--copies` non-integer as UsageError exit 1, but `--copies 0` passes parse (int) and module throws LibraryError exit 2. That's reasonable.
+
+Let me run one final full test to be safe and a `node --check` on files. ES modules can't use `node --check`? It works with `--check` for syntax. Let me run `node --check` on each. Actually `node --check` doesn't support ESM import syntax by default? It may report "Cannot use import statement outside a module" unless `--input-type=module`. Since files have .js with package type module, `node --check` might detect. Let me just run tests; they import everything, so syntax is validated.
+
+One more thought: the task says each module "with its own tests in test/". We have books/members/loans tests; storage extra; cli. Good.
+
+Let me quickly test `--data=...` form and stderr/exit on domain error to be thorough.
+dsh: reasoning:
+Everything works. `checkout member 2` correctly fails because the member id was 1.
+
+Now let me finalize the todo and give a concise summary.
+
+Let me also verify the full test output top portion to make sure no warnings (like "no tests found" for helper). Already 30 pass.
+
+One last check: does `npm test` use the repo's package.json script correctly and exit 0? The earlier `npm test | tail` showed fail 0, but piping to tail means exit code of pipeline is tail's. Let me run `npm test` and check exit code.

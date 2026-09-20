@@ -1,0 +1,18 @@
+✔ set then get returns the value (99.936667ms)
+✔ get of a missing key exits 1 with the message on stderr (47.621458ms)
+✔ list prints sorted keys (138.804333ms)
+✔ del removes and reports (96.181ms)
+✔ del of a missing key exits 1 (48.104958ms)
+✔ invalid keys are rejected (47.867375ms)
+✔ unknown commands exit 2 (47.034167ms)
+✔ ttl expiry hides and purges the key (1539.4285ms)
+✔ the store survives a garbage temp file and keeps other keys (49.868667ms)
+✔ the repository's own tests pass (2373.437042ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 10
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4547.493958

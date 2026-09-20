@@ -1,0 +1,20 @@
+I'll start by looking at the existing repository structure.The repo is a bare Node ESM package. I'll implement the CLI (`bin/kv.js` + `src/store.js`), tests, README, and the `test` script.Now the tests.Now running the test suite and a manual smoke check.Node 26 wants a glob rather than a bare directory. Let me fix the script.All 19 tests pass. A quick manual smoke check of the CLI end to end:Done. The CLI works end to end and `npm test` passes all 19 tests.
+
+**What I built**
+
+- `bin/kv.js` — argument parsing and command dispatch (`set`, `get`, `del`, `list`). It strips `--file` / `--ttl` options anywhere in the argument list, and supports `--` to force the rest to be treated as positionals, so values that start with a dash still work (`set opts -- --ttl` stores the literal `--ttl`).
+- `src/store.js` — load/save of the JSON store and the expiry check. Writes go to a temp file in the store's directory and are then `rename`d over the target, so a crash never leaves a partial file. A missing store file is treated as empty.
+- `test/kv.test.js` — runs the real CLI as a child process against a fresh temp file per test.
+- `README.md` — documents every command, both options, key rules, exit codes, and the store format.
+- `package.json` — added `"test": "node --test \"test/**/*.test.js\""` and a `bin` entry; `.gitignore` now ignores the default `.kv.json`.
+
+**Behavior details worth flagging**
+
+- Exit codes: `0` success, `1` for missing/expired key and invalid key, `2` for usage errors (unknown or missing command, bad `--ttl`). Unknown commands print the usage block on stderr.
+- `get` on an expired key deletes it from the file before reporting `not found`, so the stale entry doesn't linger. `list` filters expired keys out but leaves them in the file.
+- Store shape is `{ "version": 1, "data": { <key>: { "value": ..., "expiresAt": <epoch ms|null> } } }`.
+- `set <key>` with no value stores an empty string, since the value is the join of zero remaining arguments.
+
+**Verification**
+
+`npm test` reports 19/19 passing, covering every command, multi-word values, overwrite, persistence across processes, invalid keys, missing keys, unknown/missing commands, bad `--ttl`, the default `.kv.json` path, and TTL expiry both via `--ttl 0` and via an already-expired timestamp written directly into the file (which also asserts the key gets purged on read). Note that `node --test test/` does not work on Node 26 — a bare directory is resolved as a module — hence the glob in the script. I also smoke-tested the built CLI by hand; it behaves as documented and leaves no temp files behind.

@@ -1,0 +1,23 @@
+✔ add-book prints the book with copies and availability (49.534834ms)
+✔ a second book gets the next id and one copy by default (48.066375ms)
+✔ add-member prints the member (92.971417ms)
+✔ checkout computes the due date and decrements availability (93.4255ms)
+✔ checkout fails with exit 2 when no copy is available (95.46525ms)
+✔ list-books --available hides fully lent books (46.771709ms)
+✔ a member may not hold more than 3 active loans (188.900417ms)
+✔ list-loans filters by member and overdue (141.486708ms)
+✔ returning late charges 0.50 per day, capped at 20 (94.869792ms)
+✔ returning on time charges nothing and returning twice fails (95.16275ms)
+✔ availability is restored after returns (46.052125ms)
+✔ report sums everything (46.567917ms)
+✔ unknown commands exit 1 and errors go to stderr as JSON (93.075167ms)
+✔ the data file is JSON and the README documents the commands (0.682583ms)
+✔ the repository's own tests pass (1739.01125ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2932.772083

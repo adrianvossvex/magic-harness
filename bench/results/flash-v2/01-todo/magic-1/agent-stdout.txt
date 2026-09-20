@@ -1,0 +1,11 @@
+I'll start by exploring the existing library structure and tests.Now I'll add the three methods to `src/todo.js`.I switched id generation from `items.length + 1` to a counter, because after a `remove` the old formula would hand out a duplicate id. Now the tests:All 9 tests pass and `npm test` is green.
+
+**What changed**
+
+`src/todo.js` — `createStore` now returns `toggle`, `remove` and `count` alongside the existing `add` and `list`. `toggle` flips `done` and returns the item, throwing `Error("Unknown id: <id>")` when the id isn't found; `remove` splices the item out and returns `true`, or returns `false` for an unknown id; `count` returns the item count. `list` still returns a copy via `slice()`.
+
+One deliberate change to `add`: it now takes ids from a `nextId` counter instead of `items.length + 1`. The old formula produced duplicate ids once removal existed (remove the first of two items, then add, and both items would be id 2), which would make `toggle` and `remove` ambiguous. Sequential adds still yield ids 1, 2, 3, so the observable behavior you asked me to preserve is unchanged.
+
+`test/todo.test.js` — kept the original test and added eight more covering return values of `add`, `list` copy semantics, `count` starting at 0 and tracking adds, `toggle` in both directions, the "Unknown id" throw, both `remove` outcomes, and id uniqueness after a removal.
+
+`README.md` — documents `createStore`, `add`, `list`, `toggle`, `remove` and `count`, with a short runnable example and the `npm test` command.

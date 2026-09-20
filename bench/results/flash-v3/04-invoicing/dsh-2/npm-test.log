@@ -1,0 +1,53 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+✔ add-customer prints the customer as JSON (55.632292ms)
+✔ money fields are formatted strings, never raw cents (93.298792ms)
+✔ full invoice lifecycle through the CLI (841.077833ms)
+✔ paying the full balance marks the invoice paid (336.514333ms)
+✔ missing required options print usage and exit 1 (120.109125ms)
+✔ validation failures print an error object and exit 2 (121.837292ms)
+✔ the default data file lives under data/ in the current directory (56.002583ms)
+✔ addCustomer stores customers with incrementing ids (1.686459ms)
+✔ customers persist between calls (0.374833ms)
+✔ email must contain "@" (0.188875ms)
+✔ name is required (0.09175ms)
+✔ createInvoice creates a draft with defaults (3.441416ms)
+✔ createInvoice accepts custom terms (0.549792ms)
+✔ createInvoice stores the given customer id (0.203041ms)
+✔ addLine computes net, tax and totals (0.5445ms)
+✔ addLine rounds half up (0.522875ms)
+✔ addLine validates its inputs (0.437958ms)
+✔ only drafts accept lines (1.18825ms)
+✔ issue requires at least one line (0.382166ms)
+✔ issue assigns per-year numbers and computes due dates (2.338417ms)
+✔ issue rejects reused invoices and invalid dates (1.274292ms)
+✔ pay records partial and full payments (1.893791ms)
+✔ pay only works on issued invoices (1.87825ms)
+✔ voidInvoice rules (1.569333ms)
+✔ listInvoices filters by status, customer and overdue (0.803917ms)
+✔ getInvoice throws for unknown ids (0.145917ms)
+✔ parseMoney converts decimal strings to cents (1.126625ms)
+✔ parseMoney rejects invalid amounts (0.241167ms)
+✔ parseMoney rejects values that are not decimal strings (0.075459ms)
+✔ formatMoney renders cents with exactly two decimals (0.074208ms)
+✔ roundCents rounds half up (0.061708ms)
+✔ addProduct stores price in cents and defaults taxRate to 0 (3.61675ms)
+✔ addProduct keeps an explicit tax rate (0.472375ms)
+✔ price must be a valid money amount (0.257042ms)
+✔ taxRate must be an integer between 0 and 100 (0.725458ms)
+✔ name is required (0.129417ms)
+✔ aging buckets outstanding issued balances by days past due (5.536333ms)
+✔ revenue groups issued and paid invoices by issue month (1.233416ms)
+✔ aging boundaries land in the right buckets (2.9445ms)
+✔ revenue is sorted across years (0.677916ms)
+✔ aging and revenue are empty without invoices (0.228958ms)
+ℹ tests 41
+ℹ suites 0
+ℹ pass 41
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1702.3

@@ -1,0 +1,23 @@
+The library management system is complete. `npm test` passes all **33 tests**, and I verified the CLI end-to-end including exit codes.
+
+## What was built
+
+**Modules (`src/`)**
+- `storage.js` — JSON persistence. Resolves the data path from an explicit override → `LIBRARY_DATA` → `data/library.json` relative to cwd. Creates the file and parent directories on first use. Keeps each book's `available` count in sync with active loans on every load/save.
+- `dates.js` — `YYYY-MM-DD` validation and UTC calendar arithmetic (DST-safe).
+- `books.js` — `addBook`, `listBooks`; book shape `{ id, title, author, copies, available }`.
+- `members.js` — `addMember`, `listMembers`; member shape `{ id, name }`.
+- `loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`; loan shape `{ id, bookId, memberId, out, due, returned, fine }`.
+
+**CLI (`bin/library.js`)**
+All eight commands (`add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`) with `--data` accepted anywhere. Success prints one JSON value to stdout, exit 0; failures print `{ "error": ... }` to stderr — exit **1** for unknown command/missing option, exit **2** for operational errors.
+
+**Rules enforced:** no checkout without a free copy, max 3 active loans per member, 14-day default loan, 0.50/day late fine capped at 20.00, no double returns, `--overdue` = active loans due before today.
+
+**Tests (`test/`)** using `node:test`: module tests for books, members, loans, dates, and storage, plus a full subprocess CLI suite covering success output, both exit-code classes, default file creation, and error JSON.
+
+**Docs:** `README.md` documents the data model, every module API, every command with a real example, and all rules; `package.json` has `"test": "node --test"`.
+
+Two design notes worth flagging:
+- `available` is treated as a **count** of free copies (so `copies: 3` with one loan gives `available: 2`), which is what makes the `report` fields `copies` vs `available` coherent.
+- Module functions accept an optional trailing `dataPath` and also honor `LIBRARY_DATA`/`cwd`, so the documented signatures work unchanged while tests stay isolated.

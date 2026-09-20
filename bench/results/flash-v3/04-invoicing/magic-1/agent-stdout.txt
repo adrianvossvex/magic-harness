@@ -1,0 +1,22 @@
+I'll start by exploring the repository to understand what's already here.The repo is a bare ES-module package with no dependencies. The spec is detailed and unambiguous, so I'll implement it directly: a small storage layer, the five specified modules, the CLI, tests, and docs.
+
+Let me start with the core value/date/storage helpers.Now the invoice module with the full lifecycle and totals math.Now the CLI entry point.Now the tests, one file per module plus a CLI integration test.Now let me run the test suite.All 46 tests pass. Let me smoke-test a few edge cases the tests don't hit (per-year counters across processes, invalid dates, empty lists, exit codes).Everything behaves correctly, including CSV quoting and per-year counters. Now the README.Let me confirm nothing stray was created and the full suite still passes.Done. The invoicing system is built, `npm test` passes all 46 tests, and the workspace is clean (no stray data file).
+
+## What's there
+
+**Modules** (`src/`, each with tests in `test/`):
+- `money.js` — `parseMoney`, `formatMoney`, `roundCents`. Strict regex on input (`"12.3"`/`"12.30"` ok; letters, three decimals, negatives, empty rejected); formatting uses integer math so cents `1230` renders exactly `"12.30"`; rounding is half up via `Math.round`.
+- `customers.js` — `addCustomer({ name, email })`, email must contain `@`.
+- `products.js` — `addProduct({ name, price, taxRate })`, price parsed to cents, `taxRate` integer 0–100 defaulting to 0.
+- `invoices.js` — `createInvoice`, `addLine`, `issue`, `pay`, `voidInvoice`, `listInvoices`, `getInvoice`. Line math: `net = round(unitPrice * quantity * (100 - discount) / 100)`, `tax = round(net * taxRate / 100)`, totals recomputed on each line. Only drafts accept lines; issuing assigns `INV-<year>-<nnnn>` with a counter that resets each year; overpayment and voiding a paid/partly-paid invoice are errors.
+- `report.js` — `aging({ today })` (five buckets + total) and `revenue()` (per issue month, issued/paid only, sorted).
+- Two internal helpers, `store.js` (single-file JSON persistence, creates file and directory on first use) and `dates.js` (UTC date arithmetic), also tested.
+
+**CLI** (`bin/invoice.js`): all commands from the spec (`add-customer`, `add-product`, `create`, `add-line`, `issue`, `pay`, `void`, `show`, `list`, `report aging`, `report revenue`, `export`). Success prints one JSON value on stdout, exit 0; domain errors print `{ "error": ... }` on stderr, exit 2; unknown command or missing required option prints usage on stderr, exit 1. Every money field is a formatted string; `export` prints the CSV as a JSON string with the required header, `\n` separators, no trailing newline (comma/quote/newline-containing descriptions get standard CSV quoting).
+
+**`package.json`** has `"test": "node --test"`. **`README.md`** documents the modules, every command with an example, and the money/date/lifecycle rules.
+
+## Verified behavior beyond the unit tests
+I smoke-tested cross-process year counters (`INV-2025-0001`, then `INV-2026-0001`), half-up rounding on tiny amounts (`0.05 × 3 × 67% → 0.10`, tax `0.03`), CSV quoting for a name containing a comma, empty `list` returning `[]`, and exit codes 1 vs 2 for unknown command, invalid date, zero payment, and `--customer 0`.
+
+One deliberate interpretation worth flagging: `revenue()` counts an invoice's full `total` (not the amount collected) for invoices in `issued` or `paid` status, grouped by issue month. If you intended collected revenue instead, that's a one-line change.

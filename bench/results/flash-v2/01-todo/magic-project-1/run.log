@@ -1,0 +1,31 @@
+[f4ca1194] Glob
+[f4ca1194] Read
+[f4ca1194] Read
+[f4ca1194] Read
+[f4ca1194] Read
+[f4ca1194] Read
+[f4ca1194] plan_write
+plan: 2 tasks, 2 milestones
+project: Task add-store-methods started (Implement toggle/remove/count and cover them with tests) · session b3042016-49d7-4dbb-96bd-a417d2cfa041
+[b3042016] Read
+[b3042016] Read
+[b3042016] Edit
+[b3042016] Write
+[b3042016] Bash
+[b3042016] Bash
+[b3042016] task_report
+project: Task add-store-methods done.
+project: Milestone core-methods (Add toggle, remove and count with tests) is complete and waits for your approval. Try the result, then /project run continues or /project replan <note> revises the plan.
+milestone approved: core-methods
+project: Task document-api started (Document the public API in README.md) · session 5cee89cf-c222-44da-94e6-f3b5a7a98723
+[5cee89cf] Read
+[5cee89cf] Read
+[5cee89cf] Bash
+[5cee89cf] Write
+[5cee89cf] Bash
+[5cee89cf] Bash
+[5cee89cf] Bash
+[5cee89cf] task_report
+project: Task document-api done.
+project: Milestone docs (Document the public API in README.md) complete; continuing.
+project: Project complete: every task is done.

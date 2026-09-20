@@ -1,0 +1,11 @@
+I'll start by exploring the existing library and tests.Now I'll add the three methods, using a counter for ids so removals can't cause duplicate ids.All 8 tests pass. Now the README.Done — `npm test` is green with 8 passing tests.
+
+**What changed**
+
+- `src/todo.js:1` — added `toggle(id)`, `remove(id)`, and `count()` to the store. `toggle` flips `done`, returns the item, and throws `new Error(`Unknown id: ${id}`)` when there's no match; `remove` splices the item out and returns `true`, or returns `false` when the id isn't found (it does not throw). `add` and `list` are unchanged in signature and behavior, and `list` still returns a copy.
+- `test/todo.test.js:1` — extended the existing `node:test` file with cases for toggle, toggle on an unknown id, remove (both outcomes), count, the copy semantics of `list`, and id uniqueness after a removal.
+- `README.md` — new; documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a runnable example.
+
+**One judgment call worth flagging:** `add` previously derived ids as `items.length + 1`. That works only while nothing is ever removed — add "a" and "b", remove "a", then add "c", and the new item would get id 2, colliding with "b". Since `toggle` and `remove` look items up by id, a collision makes those methods operate on the wrong item, so I switched id generation to a `nextId` counter that increments per `add` and is never reused. Sequential adds still produce ids 1, 2, 3 exactly as before, so existing usage is unaffected; only the post-removal case changes, and that case was previously broken. The `ids stay unique after a removal` test pins this down. If you'd rather keep the literal old expression and accept duplicate ids, say so and I'll revert that line.
+
+Checks run: `npm test` (8 pass, 0 fail) and a direct `node --test test/*.test.js`, both after the final edit. The README example was written from the API but not executed as a script.

@@ -1,0 +1,1220 @@
+{
+  "task": "04-invoicing",
+  "harness": "magic-project",
+  "run": 2,
+  "model": "deepseek-flash",
+  "effort": "high",
+  "startedAt": "2026-09-20T04:17:50.946Z",
+  "durationMs": 866745,
+  "timedOut": false,
+  "exitCode": 0,
+  "checks": {
+    "pass": 12,
+    "fail": 0,
+    "total": 12
+  },
+  "repoTests": {
+    "code": 0,
+    "pass": 161,
+    "fail": 0
+  },
+  "files": [
+    ".gitignore",
+    "package.json",
+    "README.md",
+    "bin/invoice.js",
+    "src/customers.js",
+    "src/invoices.js",
+    "src/money.js",
+    "src/products.js",
+    "src/report.js",
+    "src/store.js",
+    "test/cli.test.js",
+    "test/customers.test.js",
+    "test/invoices.test.js",
+    "test/money.test.js",
+    "test/products.test.js",
+    "test/report.test.js",
+    "test/store.test.js",
+    "test/workflow.test.js"
+  ],
+  "usage": {
+    "input": 162373,
+    "cached": 4136448,
+    "output": 160494
+  },
+  "cost": 0.26612338799999996,
+  "code": 0,
+  "summary": {
+    "status": "done",
+    "goal": "Build a small invoicing system in this repository (Node.js, ES modules, no dependencies) with a command-line interface, JSON persistence, tests and documentation. Follow every rule below exactly; the CLI output is machine-read.\n\nStorage: one JSON file, default `data/invoicing.json` relative to the current directory; every command accepts `--data <path>`. Create the file (and its directory) on first use. Ids are integers per entity type, starting at 1.\n\nMoney: amounts are handled in integer cents internally and shown as decimal strings with exactly two decimals (`\"12.30\"`). Input amounts are decimal strings with at most two decimals; anything else (letters, three decimals, negative values) is an error. Rounding, wherever it is needed, is half up on the cent.\n\nModules (each with its own tests in test/ using node:test):\n- src/money.js: parseMoney(text) -> cents, formatMoney(cents) -> string, roundCents(number) -> integer cents (half up).\n- src/customers.js: addCustomer({ name, email }), a customer is { id, name, email }; email must contain \"@\".\n- src/products.js: addProduct({ name, price, taxRate }), a product is { id, name, price (cents), taxRate (percent, integer 0-100, default 0) }.\n- src/invoices.js:\n  - createInvoice({ customerId, terms = 30 }) makes a draft: { id, number: null, customerId, status: \"draft\", terms, issued: null, due: null, lines: [], payments: [], subtotal: 0, tax: 0, total: 0, paid: 0, balance: 0 } (all amounts in cents).\n  - addLine({ invoiceId, productId, quantity = 1, discount = 0 }) appends a line { productId, description (the product name), quantity (positive integer), unitPrice (cents), discount (percent, 0-100), net, tax } and recomputes the totals: net = unitPrice * quantity * (100 - discount) / 100 rounded half up; tax = net * taxRate / 100 rounded half up; subtotal = sum of net; tax = sum of line tax; total = subtotal + tax; balance = total - paid. Only drafts accept lines.\n  - issue({ invoiceId, today }) turns a draft with at least one line into status \"issued\": number becomes `INV-<year>-<nnnn>` with the year of `today` and a four-digit counter that starts at 0001 for each year and increments per issued invoice in that year; issued = today; due = today + terms days.\n  - pay({ invoiceId, amount, today }) records { amount (cents), date } on an issued invoice; partial payments are allowed; paying more than the balance is an error; when paid reaches total the status becomes \"paid\".\n  - voidInvoice({ invoiceId }) sets status \"void\" on a draft or on an issued invoice without payments; anything else is an error.\n  - listInvoices({ status, customerId, overdue, today } = {}); an invoice is overdue when its status is \"issued\" and due < today.\n  - Dates are strings YYYY-MM-DD; `today` defaults to the current date.\n- src/report.js:\n  - aging({ today }) -> { current, days1to30, days31to60, days61to90, over90, total } summing the balance of issued invoices by how many days past due they are on `today` (not yet due -> current; 1-30 days past due -> days1to30; and so on; total is the sum of all five), in cents.\n  - revenue() -> an array of { month: \"YYYY-MM\", invoices, total } for each month that has issued or paid invoices (by the issue date), sorted by month, totals in cents.\n\nCLI: bin/invoice.js, run as `node bin/invoice.js <command> [options] [--data <path>]`. Every successful command prints exactly one JSON value on stdout and exits 0; money fields in that JSON (price, unitPrice, net, tax, subtotal, total, paid, balance, amount, every aging bucket and revenue total) are formatted strings like \"12.30\", never raw cents. Every failure prints `{ \"error\": \"<message>\" }` on stderr and exits 2; an unknown command or a missing required option prints usage on stderr and exits 1.\n- `add-customer --name <n> --email <e>` prints the customer.\n- `add-product --name <n> --price <amount> [--tax <percent>]` prints the product.\n- `create --customer <id> [--terms <days>]` prints the draft invoice.\n- `add-line --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]` prints the invoice.\n- `issue --invoice <id> [--today <date>]` prints the invoice.\n- `pay --invoice <id> --amount <amount> [--today <date>]` prints the invoice.\n- `void --invoice <id>` prints the invoice.\n- `show --invoice <id>` prints the invoice.\n- `list [--status <s>] [--customer <id>] [--overdue] [--today <date>]` prints an array of invoices.\n- `report aging [--today <date>]` and `report revenue` print the report objects.\n- `export --invoice <id>` prints (as a JSON string) the CSV text of the invoice lines with the header `description,quantity,unitPrice,discount,net,tax` followed by one row per line, money as formatted strings, rows separated by \"\\n\", no trailing newline.\n\nAdd a \"test\" script to package.json so that `npm test` runs every test, and write a README.md that documents the modules, every command with an example, and the rules. npm test must pass.",
+    "parallel": 2,
+    "replans": 0,
+    "maxReplans": 2,
+    "planning": false,
+    "counts": {
+      "todo": 0,
+      "running": 0,
+      "verifying": 0,
+      "done": 7,
+      "failed": 0,
+      "blocked": 0,
+      "cancelled": 0
+    },
+    "running": [],
+    "milestones": [
+      {
+        "id": "m1-foundations",
+        "title": "Foundations: money, storage, customers, products",
+        "approval": "user",
+        "status": "approved",
+        "done": 2,
+        "total": 2
+      },
+      {
+        "id": "m2-invoices",
+        "title": "Invoice lifecycle",
+        "approval": "auto",
+        "status": "approved",
+        "done": 1,
+        "total": 1
+      },
+      {
+        "id": "m3-reports",
+        "title": "Reports",
+        "approval": "auto",
+        "status": "approved",
+        "done": 1,
+        "total": 1
+      },
+      {
+        "id": "m4-cli",
+        "title": "CLI",
+        "approval": "user",
+        "status": "approved",
+        "done": 2,
+        "total": 2
+      },
+      {
+        "id": "m5-docs",
+        "title": "Documentation",
+        "approval": "auto",
+        "status": "approved",
+        "done": 1,
+        "total": 1
+      }
+    ],
+    "tasks": [
+      {
+        "id": "money-store-scaffold",
+        "title": "Scaffold package scripts, money primitives and JSON store",
+        "status": "done",
+        "milestone": "m1-foundations",
+        "deps": [],
+        "attempts": 1,
+        "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52"
+      },
+      {
+        "id": "customers-products",
+        "title": "Customer and product modules",
+        "status": "done",
+        "milestone": "m1-foundations",
+        "deps": [
+          "money-store-scaffold"
+        ],
+        "attempts": 1,
+        "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4"
+      },
+      {
+        "id": "invoices-lifecycle",
+        "title": "Invoice lifecycle module",
+        "status": "done",
+        "milestone": "m2-invoices",
+        "deps": [
+          "customers-products"
+        ],
+        "attempts": 1,
+        "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5"
+      },
+      {
+        "id": "reports",
+        "title": "Aging and revenue reports",
+        "status": "done",
+        "milestone": "m3-reports",
+        "deps": [
+          "invoices-lifecycle"
+        ],
+        "attempts": 1,
+        "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516"
+      },
+      {
+        "id": "cli",
+        "title": "CLI with JSON output, exit codes and CSV export",
+        "status": "done",
+        "milestone": "m4-cli",
+        "deps": [
+          "reports"
+        ],
+        "attempts": 1,
+        "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0"
+      },
+      {
+        "id": "cli-workflow-tests",
+        "title": "End-to-end CLI workflow tests",
+        "status": "done",
+        "milestone": "m4-cli",
+        "deps": [
+          "cli"
+        ],
+        "attempts": 1,
+        "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e"
+      },
+      {
+        "id": "readme",
+        "title": "README documenting modules, commands and rules",
+        "status": "done",
+        "milestone": "m5-docs",
+        "deps": [
+          "cli-workflow-tests"
+        ],
+        "attempts": 1,
+        "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5"
+      }
+    ]
+  },
+  "approvals": 3,
+  "stdout": "I'll explore the repository first to understand its current structure and conventions.The repo is a bare ESM package with no source yet. Let me confirm the Node toolchain so acceptance commands match what actually runs here.The repo is a bare ESM package (`type: module`, no scripts, no source). I've confirmed there's no existing test runner or tooling to match, so the plan will introduce `node --test` and the whole layout. Writing the plan now.The plan was accepted on the first submission, so no rework was needed.\n\n**What I found:** the repository is essentially empty — only `package.json` (`type: \"module\"`, no scripts) and a two-line `.gitignore`. There is no test runner or build tooling to match, so the plan introduces `node --test test/` as the `test` script and the full `src/` / `test/` / `bin/` layout from scratch.\n\n**The plan at a glance (5 milestones, 7 tasks):**\n\n1. **Foundations (user approval)** — `money-store-scaffold` adds the `test` script, `data/` to `.gitignore`, and implements `src/money.js` (string-based cent parsing, two-decimal formatting, half-up rounding at `.005` boundaries) plus `src/store.js` (one JSON file, created with its directory on first use, per-entity id counters, derived per-year invoice numbering). `customers-products` then adds the customer and product modules on the same store singleton.\n2. **Invoice lifecycle (auto)** — `invoices-lifecycle` implements drafts, lines, totals, issuing, payments, voiding and listing with the exact shapes and rounding rules.\n3. **Reports (auto)** — `reports` adds `aging` (bucket boundaries at 0/31/61/91 days past due, balances only) and `revenue` (grouped by issue month).\n4. **CLI (user approval)** — `cli` builds `bin/invoice.js` with the two failure shapes (usage + exit 1, `{\"error\":...}` + exit 2), uniform money formatting, and CSV export; `cli-workflow-tests` proves the whole documented interface end to end through subprocess calls.\n5. **Documentation (auto)** — `readme` writes the module and command reference with real, transcribed examples.\n\n**Decisions I recorded in the design rather than asking about:** the store is a process-global singleton configured by `openStore(path)` (so the specified signatures like `addCustomer({ name, email })` hold literally), `revenue().total` sums invoice totals, aging and revenue both exclude drafts and voided invoices, invalid option *values* are exit 2 while only unknown commands/options and missing required options are exit 1, and the product name is copied into the line description at `addLine` time.\n\nAcceptance commands are limited to `npm test` plus a couple of one-line checks (`node bin/invoice.js report aging --data /tmp/...`, `test -s README.md`, two `grep -q` checks), with detailed verification delegated to each task's own tests as the rules require.I'll start by reading the existing files in the repository.Now I'll write the package configuration files and the two foundation modules.Now the store tests:Directory arguments are broken in this Node 26 build, so I'll scope the test script to a glob (which works) and fix one wrong expectation in my money test.All 28 tests pass. Let me confirm no test artifacts landed in the repository and re-check the final files.Done. The foundation is in place and green.\n\n**What was built**\n\n- `package.json` — kept name/version/type, added `\"test\": \"node --test test/*.test.js\"`, no dependencies.\n- `.gitignore` — existing lines kept, `data/` added.\n- `src/money.js` — `parseMoney` builds cents by concatenating the digits of the validated amount string (never multiplying a float), `formatMoney` emits exactly two decimals with a leading `-` for negatives, `roundCents` rounds half up through the specified `toPrecision(12)` recipe; all three throw descriptive errors on bad input.\n- `src/store.js` — `openStore`/`getStore`/`getData`/`save`/`nextId`/`defaultData`/`resetStore`, plus `nextNumber(year)`. `openStore` resolves the path, creates the directory and file with default data when missing or empty, merges partial or wrongly-typed files against `defaultData()`, and throws on invalid JSON.\n- `test/money.test.js`, `test/store.test.js` — `npm test` runs 28 tests, all passing, and writes only into temp directories (the repository stays clean apart from my six scoped files).\n\n**One deviation worth flagging:** the design says the test script should be `node --test test/`, but the Node on this machine (v26.0.0) refuses a directory argument — it tries to load `test/` as a module and fails with `MODULE_NOT_FOUND`. The glob form `test/*.test.js` runs every test file and exits 0; bare `node --test` also works if a later task prefers that. I recorded this, along with the note that `getStore().path` is the resolved absolute path, in the decision log.I'll start by reading the existing foundation modules and tests to match their conventions.Both foundation modules are in place. Now writing the two domain modules.The email rule is just \"contains @\" (per design §6.1), so `ada@` is valid — my test list was wrong.All 28 pass. Now running the full acceptance command, `npm test`.`src/customers.js` and `src/products.js` are implemented and their test suites pass. `npm test` runs 56 tests with 0 failures (my 28 plus the 28 foundation tests), exit 0.\n\nKey points: product prices are stored as integer cents via `parseMoney` (verified by tests that re-read the persisted JSON file), stored objects carry exactly the documented keys in order, ids start at 1 and increment independently per entity type, validation runs before `nextId` so a rejected add neither consumes an id nor touches the file, and each mutation calls `save()`. One design detail worth flagging: the email rule is literally \"contains @\", so `ada@` and `@` are accepted — my first test wrongly expected otherwise and I corrected the test, not the module.I'll start by reading the existing code to match conventions.Now I'll write `src/invoices.js`.Let me clean up the date helpers and make `paid` derive from the payments list.The Edit tool isn't matching that long line; I'll rewrite the file cleanly.The money module's `roundCents` takes whole units (dollars → cents, per `roundCents(1.005) === 101`), so the design's literal formula would scale line amounts 100× too large. I'll apply it at the correct scale.Now the test suite.All 96 tests pass across the repo. Let me document the scale conversion in the source and record the decision.Implemented the invoice lifecycle module and its tests; `npm test` passes 96/96 with exit 0.\n\n**What was built**\n\n`src/invoices.js` exports `createInvoice`, `addLine`, `issue`, `pay`, `voidInvoice`, `listInvoices` and `getInvoice` per design §6.3, plus the UTC date helpers (`currentDate`, `isValidDate`, `validateDate`, `addDays`, `daysBetween`) that the report and CLI tasks can share. Every mutation calls `save()`, and `today` defaults to the current local date everywhere it is optional.\n\nOne deliberate deviation from the literal design text: line amounts are computed as `roundCents((unitPrice * quantity * (100 - discount)) / 10000)` and `roundCents((net * taxRate) / 10000)`. The existing `src/money.js` `roundCents` takes whole units and returns cents (`roundCents(1.005) === 101`, pinned by its own tests), while `unitPrice`/`net` are integer cents, so the design's literal expression would inflate every line 100-fold — a $10.00 product would total $1000.00. The `/10000` form rounds half up on the cent of the cent-valued expression, which is what the brief's prose formula describes. This is noted at the call site and in the project decision log.\n\n`test/invoices.test.js` has 40 tests over a temp-directory store (nothing touches `data/` or the repo): draft shape and key order, line totals with discount and tax, the half-up rounding boundaries, lines rejected on issued/paid/void invoices, issue without lines, per-year and per-month numbering with voided numbers consumed, due-date arithmetic across month/year/leap boundaries, partial payments, overpayment rejection, the paid transition, all void rules, overdue filtering including the `due < today` boundary, list filters and sorting, persistence (including that a rejected call leaves the file byte-identical), and a spawned-process check that the date arithmetic is identical under four different `TZ` values.I'll start by reading the existing modules I need to build on.Now let me look at an existing test file for conventions and check package.json.Now I'll write `src/report.js`.Let me refine the sort comparator, then write the tests.Fixing fixture date math and a couple of wrong expectations.The boundary is right; my expectation in that test was wrong. Fixing it.All 14 report tests pass. Now the full suite.Report module and its tests are done and the whole suite is green.Done. src/report.js implements `aging` and `revenue` exactly per design §6.4 (aging sums issued-invoice balances into the five buckets and total; revenue groups issued/paid invoices by YYYY-MM of the issue date, sorted ascending), and test/report.test.js covers the empty store, the 0/1/30/31/60/61/90/91-day boundaries, balance-vs-total, the draft/paid/void exclusions, and revenue grouping/sorting. `node --test test/report.test.js` passes 14/14 and the acceptance command `npm test` passes 110/110 with exit 0.I'll start by exploring the current state of the repository and reading the existing modules I need to build on.Let me read the remaining modules and a sample test to match conventions.Now let me look at the test directory and an existing test file for conventions.I have a clear picture of the modules and conventions. Now I'll write the CLI.Now let me make it executable and smoke-test the happy paths and error paths manually.All happy paths work. Now the failure paths.Both exit classes and usage output behave correctly. Now I'll write the CLI test suite.Now let me run the new test file, then the whole suite.Found a real bug: `export` was double-encoding the CSV (I called `JSON.stringify` in `run`, and `main` stringifies again). Fixing so `run` returns the CSV text and the single output helper encodes it.All 41 CLI tests pass. Now the full suite and the acceptance command.Full suite is green (151 tests) and the acceptance command exits 0. Let me sanity-check a few remaining contract points and confirm I didn't create stray files in the repo.Everything checks out: all failure classes map to the right exit codes, no stray files were created in the repo, and repeated options take the last value.Done. The CLI and its test suite are implemented and the acceptance checks pass.\n\n**What was built**\n- `bin/invoice.js` — an executable, dependency-free CLI (`#!/usr/bin/env node`) that parses `<command> [options] [--data <path>]` itself, opens the store, runs one of the twelve command forms, and prints exactly one JSON value plus newline on success (exit 0). Usage errors exit 1 with a usage block on stderr; input/domain errors exit 2 with compact `{\"error\":\"...\"}` on stderr. Presentation flows through one set of `present*` helpers using `formatMoney`, so all money fields are two-decimal strings and the invoice key order matches the design exactly.\n- `test/cli.test.js` — 41 `spawnSync` tests over a temp-dir `--data` path covering every happy path with exact JSON, all exit-1 usage cases, all exit-2 domain cases, the no-raw-cents guarantee, `--data` handling, cross-invocation persistence, store isolation, and first-use file/directory creation.\n\n**Checks run**\n- `npm test`: 151 tests, all passing (includes the 41 new CLI tests).\n- `node bin/invoice.js report aging --data /tmp/invoicing-accept-aging.json`: exit 0 with the all-zero aging object.\n\n**Notable finding**\nThe tests caught a real bug: `export` was double-encoding the CSV because `JSON.stringify` was applied both in the command runner and the output helper. The runner now returns the raw CSV text and encoding happens once, centrally.\n\nOne design choice worth flagging: an option that belongs to a different command (e.g. `show --customer 1`) is treated as an unknown option and exits 1, consistent with the per-command option table.I'll start by reading the existing implementation and tests to match conventions.Now I understand the CLI contract and conventions. Let me write the end-to-end workflow test suite.Let me fix a bogus assertion I left in the error test and check the money module's message for empty input.Two arithmetic slips in my expectations (the CLI output is correct). Fixing them:All 10 workflow tests pass. Now the full acceptance run:Full suite is green: 161 tests pass, `npm test` exits 0, and the repository gained only `test/workflow.test.js` (no stray data files; temp stores live in `os.tmpdir()`).Done. `test/workflow.test.js` now proves the documented CLI behaviour end to end: 10 tests spawning the real `bin/invoice.js` against a fresh temp `--data` file, covering the full lifecycle and numbering, list filters with the `due < today` boundary, aging at all eight bucket boundaries plus its exclusions, revenue across two months, exact CSV export, the three void rules, exit-1 usage errors and exit-2 input/domain errors. Every successful call is checked for exactly one newline-terminated JSON value with all money as two-decimal strings, and the suite imports nothing from `bin/` or `src/`. `npm test` passes 161/161 with exit 0.I'll start by exploring the repository to see the current state of the code and CLI.Now let me read the source modules to document their exact behavior.Now let me run the real CLI in a temp directory to capture example outputs.All outputs are captured from real runs. Now writing the README.Now running the acceptance commands.All checks pass. Reporting the completed work.README.md is written and the acceptance commands pass.\n\n**What I did:** Created `README.md` (831 lines, the only file I touched) covering, in the requested order: project overview and running it (Node >= 18, no dependencies, `npm test`); the JSON data file with the `--data <path>` rule and two real file snippets; the money rules (integer cents inside, two-decimal strings at the edges, half-up rounding, accepted input and rejection cases); ids and dates; a module reference for all six `src/*.js` modules with signatures, return shapes and the net/tax/total formulas; and a command reference where each of the twelve CLI commands has an example invocation and the JSON it prints, plus the exit-code contract (0 success, 1 usage, 2 error) and the `export` CSV shown both as the printed JSON string and decoded.\n\n**How I verified it:** Every documented output was transcribed from a real run of `node bin/invoice.js` against a fresh store in `/tmp` (never in the repo), following one ordered walkthrough so the ids in later examples are reproducible. Error paths were re-run too (`show --invoice 99`, `void` on a paid invoice, `add-line` on an issued invoice, over-payment, `--amount 1.234`, bare `report`, missing required option).\n\n**Checks:** `test -s README.md`, `grep -q 'report aging' README.md`, `grep -q 'add-product' README.md` and `npm test` (161/161 pass, exit 0) all succeed; `git status --short` shows `README.md` as my only change.\n\nOne note for the reviewer: long JSON values are shown pretty-printed for readability, with an explicit statement that the CLI emits the identical value on a single compact line and one verbatim one-line example; no CLI output in the README shows raw cents.",
+  "stderr": "",
+  "project": {
+    "version": 1,
+    "goal": "Build a small invoicing system in this repository (Node.js, ES modules, no dependencies) with a command-line interface, JSON persistence, tests and documentation. Follow every rule below exactly; the CLI output is machine-read.\n\nStorage: one JSON file, default `data/invoicing.json` relative to the current directory; every command accepts `--data <path>`. Create the file (and its directory) on first use. Ids are integers per entity type, starting at 1.\n\nMoney: amounts are handled in integer cents internally and shown as decimal strings with exactly two decimals (`\"12.30\"`). Input amounts are decimal strings with at most two decimals; anything else (letters, three decimals, negative values) is an error. Rounding, wherever it is needed, is half up on the cent.\n\nModules (each with its own tests in test/ using node:test):\n- src/money.js: parseMoney(text) -> cents, formatMoney(cents) -> string, roundCents(number) -> integer cents (half up).\n- src/customers.js: addCustomer({ name, email }), a customer is { id, name, email }; email must contain \"@\".\n- src/products.js: addProduct({ name, price, taxRate }), a product is { id, name, price (cents), taxRate (percent, integer 0-100, default 0) }.\n- src/invoices.js:\n  - createInvoice({ customerId, terms = 30 }) makes a draft: { id, number: null, customerId, status: \"draft\", terms, issued: null, due: null, lines: [], payments: [], subtotal: 0, tax: 0, total: 0, paid: 0, balance: 0 } (all amounts in cents).\n  - addLine({ invoiceId, productId, quantity = 1, discount = 0 }) appends a line { productId, description (the product name), quantity (positive integer), unitPrice (cents), discount (percent, 0-100), net, tax } and recomputes the totals: net = unitPrice * quantity * (100 - discount) / 100 rounded half up; tax = net * taxRate / 100 rounded half up; subtotal = sum of net; tax = sum of line tax; total = subtotal + tax; balance = total - paid. Only drafts accept lines.\n  - issue({ invoiceId, today }) turns a draft with at least one line into status \"issued\": number becomes `INV-<year>-<nnnn>` with the year of `today` and a four-digit counter that starts at 0001 for each year and increments per issued invoice in that year; issued = today; due = today + terms days.\n  - pay({ invoiceId, amount, today }) records { amount (cents), date } on an issued invoice; partial payments are allowed; paying more than the balance is an error; when paid reaches total the status becomes \"paid\".\n  - voidInvoice({ invoiceId }) sets status \"void\" on a draft or on an issued invoice without payments; anything else is an error.\n  - listInvoices({ status, customerId, overdue, today } = {}); an invoice is overdue when its status is \"issued\" and due < today.\n  - Dates are strings YYYY-MM-DD; `today` defaults to the current date.\n- src/report.js:\n  - aging({ today }) -> { current, days1to30, days31to60, days61to90, over90, total } summing the balance of issued invoices by how many days past due they are on `today` (not yet due -> current; 1-30 days past due -> days1to30; and so on; total is the sum of all five), in cents.\n  - revenue() -> an array of { month: \"YYYY-MM\", invoices, total } for each month that has issued or paid invoices (by the issue date), sorted by month, totals in cents.\n\nCLI: bin/invoice.js, run as `node bin/invoice.js <command> [options] [--data <path>]`. Every successful command prints exactly one JSON value on stdout and exits 0; money fields in that JSON (price, unitPrice, net, tax, subtotal, total, paid, balance, amount, every aging bucket and revenue total) are formatted strings like \"12.30\", never raw cents. Every failure prints `{ \"error\": \"<message>\" }` on stderr and exits 2; an unknown command or a missing required option prints usage on stderr and exits 1.\n- `add-customer --name <n> --email <e>` prints the customer.\n- `add-product --name <n> --price <amount> [--tax <percent>]` prints the product.\n- `create --customer <id> [--terms <days>]` prints the draft invoice.\n- `add-line --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]` prints the invoice.\n- `issue --invoice <id> [--today <date>]` prints the invoice.\n- `pay --invoice <id> --amount <amount> [--today <date>]` prints the invoice.\n- `void --invoice <id>` prints the invoice.\n- `show --invoice <id>` prints the invoice.\n- `list [--status <s>] [--customer <id>] [--overdue] [--today <date>]` prints an array of invoices.\n- `report aging [--today <date>]` and `report revenue` print the report objects.\n- `export --invoice <id>` prints (as a JSON string) the CSV text of the invoice lines with the header `description,quantity,unitPrice,discount,net,tax` followed by one row per line, money as formatted strings, rows separated by \"\\n\", no trailing newline.\n\nAdd a \"test\" script to package.json so that `npm test` runs every test, and write a README.md that documents the modules, every command with an example, and the rules. npm test must pass.",
+    "status": "done",
+    "createdAt": "2026-09-20T04:19:03.816Z",
+    "updatedAt": "2026-09-20T04:31:59.583Z",
+    "parallel": 2,
+    "replans": 0,
+    "maxReplans": 2,
+    "milestones": [
+      {
+        "id": "m1-foundations",
+        "title": "Foundations: money, storage, customers, products",
+        "approval": "user",
+        "status": "approved"
+      },
+      {
+        "id": "m2-invoices",
+        "title": "Invoice lifecycle",
+        "approval": "auto",
+        "status": "approved"
+      },
+      {
+        "id": "m3-reports",
+        "title": "Reports",
+        "approval": "auto",
+        "status": "approved"
+      },
+      {
+        "id": "m4-cli",
+        "title": "CLI",
+        "approval": "user",
+        "status": "approved"
+      },
+      {
+        "id": "m5-docs",
+        "title": "Documentation",
+        "approval": "auto",
+        "status": "approved"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "money-store-scaffold",
+        "title": "Scaffold package scripts, money primitives and JSON store",
+        "spec": "Set up the package tooling and the two foundation modules described in design sections 3-5.\n\n1. package.json: keep name/version/type as they are, add \"scripts\": { \"test\": \"node --test test/\" }. Do not add dependencies.\n2. .gitignore: keep the existing lines, add \"data/\".\n3. src/money.js: implement parseMoney(text), formatMoney(cents), roundCents(value) with exactly the behaviour in design section 5 (string-based cent extraction, two-decimal output, half-up rounding via toPrecision(12), descriptive throws on invalid input).\n4. src/store.js: implement openStore(dataPath = 'data/invoicing.json'), getStore(), getData(), save(), nextId(kind), defaultData(), resetStore() per design section 4. openStore creates the parent directory and the file (writing defaultData()) on first use, merges a partial/missing top-level key against defaultData(), and throws on invalid JSON. save() writes 2-space-indented JSON with a trailing newline. nextId('customer'|'product'|'invoice') increments data.counters[kind] and returns it. Also export nextNumber(year) returning 1 + the highest numeric suffix among invoice numbers matching /^INV-<year>-(\\d{4})$/, or 1 when there is none (used later by the invoices module).\n\nTests in test/money.test.js and test/store.test.js using node:test and node:assert/strict: parse/format round trips and every rejection case, half-up rounding at .005 boundaries, store file/directory creation, counter independence per kind, re-open persistence, partial-file recovery, invalid JSON rejection. Store tests use fs.mkdtempSync(os.tmpdir()) directories; nothing is written into the repository.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm no dependencies were added, that money never goes through float multiplication when parsing, and that openStore creates data/invoicing.json plus its directory when neither exists."
+        },
+        "deps": [],
+        "files": [
+          "package.json",
+          ".gitignore",
+          "src/money.js",
+          "src/store.js",
+          "test/money.test.js",
+          "test/store.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m1-foundations",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+            "turnIds": [
+              "94745058-d69a-4954-b338-f7fa732f1f6d"
+            ],
+            "startedAt": "2026-09-20T04:19:07.584Z",
+            "status": "passed",
+            "report": {
+              "summary": "Scaffolded the package tooling and the two foundation modules. package.json keeps name/version/type and now has scripts.test (no dependencies); .gitignore keeps its existing lines and adds \"data/\". src/money.js implements parseMoney (string-digit cent extraction, no float multiplication), formatMoney (integer cents -> exactly two decimals, negative prefix) and roundCents (half up via toPrecision(12)). src/store.js implements the single-JSON-file store: openStore(dataPath = 'data/invoicing.json') resolves the path, creates the parent directory and the file with defaultData() when missing/empty, merges a partial or wrongly-typed file against defaultData() (arrays fall back to [], counters per kind fall back to 0), throws on invalid JSON, and replaces any previously open store; getStore/getData/save (2-space indent + trailing newline)/nextId('customer'|'product'|'invoice')/defaultData/resetStore plus nextNumber(year) (1 + highest matching INV-<year>-<nnnn> suffix). Tests in test/money.test.js and test/store.test.js use node:test + node:assert/strict and write only into fs.mkdtempSync(os.tmpdir()) directories.",
+              "evidence": "`npm test` from the project root: exit 0, 28 tests, 28 pass, 0 fail (money and store files only). Verified after the run that `git status --short` shows just \" M .gitignore\", \" M package.json\", \"?? src/\", \"?? test/\" — no data/ directory or other artifacts were created in the repository. Rounding verified independently in node: roundCents(1.005) === 101, roundCents(2.675) === 268, roundCents(-1.005) === -101, roundCents(0.005) === 1. parseMoney('0.05') === 5, parseMoney('12.3') === 1230, parseMoney('12.30') === 1230, parseMoney('1.234')/'-1'/'abc'/''/NaN/Infinity all throw \"invalid amount: ...\". Store tests cover file+directory creation (including nested parents and the default data/invoicing.json resolved from a temp cwd), counter independence, re-open persistence, partial-file recovery, empty file, invalid JSON and invalid JSON primitives rejection, and nextNumber per-year counting/malformed-number skipping.",
+              "files": [
+                "package.json",
+                ".gitignore",
+                "src/money.js",
+                "src/store.js",
+                "test/money.test.js",
+                "test/store.test.js"
+              ],
+              "decisions": [
+                "No dependencies were added; package.json only gained scripts.test.",
+                "The test script is `node --test test/*.test.js` rather than the literal `node --test test/`: Node v26.0.0 on this machine rejects a directory argument for the test runner (MODULE_NOT_FOUND, it tries to load test/ as a module), while the glob form runs every test file under test/ and exits 0.",
+                "openStore only writes the file when it is missing or empty; a partial/wrongly-typed existing file is normalized in memory and persisted on the next save(), so read-only CLI commands do not rewrite the file.",
+                "getStore().path is the resolved absolute path (path.resolve of the given path), which is what makes the default data/invoicing.json work relative to the current directory.",
+                "normalize() drops unknown top-level keys and coerces non-integer counters and non-array entity lists to defaults, so a truncated or hand-edited file never crashes the CLI.",
+                "parseMoney accepts numbers only when finite and non-negative, converting via String() and re-validating, so 1e21-style values are rejected."
+              ],
+              "openIssues": [
+                "The npm test script deviates from the literal text of design §8 (`node --test test/`) because of the Node version here; if a later task relies on the exact script string, this is the place to look. Bare `node --test` (default discovery) also works if preferred.",
+                "getStore().path being absolute is an unspecified detail that the later CLI task should not depend on."
+              ]
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "\n> invoicing@0.1.0 test\n> node --test test/*.test.js\n\n✔ parseMoney reads decimal strings as exact cents (0.664625ms)\n✔ parseMoney trims surrounding whitespace (0.047125ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.047792ms)\n✔ parseMoney rejects malformed amounts (0.242958ms)\n✔ formatMoney always emits two decimals (0.06925ms)\n✔ formatMoney requires integer cents (0.0765ms)\n✔ formatMoney and parseMoney round trip (0.046417ms)\n✔ roundCents rounds half up on the cent (0.364209ms)\n✔ roundCents always returns an integer (0.1355ms)\n✔ roundCents rejects non-finite and non-number input (0.145333ms)\n✔ defaultData is the empty store shape (1.571ms)\n✔ getData throws when no store is open (0.998208ms)\n✔ openStore creates the file with default data when it does not exist (0.760333ms)\n✔ openStore creates missing parent directories (0.560667ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.418167ms)\n✔ getStore exposes the resolved path and the data object (0.302584ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.344375ms)\n✔ counters are independent per kind (0.271875ms)\n✔ nextId rejects unknown kinds (0.278666ms)\n✔ data survives closing and re-opening the store (0.388583ms)\n✔ a partial file is merged against defaultData (0.283459ms)\n✔ wrongly typed top-level keys fall back to defaults (0.264291ms)\n✔ an empty file is treated as defaultData and rewritten (0.313125ms)\n✔ invalid JSON is rejected (0.290292ms)\n✔ invalid JSON primitives are rejected (0.27175ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.292167ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.241ms)\n✔ openStore replaces a previously open store (0.442959ms)\nℹ tests 28\nℹ suites 0\nℹ pass 28\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 69.763708",
+                "durationMs": 251
+              }
+            ],
+            "endedAt": "2026-09-20T04:20:36.321Z"
+          }
+        ]
+      },
+      {
+        "id": "customers-products",
+        "title": "Customer and product modules",
+        "spec": "Implement src/customers.js and src/products.js on top of the store singleton, per design sections 6.1 and 6.2.\n\n- addCustomer({ name, email }) -> { id, name, email }: name must be a non-empty string, email a string containing \"@\", id from nextId('customer'); persists via save(). getCustomer(id) -> customer or throws `customer <id> not found`.\n- addProduct({ name, price, taxRate = 0 }) -> { id, name, price, taxRate }: name non-empty; price parsed with parseMoney and stored in cents; taxRate an integer 0-100, default 0; id from nextId('product'); persists via save(). getProduct(id) -> product or throws `product <id> not found`.\n\nTests in test/customers.test.js and test/products.test.js (node:test, node:assert/strict) opening a temp store per test via openStore in beforeEach plus resetStore in afterEach: ids start at 1 and increment per entity type independently, objects have the exact shapes and key order, invalid email/name/price/taxRate throw, unknown ids throw, and values survive a re-open of the same file.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm product price is stored in cents (not a decimal string) and that stored objects contain exactly the documented keys."
+        },
+        "deps": [
+          "money-store-scaffold"
+        ],
+        "files": [
+          "src/customers.js",
+          "src/products.js",
+          "test/customers.test.js",
+          "test/products.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m1-foundations",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+            "turnIds": [
+              "a64150b4-1ce1-484d-a968-a6cf79fd5d56"
+            ],
+            "startedAt": "2026-09-20T04:20:36.337Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented src/customers.js and src/products.js on top of the process-global store singleton, plus their node:test suites.\n\n- `addCustomer({ name, email })` validates name (non-empty string, untrimmed values stored verbatim) and email (string containing \"@\"), allocates via `nextId('customer')`, pushes `{ id, name, email }` onto `data.customers` and calls `save()`. `getCustomer(id)` returns the stored object or throws `customer <id> not found`.\n- `addProduct({ name, price, taxRate = 0 })` validates name, runs `price` through `parseMoney` so it is stored as integer cents (never a decimal string), validates taxRate as an integer 0-100 (default 0), allocates via `nextId('product')`, pushes `{ id, name, price, taxRate }` and calls `save()`. `getProduct(id)` returns the object or throws `product <id> not found`.\n- Both modules are pure domain code: no printing, no process.exit, short lower-case Error messages (`name must be a non-empty string`, `email must contain \"@\"`, `taxRate must be an integer between 0 and 100`, plus `parseMoney`'s `invalid amount: <input>`).\n\nTests open a temp store per test (`fs.mkdtempSync` + `openStore` in beforeEach, `resetStore` + rm in afterEach), never touch the repository, and cover: ids starting at 1 and incrementing independently per entity type, exact key order via `Object.keys`, immediate persistence (asserting on the raw JSON file), survival across resetStore/re-open, unknown-id and cross-type-id lookups, rejection of bad name/price/taxRate/email without consuming an id, taxRate boundaries 0/100, numeric price normalisation, and no-argument calls.",
+              "evidence": "`node --test test/customers.test.js test/products.test.js` -> tests 28, pass 28, fail 0, exit 0.\n`npm test` (acceptance) from the project root -> tests 56, pass 56, fail 0, exit 0 (my 28 plus the 28 foundation tests from test/money.test.js and test/store.test.js).\nStored-cents claim is verified by tests that re-read the JSON file from disk and assert numeric values, e.g. products with prices \"12.30\"/\"12.3\"/\"0.05\"/\"0\"/\"7\"/\"1000000.99\" persist as [1230,1230,5,0,700,100000099].",
+              "files": [
+                "src/customers.js",
+                "src/products.js",
+                "test/customers.test.js",
+                "test/products.test.js"
+              ],
+              "decisions": [
+                "Email validation follows design §6.1 literally: any string containing \"@\" passes, so \"ada@\", \"@\" and \"a@b\" are all accepted; the single message `email must contain \"@\"` is used for both a non-string and a string without \"@\".",
+                "Name and email are stored verbatim — no trimming — so a leading/trailing space supplied by the caller is preserved (design says name must be a non-empty string, not that it is normalised); a whitespace-only name is rejected.",
+                "Validation happens before `nextId()` is called, so a rejected add never consumes an id or mutates the store file.",
+                "Lookups use strict equality on the stored id, so a string id like \"1\" does not match numeric id 1 and raises the not-found error.",
+                "Messages chosen for cases the design left unspecified: `name must be a non-empty string` and `taxRate must be an integer between 0 and 100`."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "\n> invoicing@0.1.0 test\n> node --test test/*.test.js\n\n✔ addCustomer returns the customer with id 1 and the documented keys (2.364417ms)\n✔ customer ids increment, independently of product ids (1.325375ms)\n✔ each customer is persisted to the store file immediately (0.501333ms)\n✔ customers survive closing and re-opening the same file (0.666459ms)\n✔ getCustomer finds a stored customer (0.4085ms)\n✔ getCustomer throws for an unknown id (0.780459ms)\n✔ getCustomer throws when no store is open (0.381875ms)\n✔ a name must be a non-empty string (0.475125ms)\n✔ an email must be a string containing \"@\" (0.395542ms)\n✔ any non-empty string containing \"@\" is a valid email (0.542958ms)\n✔ an empty email is rejected (0.298167ms)\n✔ calling addCustomer with no argument throws (0.327125ms)\n✔ name and email are stored verbatim (no trimming) (0.363333ms)\n✔ parseMoney reads decimal strings as exact cents (0.721834ms)\n✔ parseMoney trims surrounding whitespace (0.051ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.056625ms)\n✔ parseMoney rejects malformed amounts (0.25475ms)\n✔ formatMoney always emits two decimals (0.067584ms)\n✔ formatMoney requires integer cents (0.085833ms)\n✔ formatMoney and parseMoney round trip (0.049292ms)\n✔ roundCents rounds half up on the cent (0.069542ms)\n✔ roundCents always returns an integer (0.668542ms)\n✔ roundCents rejects non-finite and non-number input (0.170959ms)\n✔ addProduct returns the product with id 1 and the documented keys (2.810959ms)\n✔ price is stored as integer cents, never a decimal string (0.909ms)\n✔ a numeric price is accepted and normalised to cents (0.53575ms)\n✔ taxRate defaults to 0 (0.41225ms)\n✔ product ids increment, independently of customer ids (0.682333ms)\n✔ each product is persisted to the store file immediately (0.519458ms)\n✔ products survive closing and re-opening the same file (1.031291ms)\n✔ getProduct finds a stored product (0.827417ms)\n✔ getProduct throws for an unknown id (0.799333ms)\n✔ getProduct throws when no store is open (0.436084ms)\n✔ a name must be a non-empty string (0.398917ms)\n✔ an invalid price is rejected (0.375084ms)\n✔ a taxRate must be an integer between 0 and 100 (0.35175ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.380333ms)\n✔ calling addProduct with no argument throws on the name (0.276541ms)\n✔ defaultData is the empty store shape (1.569917ms)\n✔ getData throws when no store is open (1.289625ms)\n✔ openStore creates the file with default data when it does not exist (1.063917ms)\n✔ openStore creates missing parent directories (1.6735ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.658333ms)\n✔ getStore exposes the resolved path and the data object (0.358ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.434416ms)\n✔ counters are independent per kind (0.308833ms)\n✔ nextId rejects unknown kinds (0.354292ms)\n✔ data survives closing and re-opening the store (0.475834ms)\n✔ a partial file is merged against defaultData (0.315916ms)\n✔ wrongly typed top-level keys fall back to defaults (0.323417ms)\n✔ an empty file is treated as defaultData and rewritten (0.294625ms)\n✔ invalid JSON is rejected (0.298292ms)\n✔ invalid JSON primitives are rejected (0.271083ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.281167ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.255542ms)\n✔ openStore replaces a previously open store (0.444833ms)\nℹ tests 56\nℹ suites 0\nℹ pass 56\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 79.577917",
+                "durationMs": 248
+              }
+            ],
+            "endedAt": "2026-09-20T04:21:14.096Z"
+          }
+        ]
+      },
+      {
+        "id": "invoices-lifecycle",
+        "title": "Invoice lifecycle module",
+        "spec": "Implement src/invoices.js exactly as specified in design section 6.3: createInvoice, addLine, issue, pay, voidInvoice, listInvoices, getInvoice, plus the internal date helpers (UTC-based add-days, YYYY-MM-DD validation, day differences) and use of store.nextNumber(year) for invoice numbering.\n\nKey contracts to honour: the draft shape and key order from the design; lines only on drafts; net = roundCents(unitPrice * quantity * (100 - discount) / 100) and line tax = roundCents(net * product.taxRate / 100); totals recomputed as subtotal/tax/total/balance on every addLine and pay; invoice numbers INV-<year>-<nnnn> restarting at 0001 each year; due = issued date + terms days; payments only on issued invoices with amount > 0 and amount <= balance; status becomes paid when paid reaches total; void allowed on a draft or an issued invoice without payments and rejected otherwise; listInvoices filters on status, customerId and overdue (issued and due < today) and returns invoices sorted by id ascending; today defaults to the current local date and an invalid today string throws.\n\nWrite test/invoices.test.js (node:test, node:assert/strict, temp store per test) covering: the full create -> add-line -> issue -> pay flow with exact amounts including a discount and a taxed product, the rounding of net/tax, rejection of lines on non-draft invoices, issuing without lines, per-month and per-year numbering, partial payments and overpayment rejection, the paid transition, all void rules, overdue filtering and the due-date comparison boundary, and list filters. Use a tmpdir store so no test touches data/.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm every mutation calls save(), that today defaults to the current date when omitted, and that date arithmetic is timezone-stable (UTC based)."
+        },
+        "deps": [
+          "customers-products"
+        ],
+        "files": [
+          "src/invoices.js",
+          "test/invoices.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 45
+        },
+        "milestone": "m2-invoices",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+            "turnIds": [
+              "dd29d500-7f20-4bfb-859f-1c0b445e40b0"
+            ],
+            "startedAt": "2026-09-20T04:21:15.692Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented the invoice lifecycle in src/invoices.js and its node:test suite in test/invoices.test.js; `npm test` runs 96 tests across the repo and exits 0.\n\nsrc/invoices.js exports createInvoice, addLine, issue, pay, voidInvoice, listInvoices and getInvoice exactly as specified in design §6.3, plus the date helpers the later report/CLI tasks need (currentDate, isValidDate, validateDate, addDays, daysBetween, all UTC-based). createInvoice validates the customer and terms and pushes the documented draft with the design's key order. addLine only mutates drafts, copies the product name into the line description, computes net and line tax rounded half up on the cent, and recomputes subtotal/tax/total/paid/balance from the lines and payments. issue numbers drafts as INV-<year>-<nnnn> using store.nextNumber(year) so voided invoices still consume their number and each year restarts at 0001, and sets issued/due from the (validated, UTC) date arithmetic. pay accepts positive amounts up to the balance on issued invoices, allows partials, and flips the status to paid when paid reaches total. voidInvoice accepts a draft or a payment-free issued invoice and rejects everything else. listInvoices filters on status, customerId and overdue (issued with due < today) and returns invoices sorted by id ascending. Every mutation calls save(); today defaults to the current local date everywhere.\n\nThe one deliberate deviation: the design's line formula is scaled. src/money.js roundCents takes whole units and returns cents (roundCents(1.005) === 101, pinned by the existing money tests), while unitPrice and net are integer cents, so the literal `roundCents(unitPrice * quantity * (100 - discount) / 100)` would inflate every line 100x. I used `/ 10000` for both net and tax, which rounds half up on the cent of the cent-valued expression, i.e. what the brief's prose formula says. This is recorded in the decision log with a short comment at the call site.\n\nTests cover the draft shape and key order, id allocation, terms/customer validation, line totals with discounts and tax rates, the half-up rounding boundaries (9.5 -> 10, 0.5 -> 1, 10.05 -> 10, 6.65 -> 7, 4.5 -> 5), lines rejected on issued/paid/void invoices, description snapshotting, issue without lines, per-year and per-month numbering with voided numbers consumed and a new year restarting, due-date arithmetic across month/year/leap boundaries and terms 0, partial payments, overpayment and malformed amounts, the paid transition, all void rules, list filters and the overdue `due < today` boundary, overdue defaulting to the current date, persistence of every mutation to the raw JSON file (including that a failed operation leaves the file byte-identical), and time-zone stability of the date helpers verified by re-running the arithmetic under four different TZ values.",
+              "evidence": "- `node --test test/invoices.test.js` -> tests 40, pass 40, fail 0.\n- `npm test` (node --test test/*.test.js) from the project root -> tests 96, pass 96, fail 0, exit 0 (money, store, customers, products and invoices suites together).\n- Test file uses fs.mkdtempSync under os.tmpdir() and openStore(dir/data.json) per test with resetStore + rm in afterEach, so nothing is written into the repository.\n- The timezone test spawns `node --input-type=module -e` for TZ=UTC, America/New_York, Pacific/Kiritimati and Asia/Kolkata and asserts identical addDays/daysBetween output (e.g. 2026-01-31 +30 days = 2026-03-02, 2026-03-07..2026-03-09 = 2 days in every zone).",
+              "files": [
+                "src/invoices.js",
+                "test/invoices.test.js"
+              ],
+              "decisions": [
+                "Line amounts are rounded as roundCents((unitPrice * quantity * (100 - discount)) / 10000) and roundCents((net * taxRate) / 10000) because src/money.js roundCents maps whole units to cents while unitPrice/net are cents; the design's literal expression would be 100x too large. Recorded in the decision log.",
+                "src/invoices.js exports currentDate, isValidDate, validateDate, addDays and daysBetween so the report and CLI tasks share one UTC date implementation instead of duplicating it (report.revenue and report.aging need the same date maths).",
+                "Error messages chosen where the design was silent: 'terms must be an integer >= 0', 'invalid date: <text>', 'amount must be greater than zero', 'only draft invoices can be issued', 'quantity must be a positive integer', 'discount must be an integer between 0 and 100', 'cannot void this invoice'.",
+                "A valid date must be a real calendar day: YYYY-MM-DD format plus a UTC round-trip check, so 2026-02-30 and 2026-13-40 are rejected.",
+                "pay derives paid by summing invoice.payments (design §6.3) rather than incrementing, so a corrupt payments list can never desync paid from the balance.",
+                "Validation order in addLine is invoice -> draft state -> product -> quantity -> discount, and in pay invoice -> issued state -> amount -> today; no rejected call mutates the store or writes the file."
+              ],
+              "openIssues": [
+                "The report and CLI tasks must agree with the scaled line formula (cents, not the literal /100 expression); the decision log note explains why.",
+                "listInvoices validates a supplied `today` even when overdue is false, which means the CLI `list --today <bad>` fails with exit 2; that matches the design's rule that an invalid option value is an input error."
+              ]
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "\n> invoicing@0.1.0 test\n> node --test test/*.test.js\n\n✔ addCustomer returns the customer with id 1 and the documented keys (2.053875ms)\n✔ customer ids increment, independently of product ids (0.846417ms)\n✔ each customer is persisted to the store file immediately (0.567541ms)\n✔ customers survive closing and re-opening the same file (0.64175ms)\n✔ getCustomer finds a stored customer (0.405084ms)\n✔ getCustomer throws for an unknown id (0.572291ms)\n✔ getCustomer throws when no store is open (0.360542ms)\n✔ a name must be a non-empty string (0.372583ms)\n✔ an email must be a string containing \"@\" (0.352833ms)\n✔ any non-empty string containing \"@\" is a valid email (0.628584ms)\n✔ an empty email is rejected (0.357583ms)\n✔ calling addCustomer with no argument throws (0.383834ms)\n✔ name and email are stored verbatim (no trimming) (0.380208ms)\n✔ createInvoice returns the documented draft with the documented key order (4.812ms)\n✔ invoice ids increment and are independent of customer and product ids (0.96625ms)\n✔ createInvoice accepts terms 0 and rejects a missing customer or bad terms (1.14525ms)\n✔ addLine appends the documented line and recomputes the totals (0.78325ms)\n✔ the line description is a copy of the product name taken at addLine time (0.544417ms)\n✔ addLine defaults to quantity 1 and discount 0 (1.135625ms)\n✔ net and tax are rounded half up on the cent (0.937125ms)\n✔ addLine sums every line into subtotal, tax, total and balance (0.67ms)\n✔ only drafts accept lines (3.549625ms)\n✔ addLine validates the invoice, product, quantity and discount (0.815334ms)\n✔ discount boundaries 0 and 100 are accepted (0.47875ms)\n✔ issue assigns the number, dates and status of a draft with lines (0.462708ms)\n✔ terms 0 makes the due date the issue date, and day arithmetic crosses months in UTC (1.423833ms)\n✔ issue requires a draft with at least one line and a valid date (0.769708ms)\n✔ issue defaults today to the current date (0.488875ms)\n✔ invoice numbers start at 0001 each year and increment per issued invoice (1.169042ms)\n✔ a voided invoice keeps its number consumed (0.618541ms)\n✔ pay records partial payments and leaves the invoice issued (0.526709ms)\n✔ paying the balance in full moves the invoice to paid with a zero balance (0.519458ms)\n✔ pay defaults today to the current date (0.506458ms)\n✔ pay rejects overpayment, non-positive and malformed amounts (0.620292ms)\n✔ pay refuses an invalid today and saves nothing (0.473458ms)\n✔ only issued invoices accept payments (0.812292ms)\n✔ a draft can be voided (0.488916ms)\n✔ an issued invoice without payments can be voided (0.471ms)\n✔ voiding is rejected for a paid, part-paid or already void invoice (0.874ms)\n✔ a voided or paid invoice is no longer affected by later commands (0.511458ms)\n✔ listInvoices returns every invoice sorted by id ascending (0.578042ms)\n✔ listInvoices filters by status and by customer (0.625416ms)\n✔ overdue keeps issued invoices whose due date is before today, excluding the boundary (0.786792ms)\n✔ overdue excludes paid and voided invoices (0.721875ms)\n✔ overdue and listInvoices default today to the current date (0.567209ms)\n✔ listInvoices rejects an invalid today (0.255083ms)\n✔ getInvoice finds a stored invoice and throws for an unknown id (0.523125ms)\n✔ getInvoice throws when no store is open (0.229792ms)\n✔ every mutation is persisted and survives closing and re-opening the file (0.643875ms)\n✔ the full create, add-line, issue and pay flow adds up (0.569208ms)\n✔ isValidDate and validateDate accept only real YYYY-MM-DD dates (0.274958ms)\n✔ addDays and daysBetween work in UTC across DST and year boundaries (0.273125ms)\n✔ date arithmetic gives the same answer in every time zone (182.121583ms)\n✔ parseMoney reads decimal strings as exact cents (0.698ms)\n✔ parseMoney trims surrounding whitespace (0.051625ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.055042ms)\n✔ parseMoney rejects malformed amounts (0.257333ms)\n✔ formatMoney always emits two decimals (0.196916ms)\n✔ formatMoney requires integer cents (0.085375ms)\n✔ formatMoney and parseMoney round trip (0.04975ms)\n✔ roundCents rounds half up on the cent (0.066167ms)\n✔ roundCents always returns an integer (0.078167ms)\n✔ roundCents rejects non-finite and non-number input (0.680833ms)\n✔ addProduct returns the product with id 1 and the documented keys (3.551583ms)\n✔ price is stored as integer cents, never a decimal string (2.587584ms)\n✔ a numeric price is accepted and normalised to cents (1.431333ms)\n✔ taxRate defaults to 0 (0.965417ms)\n✔ product ids increment, independently of customer ids (0.665292ms)\n✔ each product is persisted to the store file immediately (0.419583ms)\n✔ products survive closing and re-opening the same file (0.539625ms)\n✔ getProduct finds a stored product (0.366292ms)\n✔ getProduct throws for an unknown id (0.540292ms)\n✔ getProduct throws when no store is open (0.313208ms)\n✔ a name must be a non-empty string (0.368916ms)\n✔ an invalid price is rejected (0.341583ms)\n✔ a taxRate must be an integer between 0 and 100 (0.345083ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.333084ms)\n✔ calling addProduct with no argument throws on the name (0.253666ms)\n✔ defaultData is the empty store shape (1.560458ms)\n✔ getData throws when no store is open (0.84625ms)\n✔ openStore creates the file with default data when it does not exist (0.700209ms)\n✔ openStore creates missing parent directories (0.613792ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.48075ms)\n✔ getStore exposes the resolved path and the data object (0.326208ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.391125ms)\n✔ counters are independent per kind (0.3405ms)\n✔ nextId rejects unknown kinds (0.333042ms)\n✔ data survives closing and re-opening the store (0.476417ms)\n✔ a partial file is merged against defaultData (0.34825ms)\n✔ wrongly typed top-level keys fall back to defaults (0.349ms)\n✔ an empty file is treated as defaultData and rewritten (0.399542ms)\n✔ invalid JSON is rejected (0.425417ms)\n✔ invalid JSON primitives are rejected (0.408459ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.390084ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.8085ms)\n✔ openStore replaces a previously open store (0.561ms)\nℹ tests 96\nℹ suites 0\nℹ pass 96\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 291.676417",
+                "durationMs": 471
+              }
+            ],
+            "endedAt": "2026-09-20T04:23:38.729Z"
+          }
+        ]
+      },
+      {
+        "id": "reports",
+        "title": "Aging and revenue reports",
+        "spec": "Implement src/report.js per design section 6.4 with aging({ today } = {}) and revenue() over the current store data.\n\n- aging: consider only invoices with status \"issued\"; daysPastDue = today minus due (whole days, UTC based); bucket <= 0 into current, 1-30 into days1to30, 31-60 into days31to60, 61-90 into days61to90, > 90 into over90; each bucket sums invoice.balance; total is the sum of the five buckets; return exactly { current, days1to30, days31to60, days61to90, over90, total } in cents. today defaults to the current date.\n- revenue: group invoices whose status is \"issued\" or \"paid\" (drafts and voided excluded) by the YYYY-MM of their issued date, producing { month, invoices: count, total: sum of invoice.total } sorted by month ascending; return an empty array when there is nothing.\n\nWrite test/report.test.js (node:test, node:assert/strict, temp store per test) covering: empty store, exactly-due-today (current) versus one day past due, every bucket boundary at 0/1/30/31/60/61/90/91 days, exclusion of drafts, paid and voided invoices from aging, revenue grouping across several months including invoices issued in the same month, exclusion of drafts and voided invoices, and month sorting. Build fixtures through src/invoices.js rather than hand-writing JSON.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm bucket boundary semantics (a due date exactly equal to today is current, 91 days past due is over90) and that aging sums balances, not totals."
+        },
+        "deps": [
+          "invoices-lifecycle"
+        ],
+        "files": [
+          "src/report.js",
+          "test/report.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m3-reports",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+            "turnIds": [
+              "a91eb10a-9692-4db2-bf9c-4fdeefa4f14c"
+            ],
+            "startedAt": "2026-09-20T04:23:38.747Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented src/report.js (aging and revenue per design §6.4) and test/report.test.js.\n\naging({ today = currentDate() } = {}) validates `today` with the shared invoices.js validateDate, then walks invoices with status \"issued\" only (drafts, paid and voided are therefore excluded), buckets each by daysBetween(invoice.due, today) — <= 0 current, 1-30 days1to30, 31-60 days31to60, 61-90 days61to90, > 90 over90 — and adds invoice.balance (not total) into its bucket. total is the sum of the five buckets. Returns exactly { current, days1to30, days31to60, days61to90, over90, total } in cents, key order as specified.\n\nrevenue() groups invoices with status \"issued\" or \"paid\" by String(invoice.issued).slice(0, 7), producing { month, invoices: count, total: sum of invoice.total } per month, sorted ascending by the month string; returns [] when nothing qualifies. Both functions are pure with respect to the store (read-only, no save()).\n\ntest/report.test.js has 14 tests using node:test/node:assert/strict with a fresh temp store per test, all fixtures built through src/invoices.js (never hand-written JSON): empty store; due-after-today and due-today both current; the 0/1/30/31/60/61/90/91-day boundary ladder each with a distinct amount; balance-vs-total (a partially paid issued invoice reports its balance); exclusion of drafts, paid and voided invoices; total equals the sum of the five buckets; today defaulting to the current date; an invalid today throwing; revenue empty; multi-month grouping and sorting; three invoices in one month counted separately; inclusion of paid and exclusion of draft/void; and totals including tax.",
+              "evidence": "Ran `node --test test/report.test.js` from the project root: 14 tests, 14 pass, 0 fail, exit 0. Ran the acceptance command `npm test` from the project root: 110 tests, 110 pass, 0 fail, exit 0 (96 pre-existing plus the 14 new report tests).",
+              "files": [
+                "src/report.js",
+                "test/report.test.js"
+              ],
+              "decisions": [
+                "aging validates `today` even when the store is empty, so the CLI's --today 2026-13-40 path yields the `invalid date: ...` message (exit 2) rather than a silent success.",
+                "aging considers only status === \"issued\", which already excludes paid invoices (pay flips the status), so the exclusion needs no extra condition; it sums invoice.balance as required.",
+                "revenue takes the month as String(invoice.issued).slice(0, 7) and sorts by that string, which is correct because YYYY-MM sorts lexicographically; months are unique map keys so the comparator never sees a tie.",
+                "Bucket lookup uses a small bucketFor(daysPastDue) helper with an early `daysPastDue <= 0` test, so a due date exactly equal to today is current and 91 days past due is over90."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "\n> invoicing@0.1.0 test\n> node --test test/*.test.js\n\n✔ addCustomer returns the customer with id 1 and the documented keys (2.120208ms)\n✔ customer ids increment, independently of product ids (0.81825ms)\n✔ each customer is persisted to the store file immediately (0.46275ms)\n✔ customers survive closing and re-opening the same file (0.627709ms)\n✔ getCustomer finds a stored customer (0.442916ms)\n✔ getCustomer throws for an unknown id (0.531667ms)\n✔ getCustomer throws when no store is open (0.326042ms)\n✔ a name must be a non-empty string (0.579042ms)\n✔ an email must be a string containing \"@\" (0.444792ms)\n✔ any non-empty string containing \"@\" is a valid email (0.577ms)\n✔ an empty email is rejected (0.33725ms)\n✔ calling addCustomer with no argument throws (0.344708ms)\n✔ name and email are stored verbatim (no trimming) (0.376584ms)\n✔ createInvoice returns the documented draft with the documented key order (2.419375ms)\n✔ invoice ids increment and are independent of customer and product ids (0.931208ms)\n✔ createInvoice accepts terms 0 and rejects a missing customer or bad terms (1.308625ms)\n✔ addLine appends the documented line and recomputes the totals (1.78675ms)\n✔ the line description is a copy of the product name taken at addLine time (1.09175ms)\n✔ addLine defaults to quantity 1 and discount 0 (0.58325ms)\n✔ net and tax are rounded half up on the cent (0.987834ms)\n✔ addLine sums every line into subtotal, tax, total and balance (0.636375ms)\n✔ only drafts accept lines (2.515458ms)\n✔ addLine validates the invoice, product, quantity and discount (0.757041ms)\n✔ discount boundaries 0 and 100 are accepted (0.612167ms)\n✔ issue assigns the number, dates and status of a draft with lines (0.540875ms)\n✔ terms 0 makes the due date the issue date, and day arithmetic crosses months in UTC (1.582709ms)\n✔ issue requires a draft with at least one line and a valid date (0.804333ms)\n✔ issue defaults today to the current date (0.45175ms)\n✔ invoice numbers start at 0001 each year and increment per issued invoice (0.958209ms)\n✔ a voided invoice keeps its number consumed (0.54875ms)\n✔ pay records partial payments and leaves the invoice issued (0.499875ms)\n✔ paying the balance in full moves the invoice to paid with a zero balance (0.492208ms)\n✔ pay defaults today to the current date (0.431958ms)\n✔ pay rejects overpayment, non-positive and malformed amounts (0.528833ms)\n✔ pay refuses an invalid today and saves nothing (0.592542ms)\n✔ only issued invoices accept payments (0.882792ms)\n✔ a draft can be voided (0.468958ms)\n✔ an issued invoice without payments can be voided (0.440375ms)\n✔ voiding is rejected for a paid, part-paid or already void invoice (0.840958ms)\n✔ a voided or paid invoice is no longer affected by later commands (0.4795ms)\n✔ listInvoices returns every invoice sorted by id ascending (0.553542ms)\n✔ listInvoices filters by status and by customer (0.590875ms)\n✔ overdue keeps issued invoices whose due date is before today, excluding the boundary (0.73925ms)\n✔ overdue excludes paid and voided invoices (0.66775ms)\n✔ overdue and listInvoices default today to the current date (0.515792ms)\n✔ listInvoices rejects an invalid today (0.234708ms)\n✔ getInvoice finds a stored invoice and throws for an unknown id (0.575917ms)\n✔ getInvoice throws when no store is open (0.292584ms)\n✔ every mutation is persisted and survives closing and re-opening the file (0.635416ms)\n✔ the full create, add-line, issue and pay flow adds up (0.598333ms)\n✔ isValidDate and validateDate accept only real YYYY-MM-DD dates (0.295917ms)\n✔ addDays and daysBetween work in UTC across DST and year boundaries (0.300959ms)\n✔ date arithmetic gives the same answer in every time zone (182.98375ms)\n✔ parseMoney reads decimal strings as exact cents (0.728042ms)\n✔ parseMoney trims surrounding whitespace (0.0565ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.057458ms)\n✔ parseMoney rejects malformed amounts (0.573542ms)\n✔ formatMoney always emits two decimals (0.101625ms)\n✔ formatMoney requires integer cents (0.117541ms)\n✔ formatMoney and parseMoney round trip (0.064417ms)\n✔ roundCents rounds half up on the cent (0.079625ms)\n✔ roundCents always returns an integer (0.592166ms)\n✔ roundCents rejects non-finite and non-number input (0.16475ms)\n✔ addProduct returns the product with id 1 and the documented keys (2.616125ms)\n✔ price is stored as integer cents, never a decimal string (1.407667ms)\n✔ a numeric price is accepted and normalised to cents (0.484625ms)\n✔ taxRate defaults to 0 (1.333625ms)\n✔ product ids increment, independently of customer ids (2.007833ms)\n✔ each product is persisted to the store file immediately (1.204333ms)\n✔ products survive closing and re-opening the same file (1.194667ms)\n✔ getProduct finds a stored product (0.863292ms)\n✔ getProduct throws for an unknown id (0.910917ms)\n✔ getProduct throws when no store is open (0.95875ms)\n✔ a name must be a non-empty string (0.440959ms)\n✔ an invalid price is rejected (0.403375ms)\n✔ a taxRate must be an integer between 0 and 100 (0.388875ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.411958ms)\n✔ calling addProduct with no argument throws on the name (0.278ms)\n✔ aging is all zeroes for an empty store (2.964666ms)\n✔ a due date equal to today is current, one day earlier is days1to30 (1.52125ms)\n✔ a due date after today is still current (2.037875ms)\n✔ every bucket boundary lands in the documented bucket (3.233916ms)\n✔ aging sums balances, not totals (0.788084ms)\n✔ aging excludes drafts, paid and voided invoices (1.559333ms)\n✔ total is the sum of the five buckets (1.601917ms)\n✔ aging defaults today to the current date (1.019167ms)\n✔ aging rejects an invalid today (0.56675ms)\n✔ revenue is an empty array with nothing issued (1.56125ms)\n✔ revenue groups issued invoices by month, sorted ascending (1.57075ms)\n✔ revenue counts invoices issued in the same month separately (1.120125ms)\n✔ revenue includes paid invoices and excludes drafts and voided ones (1.331208ms)\n✔ revenue sums invoice totals including tax (1.107542ms)\n✔ defaultData is the empty store shape (3.735416ms)\n✔ getData throws when no store is open (1.167166ms)\n✔ openStore creates the file with default data when it does not exist (0.656375ms)\n✔ openStore creates missing parent directories (0.716958ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.528583ms)\n✔ getStore exposes the resolved path and the data object (0.324167ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.447708ms)\n✔ counters are independent per kind (0.282917ms)\n✔ nextId rejects unknown kinds (0.323541ms)\n✔ data survives closing and re-opening the store (0.498959ms)\n✔ a partial file is merged against defaultData (0.356625ms)\n✔ wrongly typed top-level keys fall back to defaults (0.297958ms)\n✔ an empty file is treated as defaultData and rewritten (0.347375ms)\n✔ invalid JSON is rejected (0.342916ms)\n✔ invalid JSON primitives are rejected (0.378791ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.416791ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.334ms)\n✔ openStore replaces a previously open store (0.536666ms)\nℹ tests 110\nℹ suites 0\nℹ pass 110\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 302.901375",
+                "durationMs": 482
+              }
+            ],
+            "endedAt": "2026-09-20T04:24:40.118Z"
+          }
+        ]
+      },
+      {
+        "id": "cli",
+        "title": "CLI with JSON output, exit codes and CSV export",
+        "spec": "Implement bin/invoice.js per design section 7 (make it executable with a `#!/usr/bin/env node` shebang) plus test/cli.test.js.\n\nThe CLI parses `<command> [options] [--data <path>]` itself (no dependencies), opens the store with openStore(dataPath), runs the command, prints exactly one JSON value on stdout and exits 0. Usage errors (unknown command, unknown option, stray positional argument, missing required option, bad `report` subcommand) print a usage block on stderr and exit 1. Input/domain errors (invalid option value, money parse failure, missing entity, state violation) print compact `{\"error\":\"<message>\"}` on stderr and exit 2. Module Errors are caught and turned into the exit-2 form; nothing else may be printed.\n\nCommands, options and exact output shapes are the table and presentation rules in design section 7: add-customer, add-product, create, add-line, issue, pay, void, show, list, `report aging`, `report revenue`, export. Every money field in the printed JSON is a formatted string with two decimals while quantity/discount/terms/id/status/dates stay plain; the invoice key order must be exactly id, number, customerId, status, terms, issued, due, lines, payments, subtotal, tax, total, paid, balance. `export --invoice <id>` prints JSON.stringify of the CSV text (header description,quantity,unitPrice,discount,net,tax then one row per line, rows joined by \"\\n\", no trailing newline, RFC4180 quoting only when a field contains a comma, quote or newline).\n\ntest/cli.test.js spawns the CLI with child_process.spawnSync and a --data path inside a temp directory (fs.mkdtempSync(os.tmpdir())) and asserts on status, parsed stdout and stderr for: each command's happy path with exact JSON values, the exit-1 usage cases, the exit-2 error cases (bad amount, unknown invoice, overpayment, line on a non-draft), that no raw cents appear in stdout, that --data is honoured and that the file is created on first use.",
+        "acceptance": {
+          "commands": [
+            "npm test",
+            "node bin/invoice.js report aging --data /tmp/invoicing-accept-aging.json"
+          ],
+          "review": "Confirm stdout carries exactly one JSON value per successful command with nothing else, the two stderr failure shapes, and that money formatting is applied uniformly through one presentation helper rather than ad hoc per command."
+        },
+        "deps": [
+          "reports"
+        ],
+        "files": [
+          "bin/invoice.js",
+          "test/cli.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 60
+        },
+        "milestone": "m4-cli",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+            "turnIds": [
+              "81e0f266-be28-40ff-9d28-c8fcea1eff7d"
+            ],
+            "startedAt": "2026-09-20T04:24:40.135Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented the machine-readable CLI at bin/invoice.js (executable, `#!/usr/bin/env node`) and its test suite test/cli.test.js. The CLI parses `<command> [options] [--data <path>]` itself (no dependencies), opens the store with openStore(dataPath), runs the command, and prints exactly one JSON value on stdout + newline with exit 0. Usage errors (missing/unknown command, unknown or inapplicable option, option without a value, stray positional, missing required option, bad report subcommand) print a usage block on stderr and exit 1. Input/domain errors (invalid option value, money parse failure, missing entity, state violation) print compact `{\"error\":\"<message>\"}` on stderr and exit 2; caught module Errors become the exit-2 form. All twelve command forms are implemented (add-customer, add-product, create, add-line, issue, pay, void, show, list, report aging, report revenue, export) with the exact presentation rules from design §7: money flows through one set of present* helpers using formatMoney, so every money field (price, unitPrice, net, tax, subtotal, total, paid, balance, amount, aging buckets, revenue total) is a two-decimal string while quantity/discount/terms/id/status/dates stay plain; the invoice key order is id, number, customerId, status, terms, issued, due, lines, payments, subtotal, tax, total, paid, balance. export builds the RFC-4180 CSV (header description,quantity,unitPrice,discount,net,tax, one row per line, rows joined by \"\\n\", no trailing newline, quoting only when a field holds a comma, quote, CR or LF) and prints it as a single JSON string.\n\ntest/cli.test.js (41 tests) spawns the CLI with spawnSync and a temp-dir --data path and covers every command's happy path with exact JSON, the exit-1 usage cases, the exit-2 error cases (bad/negative amount, non-numeric and unknown ids, invalid date, invalid quantity, line on a non-draft, overpayment, void with payments), that successful output contains no raw cents, that --data is honoured (including mid-option placement), that state persists across invocations, that separate --data paths are isolated, and that the file and its nested directory are created on first use (verified via a read-only `report aging`).\n\nOne real bug was caught by the tests: export was double-encoding the CSV (JSON.stringify applied in both the command runner and the output helper); the runner now returns the raw CSV text and the single output helper encodes it once.",
+              "evidence": "- `npm test` from the project root: 151 tests, 151 pass, 0 fail (includes the 41 new CLI tests).\n- `node bin/invoice.js report aging --data /tmp/invoicing-accept-aging.json`: exit 0, stdout `{\"current\":\"0.00\",\"days1to30\":\"0.00\",\"days31to60\":\"0.00\",\"days61to90\":\"0.00\",\"over90\":\"0.00\",\"total\":\"0.00\"}`.\n- Manual checks: happy paths for every command produce the expected single-line JSON; exit 1 for no/unknown command, unknown option, `show --customer`, stray positional, missing `--email`, option without value, bad report subcommand; exit 2 with `{\"error\":...}` for `--price 1.234`, `--price -5`, `--invoice abc`, unknown invoice, `--today 2026-13-40`/`2026-02-30`, `--quantity 0`, line on issued invoice, overpayment, `void` with payments, `--tax 101`; `report revenue --today ...` exits 1 (unknown option); repeated `--name A --name B` prints name \"B\"; export prints a single JSON string.",
+              "files": [
+                "bin/invoice.js",
+                "test/cli.test.js"
+              ],
+              "decisions": [
+                "Option scope: an option that is valid for another command but not the current one (e.g. `show --customer 1`) is treated as an unknown option and exits 1 with usage, matching the per-command option table in design §7.",
+                "An option whose following token is missing or itself starts with `--` is a usage error (`option --invoice requires a value`, exit 1), which cleanly separates a missing value from an invalid one.",
+                "Value validators produce exit-2 messages chosen where the design was silent: `<name> must be a positive integer` for ids, `terms must be an integer >= 0`, `quantity must be a positive integer`, and `<tax|discount> must be an integer between 0 and 100`; `--amount`/`--price` are passed through to the module so parseMoney yields `invalid amount: <input>`, and `--today` is validated by the shared invoices.js date code (`invalid date: <text>`).",
+                "The command runner returns the raw CSV string for export and the single stdout helper applies JSON.stringify exactly once, so the whole CLI has one place that encodes output and one set of present* helpers that format money.",
+                "Usage text lists every command with its options and prepends the specific problem line (e.g. `unknown option: --bogus`), per design §7."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "6.523417ms)\n✔ an option belonging to another command exits 1 (45.332291ms)\n✔ a stray positional argument exits 1 (45.952375ms)\n✔ a missing required option exits 1 (45.777375ms)\n✔ an option without a value exits 1 (45.499792ms)\n✔ report without a subcommand exits 1 (46.055083ms)\n✔ report with an unknown subcommand exits 1 (45.625417ms)\n✔ an invalid price exits 2 (45.757458ms)\n✔ a negative price exits 2 (46.317ms)\n✔ a non-numeric id exits 2 (47.304042ms)\n✔ an unknown invoice exits 2 (45.980791ms)\n✔ an invalid date exits 2 (46.811291ms)\n✔ an invalid quantity exits 2 (233.319583ms)\n✔ a line on a non-draft invoice exits 2 (275.920583ms)\n✔ an overpayment exits 2 (278.306791ms)\n✔ a non-numeric payment amount exits 2 (278.678125ms)\n✔ voiding an invoice with payments exits 2 (322.34475ms)\n✔ addCustomer returns the customer with id 1 and the documented keys (3.088792ms)\n✔ customer ids increment, independently of product ids (1.519541ms)\n✔ each customer is persisted to the store file immediately (0.609ms)\n✔ customers survive closing and re-opening the same file (0.6535ms)\n✔ getCustomer finds a stored customer (0.484834ms)\n✔ getCustomer throws for an unknown id (0.639667ms)\n✔ getCustomer throws when no store is open (0.459875ms)\n✔ a name must be a non-empty string (0.432666ms)\n✔ an email must be a string containing \"@\" (0.497958ms)\n✔ any non-empty string containing \"@\" is a valid email (0.526292ms)\n✔ an empty email is rejected (0.3845ms)\n✔ calling addCustomer with no argument throws (0.443792ms)\n✔ name and email are stored verbatim (no trimming) (0.501083ms)\n✔ createInvoice returns the documented draft with the documented key order (2.211375ms)\n✔ invoice ids increment and are independent of customer and product ids (0.740208ms)\n✔ createInvoice accepts terms 0 and rejects a missing customer or bad terms (0.758125ms)\n✔ addLine appends the documented line and recomputes the totals (0.899916ms)\n✔ the line description is a copy of the product name taken at addLine time (0.665709ms)\n✔ addLine defaults to quantity 1 and discount 0 (0.573208ms)\n✔ net and tax are rounded half up on the cent (0.946834ms)\n✔ addLine sums every line into subtotal, tax, total and balance (0.688291ms)\n✔ only drafts accept lines (3.343042ms)\n✔ addLine validates the invoice, product, quantity and discount (0.761459ms)\n✔ discount boundaries 0 and 100 are accepted (0.60275ms)\n✔ issue assigns the number, dates and status of a draft with lines (0.603958ms)\n✔ terms 0 makes the due date the issue date, and day arithmetic crosses months in UTC (3.943917ms)\n✔ issue requires a draft with at least one line and a valid date (1.825792ms)\n✔ issue defaults today to the current date (0.852166ms)\n✔ invoice numbers start at 0001 each year and increment per issued invoice (2.002291ms)\n✔ a voided invoice keeps its number consumed (0.912208ms)\n✔ pay records partial payments and leaves the invoice issued (0.726834ms)\n✔ paying the balance in full moves the invoice to paid with a zero balance (1.564042ms)\n✔ pay defaults today to the current date (0.672458ms)\n✔ pay rejects overpayment, non-positive and malformed amounts (0.71925ms)\n✔ pay refuses an invalid today and saves nothing (0.574875ms)\n✔ only issued invoices accept payments (1.327833ms)\n✔ a draft can be voided (0.544708ms)\n✔ an issued invoice without payments can be voided (0.456959ms)\n✔ voiding is rejected for a paid, part-paid or already void invoice (2.148708ms)\n✔ a voided or paid invoice is no longer affected by later commands (0.562292ms)\n✔ listInvoices returns every invoice sorted by id ascending (0.575709ms)\n✔ listInvoices filters by status and by customer (0.636041ms)\n✔ overdue keeps issued invoices whose due date is before today, excluding the boundary (0.790208ms)\n✔ overdue excludes paid and voided invoices (0.704292ms)\n✔ overdue and listInvoices default today to the current date (0.527167ms)\n✔ listInvoices rejects an invalid today (0.242875ms)\n✔ getInvoice finds a stored invoice and throws for an unknown id (0.621292ms)\n✔ getInvoice throws when no store is open (0.303833ms)\n✔ every mutation is persisted and survives closing and re-opening the file (0.71525ms)\n✔ the full create, add-line, issue and pay flow adds up (0.676958ms)\n✔ isValidDate and validateDate accept only real YYYY-MM-DD dates (0.317583ms)\n✔ addDays and daysBetween work in UTC across DST and year boundaries (0.322ms)\n✔ date arithmetic gives the same answer in every time zone (189.794375ms)\n✔ parseMoney reads decimal strings as exact cents (0.719042ms)\n✔ parseMoney trims surrounding whitespace (0.05175ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.056459ms)\n✔ parseMoney rejects malformed amounts (0.259959ms)\n✔ formatMoney always emits two decimals (0.219084ms)\n✔ formatMoney requires integer cents (0.215125ms)\n✔ formatMoney and parseMoney round trip (0.131167ms)\n✔ roundCents rounds half up on the cent (0.153125ms)\n✔ roundCents always returns an integer (1.053917ms)\n✔ roundCents rejects non-finite and non-number input (0.345459ms)\n✔ addProduct returns the product with id 1 and the documented keys (3.174ms)\n✔ price is stored as integer cents, never a decimal string (0.987708ms)\n✔ a numeric price is accepted and normalised to cents (0.579042ms)\n✔ taxRate defaults to 0 (0.435541ms)\n✔ product ids increment, independently of customer ids (1.831417ms)\n✔ each product is persisted to the store file immediately (0.6575ms)\n✔ products survive closing and re-opening the same file (0.606375ms)\n✔ getProduct finds a stored product (0.362917ms)\n✔ getProduct throws for an unknown id (0.6165ms)\n✔ getProduct throws when no store is open (0.343625ms)\n✔ a name must be a non-empty string (0.339458ms)\n✔ an invalid price is rejected (0.445083ms)\n✔ a taxRate must be an integer between 0 and 100 (0.368291ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.375417ms)\n✔ calling addProduct with no argument throws on the name (0.295833ms)\n✔ aging is all zeroes for an empty store (4.51075ms)\n✔ a due date equal to today is current, one day earlier is days1to30 (3.296041ms)\n✔ a due date after today is still current (0.985375ms)\n✔ every bucket boundary lands in the documented bucket (3.282625ms)\n✔ aging sums balances, not totals (0.909916ms)\n✔ aging excludes drafts, paid and voided invoices (1.587334ms)\n✔ total is the sum of the five buckets (4.284417ms)\n✔ aging defaults today to the current date (0.737333ms)\n✔ aging rejects an invalid today (0.555334ms)\n✔ revenue is an empty array with nothing issued (1.04425ms)\n✔ revenue groups issued invoices by month, sorted ascending (1.122542ms)\n✔ revenue counts invoices issued in the same month separately (0.952541ms)\n✔ revenue includes paid invoices and excludes drafts and voided ones (1.371125ms)\n✔ revenue sums invoice totals including tax (0.826916ms)\n✔ defaultData is the empty store shape (3.402084ms)\n✔ getData throws when no store is open (0.834584ms)\n✔ openStore creates the file with default data when it does not exist (1.315875ms)\n✔ openStore creates missing parent directories (0.887708ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.964125ms)\n✔ getStore exposes the resolved path and the data object (0.542ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.58175ms)\n✔ counters are independent per kind (0.44ms)\n✔ nextId rejects unknown kinds (0.562334ms)\n✔ data survives closing and re-opening the store (1.28575ms)\n✔ a partial file is merged against defaultData (0.432ms)\n✔ wrongly typed top-level keys fall back to defaults (0.343708ms)\n✔ an empty file is treated as defaultData and rewritten (0.385917ms)\n✔ invalid JSON is rejected (0.341083ms)\n✔ invalid JSON primitives are rejected (0.405209ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.402041ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.28975ms)\n✔ openStore replaces a previously open store (0.504042ms)\nℹ tests 151\nℹ suites 0\nℹ pass 151\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 6407.607542",
+                "durationMs": 6585
+              },
+              {
+                "command": "node bin/invoice.js report aging --data /tmp/invoicing-accept-aging.json",
+                "exitCode": 0,
+                "passed": true,
+                "output": "{\"current\":\"0.00\",\"days1to30\":\"0.00\",\"days31to60\":\"0.00\",\"days61to90\":\"0.00\",\"over90\":\"0.00\",\"total\":\"0.00\"}",
+                "durationMs": 47
+              }
+            ],
+            "endedAt": "2026-09-20T04:27:43.416Z"
+          }
+        ]
+      },
+      {
+        "id": "cli-workflow-tests",
+        "title": "End-to-end CLI workflow tests",
+        "spec": "Add test/workflow.test.js: end-to-end scenarios driving the real CLI as a subprocess (spawnSync) against a fresh temp --data file, asserting on exact stdout JSON, stderr and exit codes so the documented command behaviour is proven as a whole.\n\nCover at least: add-customer and add-product, create with --terms, add-line twice with a discount and a taxed product, add-line quantity validation, issue with --today, the exact invoice number INV-<year>-0001, a partial pay followed by a final pay and the paid status, list with --status/--customer/--overdue/--today combinations, `show`, `report aging` at the bucket boundaries, `report revenue` across two months, `export` exact CSV text including the no-trailing-newline rule, void of a draft and of an unpaid issued invoice, void rejected after a payment, unknown command and missing-option exit 1 with usage on stderr, and invalid amounts or ids exiting 2. Assert that stdout of every success contains exactly one JSON value and that money appears only as two-decimal strings.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm the tests read the CLI only through its documented interface (argv, stdout, stderr, exit code, data file) and that no test relies on internals imported from bin/invoice.js."
+        },
+        "deps": [
+          "cli"
+        ],
+        "files": [
+          "test/workflow.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m4-cli",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+            "turnIds": [
+              "809ec48c-05e0-46c8-8114-00f61270562b"
+            ],
+            "startedAt": "2026-09-20T04:27:43.433Z",
+            "status": "passed",
+            "report": {
+              "summary": "Added test/workflow.test.js, an end-to-end suite that drives the real CLI (`node bin/invoice.js`) as a subprocess via spawnSync against a fresh temp `--data` file in every test (mkdtemp per test, removed afterwards). The file imports nothing from bin/invoice.js or src/ — only node:test, node:assert/strict, child_process, fs, os, path and url — so the CLI is exercised purely through argv, stdout, stderr, exit code and the JSON data file.\n\nTen tests cover: the full lifecycle (add-customer, two add-product, create --terms 15, add-line with --quantity 3 --discount 10 on a taxed product plus a second untaxed line, exact line/box totals, issue --today 2026-01-15 giving INV-2026-0001 and due 2026-01-30, a partial pay then a final pay flipping the status to paid, and `show` returning exactly the last pay output); per-year numbering restarting at INV-2026-0001/INV-2026-0002/INV-2027-0001; list with --status, --customer, --overdue and --today alone and combined, including the strict `due < today` boundary (not overdue on the due date) and a draft never counting as overdue; report aging across all eight boundaries (0, 1, 30, 31, 60, 61, 90, 91 days past due, built as eight invoices issued with --terms 0 so issue date == due date) plus the exclusion of a fully paid and a draft invoice and the one-day bucket shift; report revenue over two months including a fully paid invoice that still counts and a voided issued invoice plus a draft that do not; export producing the exact CSV text with the no-trailing-newline rule (a quoted description containing a comma, money as two-decimal strings) and stdout equal to JSON.stringify(csv)+\"\\n\"; void of a draft and of an unpaid issued invoice, void rejected after a payment with the invoice left untouched, and line-after-void rejection; unknown command / missing required option / bare `report` exiting 1 with a non-JSON usage block on stderr; and invalid amounts, ids, dates and state exiting 2.\n\nShared helpers enforce the output contract on every call: `success` asserts exit 0, empty stderr, stdout ending in exactly one newline holding exactly one JSON value, and walks the parsed value asserting every money key (price, unitPrice, net, tax, amount, subtotal, total, paid, balance and the five aging buckets) is a string matching /^\\d+\\.\\d{2}$/ rather than raw cents; `failure` asserts the requested exit code with empty stdout; `errorOf`/`usageOf` distinguish the exit-2 single-line `{\"error\":...}` form from the exit-1 usage block.\n\nChecks run: `node --test test/workflow.test.js` (10/10 pass) and `npm test` (161/161 pass, exit 0) from the project root. Two of my initial expected values were arithmetic slips in the test (the CLI was right): a 50%-discounted 2 x 10.00 line nets 10.00 with 1.00 tax, and shifting aging by one day moves one invoice out of each bucket — both corrected after the first run.",
+              "evidence": "node --test test/workflow.test.js -> tests 10, pass 10, fail 0, exit 0.\nnpm test -> tests 161, pass 161, fail 0, exit 0.\ngit status --porcelain unchanged from the session start ( M .gitignore, M package.json, ?? bin/, ?? src/, ?? test/): the only new file is test/workflow.test.js, and no data/ directory or store file was written into the repository (every test uses its own os.tmpdir() path).",
+              "files": [
+                "test/workflow.test.js"
+              ],
+              "decisions": [
+                "Invariants are asserted inside the helpers rather than per test: every success must be exit 0, empty stderr, one newline-terminated line holding exactly one JSON value, with all money keys two-decimal strings; this makes the 'one JSON value / money as strings' rule part of every scenario. A JSON string result (export) contains escaped \\n, so the one-line check still holds.",
+                "Aging boundaries are produced with eight invoices created with --terms 0 so the issue date equals the due date; each is one 10.00 product, so each bucket is a multiple of 10.00 and the expected values are easy to verify by hand.",
+                "The aging test additionally checks that a fully paid invoice and a draft are excluded and repeats the report one day later to show every invoice advancing one bucket, since those are the report's stated exclusions.",
+                "The revenue test pays one January invoice in full (it must still count as billed revenue) and voids a February issued invoice (it must disappear), pinning both edges of the 'issued or paid' rule.",
+                "export is checked with a product name containing a comma so the quoting rule is exercised, and the raw stdout is compared with JSON.stringify(csv) + '\\n' to prove the CSV is encoded exactly once.",
+                "Exit-1 usage stderr is asserted to be non-JSON (does not start with '{') while exit-2 stderr is asserted to be a single-line JSON object, keeping the two failure classes distinguishable."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "customer with id 1 and the documented keys (3.297667ms)\n✔ customer ids increment, independently of product ids (1.821ms)\n✔ each customer is persisted to the store file immediately (0.463ms)\n✔ customers survive closing and re-opening the same file (0.704792ms)\n✔ getCustomer finds a stored customer (0.415209ms)\n✔ getCustomer throws for an unknown id (0.529958ms)\n✔ getCustomer throws when no store is open (0.319292ms)\n✔ a name must be a non-empty string (0.377208ms)\n✔ an email must be a string containing \"@\" (0.381625ms)\n✔ any non-empty string containing \"@\" is a valid email (0.498125ms)\n✔ an empty email is rejected (0.269208ms)\n✔ calling addCustomer with no argument throws (0.259708ms)\n✔ name and email are stored verbatim (no trimming) (0.34625ms)\n✔ createInvoice returns the documented draft with the documented key order (2.281208ms)\n✔ invoice ids increment and are independent of customer and product ids (0.742292ms)\n✔ createInvoice accepts terms 0 and rejects a missing customer or bad terms (0.709ms)\n✔ addLine appends the documented line and recomputes the totals (0.728ms)\n✔ the line description is a copy of the product name taken at addLine time (0.535459ms)\n✔ addLine defaults to quantity 1 and discount 0 (0.589667ms)\n✔ net and tax are rounded half up on the cent (0.948333ms)\n✔ addLine sums every line into subtotal, tax, total and balance (0.653208ms)\n✔ only drafts accept lines (2.894708ms)\n✔ addLine validates the invoice, product, quantity and discount (0.793167ms)\n✔ discount boundaries 0 and 100 are accepted (0.550667ms)\n✔ issue assigns the number, dates and status of a draft with lines (0.572708ms)\n✔ terms 0 makes the due date the issue date, and day arithmetic crosses months in UTC (2.17675ms)\n✔ issue requires a draft with at least one line and a valid date (0.811875ms)\n✔ issue defaults today to the current date (0.540542ms)\n✔ invoice numbers start at 0001 each year and increment per issued invoice (2.402792ms)\n✔ a voided invoice keeps its number consumed (1.499167ms)\n✔ pay records partial payments and leaves the invoice issued (1.07525ms)\n✔ paying the balance in full moves the invoice to paid with a zero balance (0.728125ms)\n✔ pay defaults today to the current date (0.609167ms)\n✔ pay rejects overpayment, non-positive and malformed amounts (0.729292ms)\n✔ pay refuses an invalid today and saves nothing (0.533583ms)\n✔ only issued invoices accept payments (2.182041ms)\n✔ a draft can be voided (0.64ms)\n✔ an issued invoice without payments can be voided (0.602292ms)\n✔ voiding is rejected for a paid, part-paid or already void invoice (1.281917ms)\n✔ a voided or paid invoice is no longer affected by later commands (0.605917ms)\n✔ listInvoices returns every invoice sorted by id ascending (0.953375ms)\n✔ listInvoices filters by status and by customer (0.738125ms)\n✔ overdue keeps issued invoices whose due date is before today, excluding the boundary (1.123916ms)\n✔ overdue excludes paid and voided invoices (1.520208ms)\n✔ overdue and listInvoices default today to the current date (0.628125ms)\n✔ listInvoices rejects an invalid today (0.27875ms)\n✔ getInvoice finds a stored invoice and throws for an unknown id (0.34975ms)\n✔ getInvoice throws when no store is open (0.618ms)\n✔ every mutation is persisted and survives closing and re-opening the file (0.680792ms)\n✔ the full create, add-line, issue and pay flow adds up (0.666042ms)\n✔ isValidDate and validateDate accept only real YYYY-MM-DD dates (0.358459ms)\n✔ addDays and daysBetween work in UTC across DST and year boundaries (0.340166ms)\n✔ date arithmetic gives the same answer in every time zone (206.379833ms)\n✔ parseMoney reads decimal strings as exact cents (1.581292ms)\n✔ parseMoney trims surrounding whitespace (0.135833ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.113125ms)\n✔ parseMoney rejects malformed amounts (0.562459ms)\n✔ formatMoney always emits two decimals (0.163666ms)\n✔ formatMoney requires integer cents (0.185667ms)\n✔ formatMoney and parseMoney round trip (0.118958ms)\n✔ roundCents rounds half up on the cent (1.380125ms)\n✔ roundCents always returns an integer (0.400208ms)\n✔ roundCents rejects non-finite and non-number input (0.464916ms)\n✔ addProduct returns the product with id 1 and the documented keys (3.577875ms)\n✔ price is stored as integer cents, never a decimal string (0.83775ms)\n✔ a numeric price is accepted and normalised to cents (0.441083ms)\n✔ taxRate defaults to 0 (0.421208ms)\n✔ product ids increment, independently of customer ids (0.616417ms)\n✔ each product is persisted to the store file immediately (0.403084ms)\n✔ products survive closing and re-opening the same file (0.529458ms)\n✔ getProduct finds a stored product (0.314375ms)\n✔ getProduct throws for an unknown id (0.497125ms)\n✔ getProduct throws when no store is open (0.304291ms)\n✔ a name must be a non-empty string (0.371875ms)\n✔ an invalid price is rejected (0.360959ms)\n✔ a taxRate must be an integer between 0 and 100 (0.334709ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.3655ms)\n✔ calling addProduct with no argument throws on the name (0.309292ms)\n✔ aging is all zeroes for an empty store (6.207583ms)\n✔ a due date equal to today is current, one day earlier is days1to30 (1.44425ms)\n✔ a due date after today is still current (0.915042ms)\n✔ every bucket boundary lands in the documented bucket (2.971375ms)\n✔ aging sums balances, not totals (0.976542ms)\n✔ aging excludes drafts, paid and voided invoices (1.372625ms)\n✔ total is the sum of the five buckets (1.330333ms)\n✔ aging defaults today to the current date (0.58725ms)\n✔ aging rejects an invalid today (0.544125ms)\n✔ revenue is an empty array with nothing issued (1.015458ms)\n✔ revenue groups issued invoices by month, sorted ascending (1.073208ms)\n✔ revenue counts invoices issued in the same month separately (0.939709ms)\n✔ revenue includes paid invoices and excludes drafts and voided ones (1.211ms)\n✔ revenue sums invoice totals including tax (0.749ms)\n✔ defaultData is the empty store shape (1.598958ms)\n✔ getData throws when no store is open (0.413333ms)\n✔ openStore creates the file with default data when it does not exist (1.252125ms)\n✔ openStore creates missing parent directories (0.642625ms)\n✔ openStore defaults to data/invoicing.json under the current directory (0.482125ms)\n✔ getStore exposes the resolved path and the data object (0.334375ms)\n✔ save writes 2-space-indented JSON with a trailing newline (3.961917ms)\n✔ counters are independent per kind (1.189875ms)\n✔ nextId rejects unknown kinds (0.409125ms)\n✔ data survives closing and re-opening the store (0.459584ms)\n✔ a partial file is merged against defaultData (0.316292ms)\n✔ wrongly typed top-level keys fall back to defaults (1.403375ms)\n✔ an empty file is treated as defaultData and rewritten (0.366125ms)\n✔ invalid JSON is rejected (0.316292ms)\n✔ invalid JSON primitives are rejected (0.324083ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.40075ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.272292ms)\n✔ openStore replaces a previously open store (0.447833ms)\n✔ the full lifecycle: customer, products, two lines, issue, partial pay, paid (519.424125ms)\n✔ a success prints exactly one JSON value on one line (93.264708ms)\n✔ invoice numbers count per year and restart at 0001 (525.702208ms)\n✔ list filters by status, customer and overdue, alone and combined (1147.751292ms)\n✔ report aging buckets balances at every boundary (1669.359292ms)\n✔ report revenue sums issued months, keeps paid ones and drops voided ones (960.004041ms)\n✔ export prints the exact CSV text as a JSON string with no trailing newline (379.184792ms)\n✔ void works on a draft and on an unpaid issued invoice but not after a payment (766.56725ms)\n✔ an unknown command or a missing option exits 1 with usage on stderr (235.5945ms)\n✔ invalid amounts, ids, dates and state exit 2 with a JSON error (926.539458ms)\nℹ tests 161\nℹ suites 0\nℹ pass 161\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7306.854458",
+                "durationMs": 7486
+              }
+            ],
+            "endedAt": "2026-09-20T04:29:44.427Z"
+          }
+        ]
+      },
+      {
+        "id": "readme",
+        "title": "README documenting modules, commands and rules",
+        "spec": "Write README.md covering, in this order: what the project is and how to run it (Node >= 18, no dependencies, `npm test`); the data file and `--data` rule with a sample JSON snippet; the money rules (integer cents internally, two-decimal strings, half-up rounding, accepted amount input); ids and dates; a module reference for src/money.js, src/store.js, src/customers.js, src/products.js, src/invoices.js and src/report.js with their signatures and return shapes; and a command reference where every CLI command from design section 7 gets its own example invocation and the JSON it prints, including the exit codes (0 success, 1 usage, 2 error) and the CSV `export` output. Examples must be transcribed from a real run of the CLI, not invented.",
+        "acceptance": {
+          "commands": [
+            "test -s README.md",
+            "grep -q 'report aging' README.md",
+            "grep -q 'add-product' README.md",
+            "npm test"
+          ],
+          "review": "Confirm every command listed by the CLI's usage text appears in the README with an example, and that the documented outputs match what the CLI actually prints."
+        },
+        "deps": [
+          "cli-workflow-tests"
+        ],
+        "files": [
+          "README.md"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m5-docs",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+            "turnIds": [
+              "7796d445-7170-44fc-9af9-237bccef6a6a"
+            ],
+            "startedAt": "2026-09-20T04:29:46.088Z",
+            "status": "passed",
+            "report": {
+              "summary": "Wrote README.md (831 lines) documenting the invoicing system in the order the task asked for: what the project is and how to run it (Node >= 18, no dependencies, `npm test` -> `node --test test/*.test.js`); the single JSON data file, its default `data/invoicing.json` location, the `--data <path>` rule and two real file snippets (customer/product with `price: 12000`, and a stored invoice); the money rules (integer cents internally, two-decimal strings at the edges, half-up rounding, the accepted amount input with a conversion table and the rejection cases); ids (per-type integers from 1, not consumed on rejection, invoice numbers derived as `INV-<year>-<nnnn>` restarting at 0001 each year and kept by voided invoices) and dates (YYYY-MM-DD, string ordering, UTC arithmetic, real calendar days only, `today` defaulting to the current local date, `due = today + terms`, strict `due < today` overdue test); a module reference for src/money.js, src/store.js, src/customers.js, src/products.js, src/invoices.js and src/report.js with their exact signatures, the exported date helpers and the invoice/line/payment shapes plus the net/tax/total formulas; and a command reference where all twelve commands from design section 7 (`add-customer`, `add-product`, `create`, `add-line`, `issue`, `pay`, `void`, `show`, `list`, `report aging`, `report revenue`, `export`) each have a real invocation and the JSON it prints, followed by the exit-code table (0 success, 1 usage, 2 `{\"error\":...}`) with verbatim usage and error transcripts, and the `export` CSV shown both as the printed JSON string and as decoded text with the no-trailing-newline rule.\n\nEvery example output was transcribed from an actual run of `node bin/invoice.js` against a fresh store in /tmp (never in the repository), in a fixed, reproducible order: two customers, two products (120.00 at 21% tax, 9.99 untaxed), draft invoice 1 with terms 15, two lines (2 x 120.00 at 10% discount -> net 216.00 / tax 45.36, plus 9.99 untaxed), issue on 2026-03-10 -> INV-2026-0001 due 2026-03-25, partial payment 71.35, final payment 200.00 -> paid; invoice 2 for customer 2 (terms 30, issued 2026-02-01 -> due 2026-03-03); invoice 3 created and voided; then show/list/report/export. Usage (exit 1) and error (exit 2) transcripts for `create` without `--customer`, `pay` over the balance, `pay --amount 1.234`, `show --invoice 99`, `void` on a paid invoice, `add-line` on an issued invoice and `issue` without lines were captured the same way and all match the messages in the source. Long JSON values are shown 2-space-indented for readability, with an explicit note that the CLI writes the same value as one compact line and a verbatim single-line `add-customer` example; key order and every money string are exactly as printed.",
+              "evidence": "Acceptance commands run from the project root: `test -s README.md` (README non-empty OK), `grep -q 'report aging' README.md` (OK), `grep -q 'add-product' README.md` (OK), `npm test` -> 161 tests, 161 pass, 0 fail, exit 0. Also checked that each of the twelve usage-text commands appears in the README (`add-customer` 5 hits, `add-product` 5, `create` 9, `add-line` 4, `issue` 48, `pay` 30, `void` 20, `show` 6, `list` 10, `report aging` 3, `report revenue` 3, `export` 4). Every documented output was produced by running the real CLI in /tmp (e.g. `report aging --today 2026-04-15` printed `{\"current\":\"0.00\",\"days1to30\":\"0.00\",\"days31to60\":\"145.20\",\"days61to90\":\"0.00\",\"over90\":\"0.00\",\"total\":\"145.20\"}`; `report revenue` printed `[{\"month\":\"2026-02\",\"invoices\":1,\"total\":\"145.20\"},{\"month\":\"2026-03\",\"invoices\":1,\"total\":\"271.35\"}]`; `export --invoice 2` printed `\"description,quantity,unitPrice,discount,net,tax\\nConsulting hour,1,120.00,0,120.00,25.20\"`), and error paths were re-verified (`show --invoice 99` -> `{\"error\":\"invoice 99 not found\"}` exit 2; `void --invoice 1` on a paid invoice -> `{\"error\":\"cannot void this invoice\"}` exit 2; bare `report` -> exit 1 with `report requires a subcommand: aging or revenue`). `git status --short` shows README.md as the only file I added.",
+              "files": [
+                "README.md"
+              ],
+              "decisions": [
+                "Long JSON results are shown pretty-printed (2-space indent) for readability, with an explicit note that the CLI emits the identical value on one compact line, plus one verbatim single-line example; small values are also identical either way. The README never shows raw cents in any CLI output.",
+                "The command reference is written as one ordered walkthrough against a single store so the ids in later examples (invoice 2, invoice 3) are meaningful and reproducible; a reader who runs the commands in order gets exactly the documented output. Fixed dates are supplied via --today so the examples do not depend on the day they are read.",
+                "Two long list outputs (the unfiltered `list` and `list --customer 2`) are abbreviated with `...` and an explicit note that each element is the full invoice object shown by `show`; every other example is shown complete.",
+                "The module reference documents the additional exports that exist in the code (store's nextNumber/resetStore/ID_KINDS, invoices' currentDate/isValidDate/validateDate/addDays/daysBetween) since the reports and CLI rely on them, while keeping the six required modules as the top-level headings.",
+                "`npm test` is documented as `node --test test/*.test.js`, matching the actual package.json script (the glob form is required because Node v26.0.0 rejects a directory argument), not the design's literal `node --test test/`."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "test -s README.md",
+                "exitCode": 0,
+                "passed": true,
+                "output": "",
+                "durationMs": 8
+              },
+              {
+                "command": "grep -q 'report aging' README.md",
+                "exitCode": 0,
+                "passed": true,
+                "output": "",
+                "durationMs": 9
+              },
+              {
+                "command": "grep -q 'add-product' README.md",
+                "exitCode": 0,
+                "passed": true,
+                "output": "",
+                "durationMs": 8
+              },
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "customer with id 1 and the documented keys (3.271625ms)\n✔ customer ids increment, independently of product ids (0.905291ms)\n✔ each customer is persisted to the store file immediately (0.519583ms)\n✔ customers survive closing and re-opening the same file (0.723875ms)\n✔ getCustomer finds a stored customer (0.511ms)\n✔ getCustomer throws for an unknown id (0.631ms)\n✔ getCustomer throws when no store is open (0.352333ms)\n✔ a name must be a non-empty string (0.377125ms)\n✔ an email must be a string containing \"@\" (0.364416ms)\n✔ any non-empty string containing \"@\" is a valid email (0.711083ms)\n✔ an empty email is rejected (0.349916ms)\n✔ calling addCustomer with no argument throws (0.399958ms)\n✔ name and email are stored verbatim (no trimming) (0.439417ms)\n✔ createInvoice returns the documented draft with the documented key order (4.737666ms)\n✔ invoice ids increment and are independent of customer and product ids (1.852708ms)\n✔ createInvoice accepts terms 0 and rejects a missing customer or bad terms (1.468375ms)\n✔ addLine appends the documented line and recomputes the totals (0.735791ms)\n✔ the line description is a copy of the product name taken at addLine time (0.668625ms)\n✔ addLine defaults to quantity 1 and discount 0 (0.562625ms)\n✔ net and tax are rounded half up on the cent (1.21975ms)\n✔ addLine sums every line into subtotal, tax, total and balance (0.705625ms)\n✔ only drafts accept lines (3.174083ms)\n✔ addLine validates the invoice, product, quantity and discount (2.331167ms)\n✔ discount boundaries 0 and 100 are accepted (1.866625ms)\n✔ issue assigns the number, dates and status of a draft with lines (0.657834ms)\n✔ terms 0 makes the due date the issue date, and day arithmetic crosses months in UTC (1.87225ms)\n✔ issue requires a draft with at least one line and a valid date (0.87525ms)\n✔ issue defaults today to the current date (0.645042ms)\n✔ invoice numbers start at 0001 each year and increment per issued invoice (1.81325ms)\n✔ a voided invoice keeps its number consumed (0.882333ms)\n✔ pay records partial payments and leaves the invoice issued (0.706875ms)\n✔ paying the balance in full moves the invoice to paid with a zero balance (0.662167ms)\n✔ pay defaults today to the current date (0.671958ms)\n✔ pay rejects overpayment, non-positive and malformed amounts (1.977125ms)\n✔ pay refuses an invalid today and saves nothing (1.495334ms)\n✔ only issued invoices accept payments (1.435084ms)\n✔ a draft can be voided (0.592ms)\n✔ an issued invoice without payments can be voided (0.548042ms)\n✔ voiding is rejected for a paid, part-paid or already void invoice (2.430417ms)\n✔ a voided or paid invoice is no longer affected by later commands (0.643875ms)\n✔ listInvoices returns every invoice sorted by id ascending (0.669125ms)\n✔ listInvoices filters by status and by customer (0.752792ms)\n✔ overdue keeps issued invoices whose due date is before today, excluding the boundary (1.108375ms)\n✔ overdue excludes paid and voided invoices (1.033041ms)\n✔ overdue and listInvoices default today to the current date (0.658875ms)\n✔ listInvoices rejects an invalid today (0.290958ms)\n✔ getInvoice finds a stored invoice and throws for an unknown id (0.8655ms)\n✔ getInvoice throws when no store is open (0.3215ms)\n✔ every mutation is persisted and survives closing and re-opening the file (1.071708ms)\n✔ the full create, add-line, issue and pay flow adds up (0.825708ms)\n✔ isValidDate and validateDate accept only real YYYY-MM-DD dates (0.376375ms)\n✔ addDays and daysBetween work in UTC across DST and year boundaries (0.346667ms)\n✔ date arithmetic gives the same answer in every time zone (205.675084ms)\n✔ parseMoney reads decimal strings as exact cents (0.747708ms)\n✔ parseMoney trims surrounding whitespace (0.057125ms)\n✔ parseMoney accepts finite non-negative numbers and converts them via String (0.055833ms)\n✔ parseMoney rejects malformed amounts (0.272833ms)\n✔ formatMoney always emits two decimals (0.067084ms)\n✔ formatMoney requires integer cents (0.075791ms)\n✔ formatMoney and parseMoney round trip (0.05325ms)\n✔ roundCents rounds half up on the cent (0.577542ms)\n✔ roundCents always returns an integer (0.089125ms)\n✔ roundCents rejects non-finite and non-number input (0.115625ms)\n✔ addProduct returns the product with id 1 and the documented keys (5.9945ms)\n✔ price is stored as integer cents, never a decimal string (0.8515ms)\n✔ a numeric price is accepted and normalised to cents (0.503416ms)\n✔ taxRate defaults to 0 (0.438667ms)\n✔ product ids increment, independently of customer ids (0.545875ms)\n✔ each product is persisted to the store file immediately (0.397292ms)\n✔ products survive closing and re-opening the same file (0.607959ms)\n✔ getProduct finds a stored product (0.375375ms)\n✔ getProduct throws for an unknown id (1.270959ms)\n✔ getProduct throws when no store is open (0.579667ms)\n✔ a name must be a non-empty string (0.461792ms)\n✔ an invalid price is rejected (0.408833ms)\n✔ a taxRate must be an integer between 0 and 100 (0.3825ms)\n✔ taxRate boundaries 0 and 100 are accepted (0.447042ms)\n✔ calling addProduct with no argument throws on the name (0.288667ms)\n✔ aging is all zeroes for an empty store (5.47425ms)\n✔ a due date equal to today is current, one day earlier is days1to30 (1.455459ms)\n✔ a due date after today is still current (1.011125ms)\n✔ every bucket boundary lands in the documented bucket (3.581708ms)\n✔ aging sums balances, not totals (0.767958ms)\n✔ aging excludes drafts, paid and voided invoices (1.652166ms)\n✔ total is the sum of the five buckets (1.391875ms)\n✔ aging defaults today to the current date (0.563541ms)\n✔ aging rejects an invalid today (0.924041ms)\n✔ revenue is an empty array with nothing issued (1.5295ms)\n✔ revenue groups issued invoices by month, sorted ascending (1.118583ms)\n✔ revenue counts invoices issued in the same month separately (0.86725ms)\n✔ revenue includes paid invoices and excludes drafts and voided ones (1.160541ms)\n✔ revenue sums invoice totals including tax (0.570292ms)\n✔ defaultData is the empty store shape (3.382833ms)\n✔ getData throws when no store is open (0.52225ms)\n✔ openStore creates the file with default data when it does not exist (0.709333ms)\n✔ openStore creates missing parent directories (0.66825ms)\n✔ openStore defaults to data/invoicing.json under the current directory (1.033667ms)\n✔ getStore exposes the resolved path and the data object (0.821125ms)\n✔ save writes 2-space-indented JSON with a trailing newline (0.444042ms)\n✔ counters are independent per kind (0.411292ms)\n✔ nextId rejects unknown kinds (0.407541ms)\n✔ data survives closing and re-opening the store (0.456375ms)\n✔ a partial file is merged against defaultData (0.312958ms)\n✔ wrongly typed top-level keys fall back to defaults (0.30625ms)\n✔ an empty file is treated as defaultData and rewritten (0.334334ms)\n✔ invalid JSON is rejected (0.276792ms)\n✔ invalid JSON primitives are rejected (0.434458ms)\n✔ nextNumber counts per year and ignores numbers of another year (0.420708ms)\n✔ nextNumber ignores malformed or missing invoice numbers (0.261ms)\n✔ openStore replaces a previously open store (0.436459ms)\n✔ the full lifecycle: customer, products, two lines, issue, partial pay, paid (515.970375ms)\n✔ a success prints exactly one JSON value on one line (93.700375ms)\n✔ invoice numbers count per year and restart at 0001 (526.255458ms)\n✔ list filters by status, customer and overdue, alone and combined (1149.225917ms)\n✔ report aging buckets balances at every boundary (1669.397625ms)\n✔ report revenue sums issued months, keeps paid ones and drops voided ones (959.035708ms)\n✔ export prints the exact CSV text as a JSON string with no trailing newline (382.71075ms)\n✔ void works on a draft and on an unpaid issued invoice but not after a payment (764.057083ms)\n✔ an unknown command or a missing option exits 1 with usage on stderr (236.284917ms)\n✔ invalid amounts, ids, dates and state exit 2 with a JSON error (934.268ms)\nℹ tests 161\nℹ suites 0\nℹ pass 161\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 7319.10225",
+                "durationMs": 7476
+              }
+            ],
+            "endedAt": "2026-09-20T04:31:59.581Z"
+          }
+        ]
+      }
+    ]
+  },
+  "projectEvents": [
+    {
+      "ts": "2026-09-20T04:17:33.521Z",
+      "type": "planner.start",
+      "sessionId": "813fe8af-fa13-4658-a002-e3a431733b02",
+      "mode": "write"
+    },
+    {
+      "ts": "2026-09-20T04:19:03.820Z",
+      "type": "project.planned",
+      "sessionId": "813fe8af-fa13-4658-a002-e3a431733b02",
+      "tasks": 7,
+      "milestones": 5
+    },
+    {
+      "ts": "2026-09-20T04:19:07.550Z",
+      "type": "planner.end",
+      "sessionId": "813fe8af-fa13-4658-a002-e3a431733b02",
+      "status": "completed",
+      "planned": true
+    },
+    {
+      "ts": "2026-09-20T04:19:07.552Z",
+      "type": "plan.approved"
+    },
+    {
+      "ts": "2026-09-20T04:19:07.552Z",
+      "type": "project.status",
+      "status": "running"
+    },
+    {
+      "ts": "2026-09-20T04:19:07.584Z",
+      "type": "task.dispatched",
+      "taskId": "money-store-scaffold",
+      "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:20:28.007Z",
+      "type": "task.note",
+      "taskId": "money-store-scaffold",
+      "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+      "note": "package.json \"test\" is `node --test test/*.test.js`, not the literal `node --test test/` from design §8: the Node on this machine (v26.0.0) does not accept a directory argument for the test runner (it tries to load `test/` as a module and dies with MODULE_NOT_FOUND). The glob form runs every file under test/ and `npm test` exits 0. Bare `node --test` (default discovery) also works. Also: src/store.js getStore().path is the path resolved against the current directory (absolute), and openStore only rewrites the file when it is missing or empty."
+    },
+    {
+      "ts": "2026-09-20T04:20:32.958Z",
+      "type": "task.report",
+      "taskId": "money-store-scaffold",
+      "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+      "summary": "Scaffolded the package tooling and the two foundation modules. package.json keeps name/version/type and now has scripts.test (no dependencies); .gitignore keeps its existing lines and adds \"data/\". src/money.js implements parseMoney (string-digit cent extraction, no float multiplication), formatMoney (integer cents -> exactly two decimals, negative prefix) and roundCents (half up via toPrecision(12)). src/store.js implements the single-JSON-file store: openStore(dataPath = 'data/invoicing.json') resolves the path, creates the parent directory and the file with defaultData() when missing/empty, merges a partial or wrongly-typed file against defaultData() (arrays fall back to [], counters per kind fall back to 0), throws on invalid JSON, and replaces any previously open store; getStore/getData/save (2-space indent + trailing newline)/nextId('customer'|'product'|'invoice')/defaultData/resetStore plus nextNumber(year) (1 + highest matching INV-<year>-<nnnn> suffix). Tests in test/money.test.js and test/store.test.js use node:test + node:assert/strict and write only into fs.mkdtempSync(os.tmpdir()) directories.",
+      "files": [
+        "package.json",
+        ".gitignore",
+        "src/money.js",
+        "src/store.js",
+        "test/money.test.js",
+        "test/store.test.js"
+      ],
+      "openIssues": [
+        "The npm test script deviates from the literal text of design §8 (`node --test test/`) because of the Node version here; if a later task relies on the exact script string, this is the place to look. Bare `node --test` (default discovery) also works if preferred.",
+        "getStore().path being absolute is an unspecified detail that the later CLI task should not depend on."
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:20:36.070Z",
+      "type": "task.verifying",
+      "taskId": "money-store-scaffold",
+      "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:20:36.321Z",
+      "type": "task.status",
+      "taskId": "money-store-scaffold",
+      "sessionId": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+      "status": "done",
+      "outcome": "done (open issues: The npm test script deviates from the literal text of design §8 (`node --test test/`) because of the Node version here; if a later task relies on the exact script string, this is the place to look. Bare `node --test` (default discovery) also works if preferred.; getStore().path being absolute is an unspecified detail that the later CLI task should not depend on.)"
+    },
+    {
+      "ts": "2026-09-20T04:20:36.338Z",
+      "type": "task.dispatched",
+      "taskId": "customers-products",
+      "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:21:11.770Z",
+      "type": "task.report",
+      "taskId": "customers-products",
+      "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+      "summary": "Implemented src/customers.js and src/products.js on top of the process-global store singleton, plus their node:test suites.\n\n- `addCustomer({ name, email })` validates name (non-empty string, untrimmed values stored verbatim) and email (string containing \"@\"), allocates via `nextId('customer')`, pushes `{ id, name, email }` onto `data.customers` and calls `save()`. `getCustomer(id)` returns the stored object or throws `customer <id> not found`.\n- `addProduct({ name, price, taxRate = 0 })` validates name, runs `price` through `parseMoney` so it is stored as integer cents (never a decimal string), validates taxRate as an integer 0-100 (default 0), allocates via `nextId('product')`, pushes `{ id, name, price, taxRate }` and calls `save()`. `getProduct(id)` returns the object or throws `product <id> not found`.\n- Both modules are pure domain code: no printing, no process.exit, short lower-case Error messages (`name must be a non-empty string`, `email must contain \"@\"`, `taxRate must be an integer between 0 and 100`, plus `parseMoney`'s `invalid amount: <input>`).\n\nTests open a temp store per test (`fs.mkdtempSync` + `openStore` in beforeEach, `resetStore` + rm in afterEach), never touch the repository, and cover: ids starting at 1 and incrementing independently per entity type, exact key order via `Object.keys`, immediate persistence (asserting on the raw JSON file), survival across resetStore/re-open, unknown-id and cross-type-id lookups, rejection of bad name/price/taxRate/email without consuming an id, taxRate boundaries 0/100, numeric price normalisation, and no-argument calls.",
+      "files": [
+        "src/customers.js",
+        "src/products.js",
+        "test/customers.test.js",
+        "test/products.test.js"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T04:21:13.848Z",
+      "type": "task.verifying",
+      "taskId": "customers-products",
+      "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:21:14.097Z",
+      "type": "task.status",
+      "taskId": "customers-products",
+      "sessionId": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T04:21:14.097Z",
+      "type": "milestone.awaiting",
+      "milestone": "m1-foundations"
+    },
+    {
+      "ts": "2026-09-20T04:21:15.643Z",
+      "type": "milestone.approved",
+      "milestone": "m1-foundations"
+    },
+    {
+      "ts": "2026-09-20T04:21:15.644Z",
+      "type": "project.status",
+      "status": "running"
+    },
+    {
+      "ts": "2026-09-20T04:21:15.692Z",
+      "type": "task.dispatched",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:23:25.296Z",
+      "type": "task.note",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "note": "[invoices-lifecycle · 2026-09-19] The line amounts in src/invoices.js use roundCents((unitPrice * quantity * (100 - discount)) / 10000) and roundCents((net * taxRate) / 10000), not the literal design §6.3 formula divided by 100. Reason: src/money.js roundCents takes whole units and returns cents (roundCents(1.005) === 101, as fixed by test/money.test.js), while unitPrice/net are integer cents; the literal formula would inflate every line amount 100x (a $10.00 product would total $1000.00). The /10000 form rounds half up on the cent of the cent-valued expression, which is what the brief's \"net = unitPrice * quantity * (100 - discount) / 100 rounded half up\" means."
+    },
+    {
+      "ts": "2026-09-20T04:23:27.645Z",
+      "type": "task.note",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "note": "[invoices-lifecycle · 2026-09-19] src/invoices.js also exports the internal date helpers for the later report/CLI tasks: currentDate(), isValidDate(text), validateDate(text) (throws `invalid date: <text>`), addDays(date, days) and daysBetween(from, to) (to - from, both UTC). Error messages chosen where the design was silent: `terms must be an integer >= 0`, `invalid date: <text>`, `amount must be greater than zero`, `only draft invoices can be issued`, `quantity must be a positive integer`, `discount must be an integer between 0 and 100`, `cannot void this invoice`. A valid date requires a real calendar day (2026-02-30 and 2026-13-40 are rejected)."
+    },
+    {
+      "ts": "2026-09-20T04:23:34.984Z",
+      "type": "task.report",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "summary": "Implemented the invoice lifecycle in src/invoices.js and its node:test suite in test/invoices.test.js; `npm test` runs 96 tests across the repo and exits 0.\n\nsrc/invoices.js exports createInvoice, addLine, issue, pay, voidInvoice, listInvoices and getInvoice exactly as specified in design §6.3, plus the date helpers the later report/CLI tasks need (currentDate, isValidDate, validateDate, addDays, daysBetween, all UTC-based). createInvoice validates the customer and terms and pushes the documented draft with the design's key order. addLine only mutates drafts, copies the product name into the line description, computes net and line tax rounded half up on the cent, and recomputes subtotal/tax/total/paid/balance from the lines and payments. issue numbers drafts as INV-<year>-<nnnn> using store.nextNumber(year) so voided invoices still consume their number and each year restarts at 0001, and sets issued/due from the (validated, UTC) date arithmetic. pay accepts positive amounts up to the balance on issued invoices, allows partials, and flips the status to paid when paid reaches total. voidInvoice accepts a draft or a payment-free issued invoice and rejects everything else. listInvoices filters on status, customerId and overdue (issued with due < today) and returns invoices sorted by id ascending. Every mutation calls save(); today defaults to the current local date everywhere.\n\nThe one deliberate deviation: the design's line formula is scaled. src/money.js roundCents takes whole units and returns cents (roundCents(1.005) === 101, pinned by the existing money tests), while unitPrice and net are integer cents, so the literal `roundCents(unitPrice * quantity * (100 - discount) / 100)` would inflate every line 100x. I used `/ 10000` for both net and tax, which rounds half up on the cent of the cent-valued expression, i.e. what the brief's prose formula says. This is recorded in the decision log with a short comment at the call site.\n\nTests cover the draft shape and key order, id allocation, terms/customer validation, line totals with discounts and tax rates, the half-up rounding boundaries (9.5 -> 10, 0.5 -> 1, 10.05 -> 10, 6.65 -> 7, 4.5 -> 5), lines rejected on issued/paid/void invoices, description snapshotting, issue without lines, per-year and per-month numbering with voided numbers consumed and a new year restarting, due-date arithmetic across month/year/leap boundaries and terms 0, partial payments, overpayment and malformed amounts, the paid transition, all void rules, list filters and the overdue `due < today` boundary, overdue defaulting to the current date, persistence of every mutation to the raw JSON file (including that a failed operation leaves the file byte-identical), and time-zone stability of the date helpers verified by re-running the arithmetic under four different TZ values.",
+      "files": [
+        "src/invoices.js",
+        "test/invoices.test.js"
+      ],
+      "openIssues": [
+        "The report and CLI tasks must agree with the scaled line formula (cents, not the literal /100 expression); the decision log note explains why.",
+        "listInvoices validates a supplied `today` even when overdue is false, which means the CLI `list --today <bad>` fails with exit 2; that matches the design's rule that an invalid option value is an input error."
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:23:38.257Z",
+      "type": "task.verifying",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:23:38.730Z",
+      "type": "task.status",
+      "taskId": "invoices-lifecycle",
+      "sessionId": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+      "status": "done",
+      "outcome": "done (open issues: The report and CLI tasks must agree with the scaled line formula (cents, not the literal /100 expression); the decision log note explains why.; listInvoices validates a supplied `today` even when overdue is false, which means the CLI `list --today <bad>` fails with exit 2; that matches the design's rule that an invalid option value is an input error.)"
+    },
+    {
+      "ts": "2026-09-20T04:23:38.731Z",
+      "type": "milestone.approved",
+      "milestone": "m2-invoices",
+      "automatic": true
+    },
+    {
+      "ts": "2026-09-20T04:23:38.748Z",
+      "type": "task.dispatched",
+      "taskId": "reports",
+      "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:24:33.246Z",
+      "type": "task.note",
+      "taskId": "reports",
+      "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+      "note": "src/report.js aging({ today = currentDate() } = {}) validates today via invoices.js validateDate (so the CLI gets its invalid-date error as `invalid date: <text>`) and buckets by daysBetween(invoice.due, today): <=0 current, 1-30 days1to30, 31-60 days31to60, 61-90 days61to90, >90 over90, summing invoice.balance (not total), total = sum of the five buckets. Only status \"issued\" is considered, so paid/void/draft are excluded automatically. revenue() groups status \"issued\" or \"paid\" by String(invoice.issued).slice(0, 7) into { month, invoices: count, total: sum invoice.total }, sorted ascending by month string. Key order matches design 6.4 exactly."
+    },
+    {
+      "ts": "2026-09-20T04:24:37.814Z",
+      "type": "task.report",
+      "taskId": "reports",
+      "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+      "summary": "Implemented src/report.js (aging and revenue per design §6.4) and test/report.test.js.\n\naging({ today = currentDate() } = {}) validates `today` with the shared invoices.js validateDate, then walks invoices with status \"issued\" only (drafts, paid and voided are therefore excluded), buckets each by daysBetween(invoice.due, today) — <= 0 current, 1-30 days1to30, 31-60 days31to60, 61-90 days61to90, > 90 over90 — and adds invoice.balance (not total) into its bucket. total is the sum of the five buckets. Returns exactly { current, days1to30, days31to60, days61to90, over90, total } in cents, key order as specified.\n\nrevenue() groups invoices with status \"issued\" or \"paid\" by String(invoice.issued).slice(0, 7), producing { month, invoices: count, total: sum of invoice.total } per month, sorted ascending by the month string; returns [] when nothing qualifies. Both functions are pure with respect to the store (read-only, no save()).\n\ntest/report.test.js has 14 tests using node:test/node:assert/strict with a fresh temp store per test, all fixtures built through src/invoices.js (never hand-written JSON): empty store; due-after-today and due-today both current; the 0/1/30/31/60/61/90/91-day boundary ladder each with a distinct amount; balance-vs-total (a partially paid issued invoice reports its balance); exclusion of drafts, paid and voided invoices; total equals the sum of the five buckets; today defaulting to the current date; an invalid today throwing; revenue empty; multi-month grouping and sorting; three invoices in one month counted separately; inclusion of paid and exclusion of draft/void; and totals including tax.",
+      "files": [
+        "src/report.js",
+        "test/report.test.js"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T04:24:39.635Z",
+      "type": "task.verifying",
+      "taskId": "reports",
+      "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:24:40.118Z",
+      "type": "task.status",
+      "taskId": "reports",
+      "sessionId": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T04:24:40.119Z",
+      "type": "milestone.approved",
+      "milestone": "m3-reports",
+      "automatic": true
+    },
+    {
+      "ts": "2026-09-20T04:24:40.136Z",
+      "type": "task.dispatched",
+      "taskId": "cli",
+      "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:27:33.176Z",
+      "type": "task.report",
+      "taskId": "cli",
+      "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+      "summary": "Implemented the machine-readable CLI at bin/invoice.js (executable, `#!/usr/bin/env node`) and its test suite test/cli.test.js. The CLI parses `<command> [options] [--data <path>]` itself (no dependencies), opens the store with openStore(dataPath), runs the command, and prints exactly one JSON value on stdout + newline with exit 0. Usage errors (missing/unknown command, unknown or inapplicable option, option without a value, stray positional, missing required option, bad report subcommand) print a usage block on stderr and exit 1. Input/domain errors (invalid option value, money parse failure, missing entity, state violation) print compact `{\"error\":\"<message>\"}` on stderr and exit 2; caught module Errors become the exit-2 form. All twelve command forms are implemented (add-customer, add-product, create, add-line, issue, pay, void, show, list, report aging, report revenue, export) with the exact presentation rules from design §7: money flows through one set of present* helpers using formatMoney, so every money field (price, unitPrice, net, tax, subtotal, total, paid, balance, amount, aging buckets, revenue total) is a two-decimal string while quantity/discount/terms/id/status/dates stay plain; the invoice key order is id, number, customerId, status, terms, issued, due, lines, payments, subtotal, tax, total, paid, balance. export builds the RFC-4180 CSV (header description,quantity,unitPrice,discount,net,tax, one row per line, rows joined by \"\\n\", no trailing newline, quoting only when a field holds a comma, quote, CR or LF) and prints it as a single JSON string.\n\ntest/cli.test.js (41 tests) spawns the CLI with spawnSync and a temp-dir --data path and covers every command's happy path with exact JSON, the exit-1 usage cases, the exit-2 error cases (bad/negative amount, non-numeric and unknown ids, invalid date, invalid quantity, line on a non-draft, overpayment, void with payments), that successful output contains no raw cents, that --data is honoured (including mid-option placement), that state persists across invocations, that separate --data paths are isolated, and that the file and its nested directory are created on first use (verified via a read-only `report aging`).\n\nOne real bug was caught by the tests: export was double-encoding the CSV (JSON.stringify applied in both the command runner and the output helper); the runner now returns the raw CSV text and the single output helper encodes it once.",
+      "files": [
+        "bin/invoice.js",
+        "test/cli.test.js"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T04:27:36.783Z",
+      "type": "task.verifying",
+      "taskId": "cli",
+      "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+      "commands": [
+        "npm test",
+        "node bin/invoice.js report aging --data /tmp/invoicing-accept-aging.json"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:27:43.417Z",
+      "type": "task.status",
+      "taskId": "cli",
+      "sessionId": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T04:27:43.433Z",
+      "type": "task.dispatched",
+      "taskId": "cli-workflow-tests",
+      "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:29:34.111Z",
+      "type": "task.report",
+      "taskId": "cli-workflow-tests",
+      "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+      "summary": "Added test/workflow.test.js, an end-to-end suite that drives the real CLI (`node bin/invoice.js`) as a subprocess via spawnSync against a fresh temp `--data` file in every test (mkdtemp per test, removed afterwards). The file imports nothing from bin/invoice.js or src/ — only node:test, node:assert/strict, child_process, fs, os, path and url — so the CLI is exercised purely through argv, stdout, stderr, exit code and the JSON data file.\n\nTen tests cover: the full lifecycle (add-customer, two add-product, create --terms 15, add-line with --quantity 3 --discount 10 on a taxed product plus a second untaxed line, exact line/box totals, issue --today 2026-01-15 giving INV-2026-0001 and due 2026-01-30, a partial pay then a final pay flipping the status to paid, and `show` returning exactly the last pay output); per-year numbering restarting at INV-2026-0001/INV-2026-0002/INV-2027-0001; list with --status, --customer, --overdue and --today alone and combined, including the strict `due < today` boundary (not overdue on the due date) and a draft never counting as overdue; report aging across all eight boundaries (0, 1, 30, 31, 60, 61, 90, 91 days past due, built as eight invoices issued with --terms 0 so issue date == due date) plus the exclusion of a fully paid and a draft invoice and the one-day bucket shift; report revenue over two months including a fully paid invoice that still counts and a voided issued invoice plus a draft that do not; export producing the exact CSV text with the no-trailing-newline rule (a quoted description containing a comma, money as two-decimal strings) and stdout equal to JSON.stringify(csv)+\"\\n\"; void of a draft and of an unpaid issued invoice, void rejected after a payment with the invoice left untouched, and line-after-void rejection; unknown command / missing required option / bare `report` exiting 1 with a non-JSON usage block on stderr; and invalid amounts, ids, dates and state exiting 2.\n\nShared helpers enforce the output contract on every call: `success` asserts exit 0, empty stderr, stdout ending in exactly one newline holding exactly one JSON value, and walks the parsed value asserting every money key (price, unitPrice, net, tax, amount, subtotal, total, paid, balance and the five aging buckets) is a string matching /^\\d+\\.\\d{2}$/ rather than raw cents; `failure` asserts the requested exit code with empty stdout; `errorOf`/`usageOf` distinguish the exit-2 single-line `{\"error\":...}` form from the exit-1 usage block.\n\nChecks run: `node --test test/workflow.test.js` (10/10 pass) and `npm test` (161/161 pass, exit 0) from the project root. Two of my initial expected values were arithmetic slips in the test (the CLI was right): a 50%-discounted 2 x 10.00 line nets 10.00 with 1.00 tax, and shifting aging by one day moves one invoice out of each bucket — both corrected after the first run.",
+      "files": [
+        "test/workflow.test.js"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T04:29:36.940Z",
+      "type": "task.verifying",
+      "taskId": "cli-workflow-tests",
+      "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:29:44.428Z",
+      "type": "task.status",
+      "taskId": "cli-workflow-tests",
+      "sessionId": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T04:29:44.429Z",
+      "type": "milestone.awaiting",
+      "milestone": "m4-cli"
+    },
+    {
+      "ts": "2026-09-20T04:29:46.040Z",
+      "type": "milestone.approved",
+      "milestone": "m4-cli"
+    },
+    {
+      "ts": "2026-09-20T04:29:46.041Z",
+      "type": "project.status",
+      "status": "running"
+    },
+    {
+      "ts": "2026-09-20T04:29:46.089Z",
+      "type": "task.dispatched",
+      "taskId": "readme",
+      "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T04:31:48.645Z",
+      "type": "task.report",
+      "taskId": "readme",
+      "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+      "summary": "Wrote README.md (831 lines) documenting the invoicing system in the order the task asked for: what the project is and how to run it (Node >= 18, no dependencies, `npm test` -> `node --test test/*.test.js`); the single JSON data file, its default `data/invoicing.json` location, the `--data <path>` rule and two real file snippets (customer/product with `price: 12000`, and a stored invoice); the money rules (integer cents internally, two-decimal strings at the edges, half-up rounding, the accepted amount input with a conversion table and the rejection cases); ids (per-type integers from 1, not consumed on rejection, invoice numbers derived as `INV-<year>-<nnnn>` restarting at 0001 each year and kept by voided invoices) and dates (YYYY-MM-DD, string ordering, UTC arithmetic, real calendar days only, `today` defaulting to the current local date, `due = today + terms`, strict `due < today` overdue test); a module reference for src/money.js, src/store.js, src/customers.js, src/products.js, src/invoices.js and src/report.js with their exact signatures, the exported date helpers and the invoice/line/payment shapes plus the net/tax/total formulas; and a command reference where all twelve commands from design section 7 (`add-customer`, `add-product`, `create`, `add-line`, `issue`, `pay`, `void`, `show`, `list`, `report aging`, `report revenue`, `export`) each have a real invocation and the JSON it prints, followed by the exit-code table (0 success, 1 usage, 2 `{\"error\":...}`) with verbatim usage and error transcripts, and the `export` CSV shown both as the printed JSON string and as decoded text with the no-trailing-newline rule.\n\nEvery example output was transcribed from an actual run of `node bin/invoice.js` against a fresh store in /tmp (never in the repository), in a fixed, reproducible order: two customers, two products (120.00 at 21% tax, 9.99 untaxed), draft invoice 1 with terms 15, two lines (2 x 120.00 at 10% discount -> net 216.00 / tax 45.36, plus 9.99 untaxed), issue on 2026-03-10 -> INV-2026-0001 due 2026-03-25, partial payment 71.35, final payment 200.00 -> paid; invoice 2 for customer 2 (terms 30, issued 2026-02-01 -> due 2026-03-03); invoice 3 created and voided; then show/list/report/export. Usage (exit 1) and error (exit 2) transcripts for `create` without `--customer`, `pay` over the balance, `pay --amount 1.234`, `show --invoice 99`, `void` on a paid invoice, `add-line` on an issued invoice and `issue` without lines were captured the same way and all match the messages in the source. Long JSON values are shown 2-space-indented for readability, with an explicit note that the CLI writes the same value as one compact line and a verbatim single-line `add-customer` example; key order and every money string are exactly as printed.",
+      "files": [
+        "README.md"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T04:31:52.080Z",
+      "type": "task.verifying",
+      "taskId": "readme",
+      "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+      "commands": [
+        "test -s README.md",
+        "grep -q 'report aging' README.md",
+        "grep -q 'add-product' README.md",
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T04:31:59.582Z",
+      "type": "task.status",
+      "taskId": "readme",
+      "sessionId": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T04:31:59.583Z",
+      "type": "milestone.approved",
+      "milestone": "m5-docs",
+      "automatic": true
+    },
+    {
+      "ts": "2026-09-20T04:31:59.583Z",
+      "type": "project.status",
+      "status": "done"
+    }
+  ],
+  "metrics": {
+    "requests": 132,
+    "input": 162373,
+    "cached": 4136448,
+    "output": 160494,
+    "toolCalls": 158,
+    "toolErrors": 4,
+    "tools": {
+      "Read": 45,
+      "Write": 19,
+      "Edit": 28,
+      "Bash": 51,
+      "Grep": 1,
+      "task_note": 4,
+      "task_report": 7,
+      "Glob": 2,
+      "plan_write": 1
+    },
+    "compactions": 0,
+    "sessions": [
+      {
+        "id": "20ad4517-6b29-44d0-a4b0-d09e088178e5",
+        "requests": 27,
+        "input": 19835,
+        "cached": 967168,
+        "output": 29038,
+        "toolCalls": 30,
+        "toolErrors": 2,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 52037,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "24dce8e6-32dc-46a8-af38-146bf9ed6516",
+        "requests": 17,
+        "input": 17713,
+        "cached": 433664,
+        "output": 10366,
+        "toolCalls": 19,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 32576,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "4cda3ecd-058a-4e0d-af93-6a83d7036e6e",
+        "requests": 13,
+        "input": 30043,
+        "cached": 478208,
+        "output": 19424,
+        "toolCalls": 15,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 50177,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "7996da0d-b642-4d3f-aced-52af0fb46cd0",
+        "requests": 14,
+        "input": 22360,
+        "cached": 661120,
+        "output": 39185,
+        "toolCalls": 19,
+        "toolErrors": 1,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 66881,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "813fe8af-fa13-4658-a002-e3a431733b02",
+        "requests": 6,
+        "input": 7274,
+        "cached": 84352,
+        "output": 20928,
+        "toolCalls": 9,
+        "toolErrors": 1,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 29695,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "b0d1b2db-eacf-435e-92cd-6ffd559ba5b4",
+        "requests": 12,
+        "input": 18444,
+        "cached": 236416,
+        "output": 6407,
+        "toolCalls": 15,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 25862,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "c680eda9-1235-4d24-ba1e-f3f2fca85c52",
+        "requests": 22,
+        "input": 16493,
+        "cached": 508672,
+        "output": 16027,
+        "toolCalls": 24,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 32735,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "eec7fec5-c45d-4ae9-8c36-0b37390543b5",
+        "requests": 21,
+        "input": 30211,
+        "cached": 766848,
+        "output": 19119,
+        "toolCalls": 27,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 54216,
+        "turns": [
+          "completed"
+        ]
+      }
+    ],
+    "apiErrors": 0,
+    "questions": 0
+  }
+}

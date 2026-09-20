@@ -1,0 +1,484 @@
+dsh: reasoning:
+Let me start by exploring the repository.
+dsh: reasoning:
+Empty repo. Let me look at .gitignore and node version.
+dsh: reasoning:
+Let me plan the work. I'll create:
+- bin/kv.js
+- lib/store.js maybe (ES modules, no deps). The task says entry point bin/kv.js. I can put logic in lib/ for testability, but tests run CLI as child process. I'll keep it clean.
+- test/kv.test.js
+- README.md
+- package.json test script
+
+Let me design the CLI.
+
+Arguments parsing:
+`node bin/kv.js <command> [args] [--file <path>]`
+`set <key> <value...>` with optional `--ttl <seconds>`
+`get <key>`
+`del <key>`
+`list`
+
+Global `--file` can appear anywhere? Probably parse flag out of argv. --ttl only for set. Let's implement a parser that extracts `--file <path>` from args regardless of position, and `--ttl <seconds>` for set.
+
+Need to be careful: `set <key> <value...>` all remaining arguments joined with single spaces. If value contains `--file`? Ambiguous. Standard: parse known flags. Let me extract flags before/after. I'll parse sequentially: command first. Then for set, collect positional args until we hit `--ttl`, consume its value; `--file` consume path. Value parts are positionals. This allows `set key hello --file x`... hmm the --file would be extracted. That's acceptable.
+
+Actually careful: value might legitimately include the literal string "--ttl". Edge case not required. I'll do a reasonable parser.
+
+Store format: JSON file. What shape? "the file stores absolute expiry times in milliseconds." Let's design:
+```json
+{
+  "version": 1,
+  "data": {
+    "key": { "value": "...", "expiresAt": 1234567890 }
+  }
+}
+```
+or simpler:
+```json
+{ "key": { "value": "v", "expiresAt": null } }
+```
+I'll use a top-level object mapping key -> {value, expiresAt}. Keep simple and documented. Missing file = empty store.
+
+Atomic writes: write to temp file in same dir then rename. Temp name: `<path>.<pid>.<random>.tmp`. fs.writeFileSync then fs.renameSync.
+
+Read behavior: on get, if key expired, remove from file (persist) then report not found. On list, exclude expired; should we remove expired from file on list? Spec says expired key is removed from the file when it is read (get). For list, just filter. I could prune too but spec only requires get. I'll only remove on get to match precisely. Actually pruning on list is harmless but let's follow spec exactly: list prints non-expired. I'll leave file as is on list. Hmm but "every non-expired key" implies filter.
+
+Expiry semantics: expires that many seconds after it was set. expiresAt = Date.now() + ttl*1000. Expired if Date.now() >= expiresAt. For tests "use a short TTL and a fake clock or an already-expired timestamp". Tests can write a store file directly with expiresAt in the past.
+
+Parsing JSON gracefully: if file corrupted? Not required. I could error. Keep simple but handle missing file.
+
+File path resolution: default `.kv.json` in cwd. `--file <path>` selects it. Resolve to absolute relative to cwd.
+
+Validation: keys must match /^[A-Za-z0-9_.-]+$/. For set, get, del. If invalid -> stderr `invalid key: <key>` exit 1. What if key missing entirely? `node bin/kv.js set` -> maybe usage? Spec doesn't say. I'll treat missing key as usage error exit 2, or invalid key? Let's think: unknown command prints usage exit 2. Missing arguments: reasonable to print usage on stderr exit 2. I'll do that.
+
+Exit codes:
+- set: 0, prints nothing
+- get: 0 prints value + newline; missing/expired: stderr `not found: <key>`, exit 1
+- del: prints `deleted`, 0; missing: stderr not found exit 1
+- list: prints each key sorted, 0
+- invalid key: stderr `invalid key: <key>` exit 1
+- unknown command: usage on stderr exit 2
+
+Usage text: something like:
+```
+Usage: kv <command> [args] [--file <path>]
+
+Commands:
+  set <key> <value...> [--ttl <seconds>]
+  get <key>
+  del <key>
+  list
+```
+
+No args at all: I think print usage on stderr exit 2 (treated as unknown/missing command).
+
+TTL validation: `--ttl` value must be a non-negative number. If invalid -> error exit 1? Not specified. I'll print `invalid ttl: <value>` on stderr exit 1. That's reasonable.
+
+Now let's write files. Let me structure lib/store.js with functions and bin/kv.js as thin CLI. Tests run CLI child process.
+
+Actually, to keep things simple and self-contained, I can put everything in bin/kv.js. But separating store logic is cleaner. Tests only use child process. I'll create lib/store.js.
+
+Let me write.
+
+store.js:
+```js
+import { readFileSync, writeFileSync, renameSync, existsSync, mkdirSync } from 'node:fs';
+import { dirname, resolve } from 'node:path';
+import { randomBytes } from 'node:crypto';
+
+export function readStore(filePath) {
+  let raw;
+  try {
+    raw = readFileSync(filePath, 'utf8');
+  } catch (err) {
+    if (err.code === 'ENOENT') return {};
+    throw err;
+  }
+  if (raw.trim() === '') return {};
+  let parsed;
+  try {
+    parsed = JSON.parse(raw);
+  } catch {
+    throw new Error(`invalid store file: ${filePath}`);
+  }
+  if (parsed === null || typeof parsed !== 'object' || Array.isArray(parsed)) {
+    throw new Error(`invalid store file: ${filePath}`);
+  }
+  return parsed;
+}
+
+export function writeStore(filePath, store) {
+  const dir = dirname(filePath);
+  const tmp = resolve(dir, `.${basename?}...`);
+  writeFileSync(tmp, JSON.stringify(store, null, 2) + '\n');
+  renameSync(tmp, filePath);
+}
+```
+
+atomic: temp file must be same directory for rename atomicity. Use basename.
+
+Use `randomBytes(6).toString('hex')`.
+
+Expiry: `isExpired(entry, now)`.
+
+Now CLI parsing. Let me write a parseArgs function.
+
+```js
+function parse(argv) {
+  // returns { command, positionals, file, ttl }
+}
+```
+
+I'll scan argv:
+- first non-flag token = command.
+- Then for remaining, recognized flags: `--file` consumes next; `--ttl` consumes next; `--` ends flags? Keep simple.
+- Everything else positional.
+
+But for `set`, value may include tokens that look like flags. Hmm. If a user does `set greeting hello --ttl 10`, `--ttl` is flag. If user wants value "--ttl", they can't. Acceptable.
+
+Actually there's a subtlety: "all remaining arguments joined with single spaces". If we strip flags, value is remaining positionals after key. Fine.
+
+Let me handle `--file` globally and `--ttl` only for set (but we can parse it regardless; unknown use ignored/error). I'll parse all known flags and pass ttl to set; if ttl given for non-set, ignore or error. I'll ignore.
+
+Now implement main:
+
+```js
+const KNOWN = new Set(['set','get','del','list']);
+```
+
+Let me write the code carefully.
+
+For get expired removal: read store, check entry. If expired: delete from store and writeStore (persist removal), then not found. If key missing: not found (no write needed).
+
+Value stored may be empty string? `set key` with no value -> value = ''. Should that be allowed? Spec says `set <key> <value...>`; value... possibly zero? "stores the value (all remaining arguments joined)". I'll require at least the key; value can be empty? Probably require at least one value token? Hmm. All remaining joined; if none, ''. I'll allow empty value. But then `set key` sets empty. That seems fine. Actually to be safe and match tests, they'd use `set key value`. I'll allow empty.
+
+Wait, but minimum args for set = key. If no key -> usage exit 2.
+
+Let me now consider the tests. Tests use node:test, spawn child process. Use `node:test` and `node:assert`. Create temp dir via os.tmpdir + mkdtemp. Spawn `node bin/kv.js ...` with cwd maybe repo root. Use execFileSync or spawnSync. I'll use a helper `run(args, {file})` returning {status, stdout, stderr}.
+
+For TTL expiry: write JSON directly with expiresAt = Date.now() - 1000. Then `get` should say not found and remove key from file. Also list excludes.
+
+Also test short TTL: maybe set with --ttl 1 then wait? Better use fake clock. Since expiry stored absolute ms, we can test by directly writing already-expired timestamp — that's explicitly allowed. I'll do that. Also test that `get` removes expired key from file.
+
+Test all commands, error cases, unknown command exit 2, invalid key.
+
+package.json test script: `"test": "node --test"`. Node's test runner discovers test/ directory files matching. Node 26 supports `node --test`. Good.
+
+Also maybe add `"bin"` field? Not required. Keep package.json with script.
+
+README documents every command.
+
+Let me also add .gitignore maybe .kv.json? Not necessary but could add. The .gitignore already exists with node_modules and .magic. I could add `.kv.json` to avoid committing. Eh, optional. I'll leave.
+
+Let me write the files.
+
+Let me be careful about atomic write with tmp file and cleanup on error. Also ensure directory exists? If --file points to nonexistent dir, write should fail. Could mkdir. Not required. I'll let it throw and catch in main, printing error exit 1. Actually simpler: try/catch top-level.
+
+Let me write bin/kv.js.
+
+```js
+#!/usr/bin/env node
+import process from 'node:process';
+import { resolve } from 'node:path';
+import { readStore, writeStore, isExpired, KEY_RE } from '../lib/store.js';
+
+const USAGE = `Usage: kv <command> [args] [--file <path>]
+
+Commands:
+  set <key> <value...> [--ttl <seconds>]   Store a value (optionally expiring)
+  get <key>                                Print a value
+  del <key>                                Delete a key
+  list                                     List non-expired keys
+
+Options:
+  --file <path>   Store file (default: .kv.json)
+  --ttl <seconds> Expiry for set (absolute ms stored in file)
+`;
+
+function fail(message, code) {
+  process.stderr.write(message + '\n');
+  process.exit(code);
+}
+
+function parseArgs(argv) {
+  const flags = { file: null, ttl: null };
+  const positionals = [];
+  for (let i = 0; i < argv.length; i++) {
+    const arg = argv[i];
+    if (arg === '--file') {
+      if (i + 1 >= argv.length) fail('missing value for --file', 2);
+      flags.file = argv[++i];
+    } else if (arg === '--ttl') {
+      if (i + 1 >= argv.length) fail('missing value for --ttl', 2);
+      flags.ttl = argv[++i];
+    } else if (arg.startsWith('--file=')) {
+      flags.file = arg.slice('--file='.length);
+    } else if (arg.startsWith('--ttl=')) {
+      flags.ttl = arg.slice('--ttl='.length);
+    } else {
+      positionals.push(arg);
+    }
+  }
+  return { flags, positionals };
+}
+```
+
+Then main.
+
+```js
+function main() {
+  const { flags, positionals } = parseArgs(process.argv.slice(2));
+  const file = resolve(process.cwd(), flags.file ?? '.kv.json');
+  const command = positionals[0];
+  if (!command) fail(USAGE.trimEnd(), 2);
+  const rest = positionals.slice(1);
+  switch(command) {
+    case 'set': return cmdSet(...);
+    ...
+    default: fail(USAGE.trimEnd(), 2);
+  }
+}
+```
+
+Careful: fail returns never but JS doesn't know. Fine.
+
+cmdSet:
+```js
+function cmdSet(rest, flags, file) {
+  if (rest.length < 1) fail(USAGE.trimEnd(), 2);
+  const key = rest[0];
+  if (!KEY_RE.test(key)) fail(`invalid key: ${key}`, 1);
+  const value = rest.slice(1).join(' ');
+  let expiresAt = null;
+  if (flags.ttl !== null) {
+    const seconds = Number(flags.ttl);
+    if (!Number.isFinite(seconds) || seconds < 0) fail(`invalid ttl: ${flags.ttl}`, 1);
+    expiresAt = Date.now() + seconds * 1000;
+  }
+  const store = readStore(file);
+  const entry = { value };
+  if (expiresAt !== null) entry.expiresAt = expiresAt;
+  store[key] = entry;
+  writeStore(file, store);
+}
+```
+
+Should entries without expiry include expiresAt? I'll omit or set null. isExpired handles undefined/null. Let me store `expiresAt: expiresAt` always maybe null. Simpler for tests reading file. I'll include only when set? Tests may check file. I'll include `expiresAt` only when ttl provided; isExpired treats absence as no expiry. Actually to be predictable, include `"expiresAt": null` always? Hmm. Let me store `{ value, expiresAt }` where expiresAt is null when no ttl. That's clean and easy to inspect. I'll do that.
+
+cmdGet:
+```js
+function cmdGet(rest, file) {
+  if (rest.length < 1) fail(USAGE.trimEnd(), 2);
+  const key = rest[0];
+  if (!KEY_RE.test(key)) fail(`invalid key: ${key}`, 1);
+  const store = readStore(file);
+  const entry = store[key];
+  if (entry === undefined) fail(`not found: ${key}`, 1);
+  if (isExpired(entry)) {
+    delete store[key];
+    writeStore(file, store);
+    fail(`not found: ${key}`, 1);
+  }
+  process.stdout.write(String(entry.value) + '\n');
+}
+```
+
+cmdDel similar, print `deleted`.
+
+cmdList:
+```js
+const keys = Object.keys(store).filter(k => !isExpired(store[k])).sort();
+if (keys.length) process.stdout.write(keys.join('\n') + '\n');
+```
+
+Sorting: default lexicographic. Good.
+
+Wrap main in try/catch:
+```js
+try { main(); } catch (err) { fail(err.message, 1); }
+```
+
+Now store.js. KEY_RE export.
+
+writeStore atomic:
+```js
+import { readFileSync, writeFileSync, renameSync } from 'node:fs';
+import { dirname, basename, join } from 'node:path';
+import { randomBytes } from 'node:crypto';
+
+export function writeStore(filePath, store) {
+  const tmp = join(dirname(filePath), `.${basename(filePath)}.${process.pid}.${randomBytes(6).toString('hex')}.tmp`);
+  const data = JSON.stringify(store, null, 2) + '\n';
+  writeFileSync(tmp, data, 'utf8');
+  try {
+    renameSync(tmp, filePath);
+  } catch (err) {
+    // best-effort cleanup
+    try { unlinkSync(tmp); } catch {}
+    throw err;
+  }
+}
+```
+
+Actually writeFileSync could throw leaving no tmp. Fine.
+
+isExpired:
+```js
+export function isExpired(entry, now = Date.now()) {
+  if (entry == null || typeof entry !== 'object') return false;
+  const exp = entry.expiresAt;
+  if (exp === null || exp === undefined) return false;
+  return now >= exp;
+}
+```
+
+Use `>=` so at exact expiry it's expired. Good.
+
+Now tests. Let me write comprehensive tests.
+
+test/helpers maybe inline. I'll create test/kv.test.js.
+
+```js
+import { test, describe, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import { spawnSync } from 'node:child_process';
+import { mkdtempSync, rmSync, readFileSync, writeFileSync, existsSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { join, resolve, dirname } from 'node:path';
+import { fileURLToPath } from 'node:url';
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+const CLI = resolve(__dirname, '..', 'bin', 'kv.js');
+```
+
+run helper:
+```js
+let dir, file;
+beforeEach(() => { dir = mkdtempSync(join(tmpdir(), 'kv-test-')); file = join(dir, 'store.json'); });
+afterEach(() => { rmSync(dir, {recursive:true, force:true}); });
+
+function run(args, opts = {}) {
+  const result = spawnSync(process.execPath, [CLI, ...args, '--file', opts.file ?? file], { encoding: 'utf8' });
+  return result;
+}
+```
+
+Wait some tests want to omit --file to test default. Then pass `{useFile:false}`. Let me make helper flexible: `run(args, { file: ..., cwd })`. If file === null, don't add. Default uses `file`.
+
+Also default file test: run with cwd=dir and no --file, should create `.kv.json` in dir. Add test.
+
+Let me write tests:
+
+1. set/get round trip; set prints nothing, exit 0.
+2. set joins values with spaces.
+3. get missing -> stderr `not found: k`, exit 1.
+4. del existing -> stdout `deleted\n`, 0; file no longer has key.
+5. del missing -> not found, 1.
+6. list sorted, one per line.
+7. list empty -> stdout ''.
+8. invalid key on set/get/del -> `invalid key: ...` exit 1.
+9. unknown command -> stderr includes usage, exit 2.
+10. TTL short: write file with expiresAt = Date.now() - 1; get -> not found, exit 1, and key removed from file; list excludes. Also future expiry returns value.
+11. --ttl sets absolute expiry ~ now + seconds*1000. Check file entry expiresAt within range.
+12. default file path `.kv.json` in cwd.
+13. atomic write maybe check no tmp files left. Could check dir has only store.json. Good.
+14. overwrite existing key.
+15. no command -> usage exit 2.
+
+Also value with special chars? `set key hello world` -> "hello world".
+
+Let me also test that get expired removes from file (explicitly required).
+
+Now write everything.
+
+Let me create files. I'll use write tool.
+
+One concern: test file discovery. `node --test` by default runs files matching patterns under test/. In Node 26, `node --test` without paths runs test runner on files matching `**/*.test.{js,mjs,cjs}` etc. It should find test/kv.test.js. Good.
+
+Let me write.
+dsh: reasoning:
+Now bin/kv.js.
+dsh: reasoning:
+Now tests. Let me write test/kv.test.js.
+
+Note: `requireKey` on missing key prints USAGE and exits 2. Fine.
+
+For the test helper, I need to run CLI in a temp cwd for the default-file test. Let me design:
+
+```js
+function runCli(args, { file: fileOverride, cwd } = {}) {
+  const argv = [CLI, ...args];
+  if (fileOverride !== null) {
+    argv.push('--file', fileOverride ?? file);
+  }
+  return spawnSync(process.execPath, argv, { cwd: cwd ?? dir, encoding: 'utf8' });
+}
+```
+
+Hmm default file test should not append --file, and cwd = dir. Let me use sentinel: pass `noFile: true`.
+
+Simplify: 
+```js
+function runCli(args, opts = {}) {
+  const full = [...args];
+  if (!opts.noFile) full.push('--file', opts.file ?? file);
+  return spawnSync(process.execPath, [CLI, ...full], { cwd: opts.cwd ?? dir, encoding: 'utf8' });
+}
+```
+
+Default `file` is a module-level variable set in beforeEach. But runCli references it at call time; fine.
+
+Actually using top-level `let file, dir;` and beforeEach. node:test supports beforeEach within describe or top-level. I'll use describe.
+
+Let me write tests.
+
+Check output: set stdout === '' and stderr === ''.
+Set with value join.
+Read file JSON to verify.
+
+Expired test: write file JSON manually:
+```js
+writeFileSync(file, JSON.stringify({ old: { value: 'gone', expiresAt: Date.now() - 1000 }, live: { value: 'ok', expiresAt: Date.now() + 60000 }, forever: { value: 'stay', expiresAt: null } }));
+```
+get old -> status 1, stderr `not found: old\n`; file no longer has old.
+list -> live, forever sorted -> "forever\nlive\n".
+
+TTL via --ttl: `set k v --ttl 100`. Then parse file expiresAt, assert between before+100000 and after+100000 maybe. Use tolerance.
+
+Also test `--file` default: runCli(['set','a','1'], {noFile:true}) with cwd=dir; then assert existsSync(join(dir, '.kv.json')).
+
+Atomic: after set, readdirSync(dir) should contain only 'store.json'. Let me add.
+
+Invalid keys: 'bad key' (space), 'bad/key', 'bad!'. Can't pass space as a single argv? Yes can, spawn args array element 'bad key'. Good.
+- set 'bad key' v -> invalid key exit 1.
+- get 'bad*' -> invalid key 1.
+- del 'bad/' -> invalid key 1.
+
+Unknown command -> status 2, stderr includes 'Usage:'.
+
+No args -> status 2.
+
+Missing key: `get` with no key -> status 2 (usage). Maybe test.
+
+Let me also test overwrite.
+
+Let me write it. Use `assert.equal(result.status, 0)`, `assert.equal(result.stdout, ...)`, `assert.equal(result.stderr, ...)`.
+
+Note spawnSync on non-zero exit: result.error null, status is code. Good.
+
+Let me create.
+dsh: reasoning:
+Now package.json and README. Let me update package.json.
+dsh: reasoning:
+I read package.json via cat earlier, not via read tool. Need to read it with read tool then write. Let me use edit instead after reading.
+dsh: reasoning:
+All 23 tests pass. Let me do a quick manual smoke test of the CLI as documented, and verify a couple edge cases. Also double check the `--file` test I wrote: it creates `other` but never uses; harmless but slightly silly. It just asserts nested dir not created. Fine.
+
+Let me run a quick manual smoke to be safe, and check git status.
+dsh: reasoning:
+The smoke test bash script stopped because `set -e` and the expired get exited 1, so the rest (store file, ls) didn't run. That's fine; the behavior is correct. But let me re-run the tail without set -e to inspect the store file and confirm expired key removed.
+dsh: reasoning:
+Everything works. The expired key was pruned, no temp files left.
+
+Let me finalize the todo and give a summary.

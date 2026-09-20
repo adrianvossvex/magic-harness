@@ -1,0 +1,44 @@
+
+> kv-store@0.1.0 test
+> node --test "test/**/*.test.js"
+
+✔ invalid keys are rejected for set, get and del (661.2355ms)
+✔ valid key characters are accepted (96.363333ms)
+✔ unknown command prints usage and exits 2 (47.384333ms)
+✔ missing command prints usage and exits 2 (48.347041ms)
+✔ wrong arity prints usage and exits 2 (241.633167ms)
+✔ unknown flags and a flag missing its value print usage and exit 2 (193.295959ms)
+✔ --ttl with a command other than set is a usage error (96.950541ms)
+✔ invalid --ttl values exit 1 with invalid ttl on stderr (236.964584ms)
+✔ unparseable store file is a hard error naming the file (48.244666ms)
+✔ ill-shaped store documents are rejected (94.984708ms)
+✔ a missing store file is an empty store, not an error (47.699375ms)
+✔ an explicit --file path is the store that gets written (61.222042ms)
+✔ a relative --file path is resolved against the child cwd (58.618416ms)
+✔ without --file the store is .kv.json in the child cwd (121.949ms)
+✔ a write leaves exactly the store file and no temp files behind (212.907417ms)
+✔ the store file is pretty-printed JSON ending in a newline (53.181709ms)
+✔ list prints keys sorted one per line (230.963083ms)
+✔ list on an empty store prints nothing, exits 0 and creates no file (56.127459ms)
+✔ list skips expired keys and prunes them from the file (61.024375ms)
+✔ list reflects deletions (211.955333ms)
+✔ set then get round-trips the value, set prints nothing (117.705208ms)
+✔ set joins multiple value arguments with single spaces (126.098875ms)
+✔ set overwrites an existing key and stores no expiry without --ttl (171.317ms)
+✔ get of a missing key exits 1, writes not found to stderr, stdout empty (56.587958ms)
+✔ get of a missing key does not create the store file (52.323375ms)
+✔ del of an existing key prints deleted, exits 0 and removes the key (150.362417ms)
+✔ del of a missing key exits 1 and writes not found to stderr (48.244125ms)
+✔ get of an entry with a past expiresAt is not found and prunes it (65.53825ms)
+✔ get of an entry with a future expiresAt is found (57.336084ms)
+✔ set --ttl stores an absolute expiry of now + ttl*1000 ms (57.022ms)
+✔ a key set with a real short --ttl expires after a brief wait (673.885334ms)
+✔ an entry expiring exactly at now is treated as expired (48.567208ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1882.841625

@@ -1,0 +1,21 @@
+I'll start by exploring the repository to see what's already here.The repo is essentially empty (just `package.json` and `.gitignore`), so I'll build the CLI from scratch. Starting with the source modules.Now the CLI logic and entry point.I duplicated a write in `del` and `list`; fixing that.Basic commands behave. Now the test suite.Two assertions need cleanup before I run the suite.Now the `test` script and README.Tests pass with autodiscovery; the explicit directory arg isn't accepted by this Node version, so I'll use a glob pattern instead.`npm test` runs 29 passing tests. Writing the README now.The key-value store CLI is built and `npm test` passes with 29 tests.
+
+**What I added**
+
+- `bin/kv.js` — entry point; parses `process.argv` and sets the exit code.
+- `src/cli.js` — argument parsing and the four commands (`set`, `get`, `del`, `list`), usage text, exit-code mapping.
+- `src/store.js` — JSON store read/write, TTL checking and pruning, atomic writes (temp file in the same directory, `fsync`, then `rename`).
+- `src/errors.js` — small `CliError` carrying an exit code.
+- `test/cli.test.js` — 29 `node:test` cases spawning the CLI against a temp file.
+- `README.md` — documents every command, options, key rules, exit codes, store format, and how to run tests.
+- `package.json` — `"test": "node --test \"test/**/*.test.js\""` plus a `kv` bin entry; `.gitignore` now also ignores the default `.kv.json`.
+
+**Behavior notes worth knowing**
+
+- `set` joins all remaining arguments with single spaces; `--file`/`--ttl` are extracted wherever they appear, so `set k --flag` stores the literal string `--flag`. For the other commands an unrecognized `--option` is a usage error.
+- `--ttl` accepts fractional seconds (and `0`, which expires immediately), and the file stores `expiresAt` as absolute epoch milliseconds. Setting a key without `--ttl` clears a previous expiry.
+- Expired keys are pruned from the file whenever a command loads the store and finds expired entries, which is what removes a key when it is read. `get`/`del` report expired keys as `not found: <key>` with exit 1.
+- Exit codes: 1 for missing/expired key, invalid key, invalid `--ttl`, or a malformed store file; 2 for unknown command, unknown option, or missing/extra arguments (these print usage on stderr).
+- `node --test test/` failed on this Node version (it tried to load `test` as a module), which is why the npm script uses a glob pattern; plain `node --test` also works.
+
+Verification: `npm test` → 29 pass, 0 fail. I also ran a manual end-to-end check in a temp directory covering the default `.kv.json`, expiry pruning, sorted listing, and confirming no leftover temp files. Nothing is committed — let me know if you'd like a commit.

@@ -1,0 +1,13 @@
+All done. Summary of changes:
+
+**`src/todo.js`** — extended the store returned by `createStore()`:
+- `toggle(id)` finds the item, flips `done`, returns it; throws `Error("Unknown id: <id>")` when missing.
+- `remove(id)` splices out the matching item and returns `true`, or `false` if not found.
+- `count()` returns `items.length`.
+- `add` and `list` were left unchanged (list still returns `slice()` copy).
+
+**`test/todo.test.js`** — added `node:test` cases covering add return value, list copy semantics, toggle flip + return, toggle unknown-id throw (matched with `/Unknown id/`), remove success, remove unknown id, and count.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, `count` with signatures, return values, a runnable example, and test instructions.
+
+`npm test` is green: 7/7 passing.

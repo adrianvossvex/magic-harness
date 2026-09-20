@@ -1,0 +1,71 @@
+
+> library-system@0.1.0 test
+> node --test
+
+▶ addBook
+  ✔ assigns ids in order starting at 1 (1.34725ms)
+  ✔ defaults copies to 1 and makes it available (2.288208ms)
+  ✔ keeps the requested number of copies and trims text (0.748625ms)
+  ✔ persists to the JSON file and creates it on first use (0.653167ms)
+  ✔ rejects missing or empty fields (0.626292ms)
+  ✔ rejects a non-positive or fractional copy count (0.339334ms)
+✔ addBook (6.722417ms)
+▶ listBooks
+  ✔ returns every book by default (0.907958ms)
+  ✔ filters by availability when requested (1.007583ms)
+  ✔ returns an empty array when there are no books (0.250166ms)
+✔ listBooks (2.360042ms)
+✔ add-book prints the book and exits 0 (53.465667ms)
+✔ add-member prints the member and exits 0 (48.592541ms)
+✔ a full checkout / return flow works across commands (444.67ms)
+✔ creates the file on first use at the default location (49.462125ms)
+✔ unknown command exits 1 with an error on stderr (48.932209ms)
+✔ missing required option exits 1 (46.864875ms)
+✔ missing option value exits 1 (46.228417ms)
+✔ failed operation exits 2 with an error on stderr (47.364291ms)
+✔ returning the same loan twice exits 2 (234.211792ms)
+✔ list-loans filters by member (297.639458ms)
+▶ checkout
+  ✔ creates a loan with a due date and reduces availability (2.596208ms)
+  ✔ honours a custom loan length across a leap day (0.491708ms)
+  ✔ defaults today to the current date (0.463875ms)
+  ✔ fails when the book has no available copy (0.598958ms)
+  ✔ fails when the member already has three active loans (0.574167ms)
+  ✔ allows a new loan after one is returned (0.667875ms)
+  ✔ fails for unknown books and members (0.321958ms)
+✔ checkout (6.320208ms)
+▶ returnLoan
+  ✔ charges no fine when returned on or before the due date (0.416292ms)
+  ✔ charges 0.50 per late day (0.382292ms)
+  ✔ caps the fine at 20.00 (0.5055ms)
+  ✔ fails when the loan was already returned (0.47ms)
+  ✔ fails for an unknown loan (0.120625ms)
+✔ returnLoan (2.012208ms)
+▶ listLoans
+  ✔ filters by member (0.46375ms)
+  ✔ keeps only active loans that are past due when overdue (0.474334ms)
+  ✔ does not treat a loan due today as overdue (0.30875ms)
+  ✔ returns an empty array when there are no loans (0.107125ms)
+✔ listLoans (1.40325ms)
+▶ report
+  ✔ summarises books, members, loans and fines (0.908167ms)
+  ✔ reports zeroes for an empty library (0.104458ms)
+✔ report (1.042042ms)
+▶ addMember
+  ✔ assigns ids in order starting at 1 (2.323917ms)
+  ✔ trims the member name (0.355167ms)
+  ✔ persists members to the JSON file (0.877875ms)
+  ✔ rejects a missing or empty name (0.341292ms)
+✔ addMember (4.6515ms)
+▶ listMembers
+  ✔ returns every member (0.414125ms)
+  ✔ returns an empty array when there are no members (0.133584ms)
+✔ listMembers (0.625708ms)
+ℹ tests 43
+ℹ suites 8
+ℹ pass 43
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1393.617583

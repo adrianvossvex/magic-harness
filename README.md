@@ -175,6 +175,19 @@ Everything lives in `.magic/project/`: `project.json` (the tree and every attemp
 
 This is a test version: there is no project view in the web page yet, Bash commands are not confined to the file scope, review-only acceptance is accepted on the executor's word, and tasks run in the same working tree rather than in separate worktrees.
 
+## Compared with dsh
+
+Same model, same tasks, different harness. [`bench/`](bench/README.md) runs four coding tasks through magic and through DeepSeek's own harness, [dsh](https://www.npmjs.com/package/@deepseek-ai/dsh), both driving `deepseek-flash` (DeepSeek V4.1 Flash) with the same prompt, then scores the result with hidden acceptance suites the agents never see. Three runs per cell, means shown; the full per-run tables and every run's record are in the folder.
+
+| Task | dsh | magic, one session |
+|---|---|---|
+| `01-todo`: extend a tiny library (8 checks) | 3/3 passed · 0.4 min · $0.006 | 3/3 passed · 0.3 min · $0.005 |
+| `02-kv`: a key-value CLI with TTL (10 checks) | 3/3 passed · 1.4 min · $0.023 | 3/3 passed · 1.5 min · $0.024 |
+| `03-library`: a library system, three modules and a CLI (15 checks) | 3/3 passed · 2.9 min · $0.050 | 3/3 passed · 2.2 min · $0.040 |
+| `04-invoicing`: an invoicing system with money rules and reports (12 checks) | 3/3 passed · 5.6 min · $0.091 | 3/3 passed · 3.5 min · $0.060 |
+
+Both harnesses solved every task in every run. magic's session used fewer requests and tool calls on the larger tasks, so it finished sooner and cost less at the same pass rate; on the small tasks they are even. The project system (planner, dispatcher, executors) also took every task from goal to green, at four to five times the cost of one session: that is the price of a design document, a task tree and a fresh session per task, worth paying for work that does not fit one session and not for a ten-minute task. The benchmark also found and fixed a weakness in magic: a tool call whose JSON the model mangled used to end the turn; now it comes back to the model as an error that says where the brackets went wrong.
+
 ## Providers and effort
 
 magic uses the Anthropic message format with every provider that offers it (Claude, Kimi, DeepSeek, GLM) and translates to OpenAI's Responses API for OpenAI. Effort levels follow each vendor's documentation:

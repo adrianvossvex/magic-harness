@@ -1,0 +1,49 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+✔ cli runs a full invoicing flow with formatted money (573.632792ms)
+✔ cli reports domain errors as JSON on stderr and exits 2 (47.763583ms)
+✔ cli exits 1 with usage for an unknown command (45.615667ms)
+✔ cli exits 1 with usage for a missing required option (46.149375ms)
+✔ cli creates the data file and its directory on first use (97.596166ms)
+✔ addCustomer assigns incrementing ids starting at 1 (1.567916ms)
+✔ addCustomer rejects an email without @ (0.200875ms)
+✔ addCustomer rejects a missing name (0.093708ms)
+✔ customers are persisted to the data file (0.24025ms)
+✔ createInvoice makes an empty draft with the documented shape (3.39025ms)
+✔ createInvoice rejects an unknown customer (1.176541ms)
+✔ addLine computes net and tax with half-up rounding (1.616959ms)
+✔ addLine rounds a half cent up (0.634667ms)
+✔ addLine accumulates totals across lines (0.455625ms)
+✔ addLine validates its inputs (0.3415ms)
+✔ only drafts accept lines (0.983167ms)
+✔ issue requires at least one line (0.221375ms)
+✔ issue numbers invoices per year and sets issued/due (0.615084ms)
+✔ pay records partial payments and closes the invoice at zero balance (0.477875ms)
+✔ pay rejects overpayment, non-positive amounts and non-issued invoices (0.383833ms)
+✔ void works on drafts and unpaid issued invoices only (0.621417ms)
+✔ listInvoices filters by status, customer and overdue (0.725958ms)
+✔ getInvoice throws for an unknown id (0.24075ms)
+✔ parseMoney accepts whole and decimal amounts (0.647083ms)
+✔ parseMoney rejects anything that is not a two-decimal amount (0.221708ms)
+✔ formatMoney renders exactly two decimals (0.064125ms)
+✔ roundCents rounds half up (0.051458ms)
+✔ parseMoney and formatMoney round-trip (0.063542ms)
+✔ addProduct stores the price in cents and defaults taxRate to 0 (1.747333ms)
+✔ addProduct accepts an integer tax rate (0.275042ms)
+✔ addProduct rejects an invalid price (0.217125ms)
+✔ addProduct rejects an out-of-range tax rate (0.520125ms)
+✔ addProduct assigns incrementing ids (0.439333ms)
+✔ aging buckets issued invoices by days past due (4.622625ms)
+✔ aging ignores drafts, paid and void invoices (0.733709ms)
+✔ revenue groups issued and paid invoices by issue month, sorted (1.051583ms)
+✔ revenue is an empty array when nothing has been issued (0.209958ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 906.541708

@@ -1,0 +1,12 @@
+All 7 tests pass. Here's a summary of what I changed:
+
+**`src/todo.js`** — added three methods to the store while leaving `add`/`list` untouched:
+- `toggle(id)` — finds the item, flips `done`, returns it; throws `Error("Unknown id: <id>")` if not found.
+- `remove(id)` — splices the item out and returns `true`, or `false` if the id is unknown.
+- `count()` — returns `items.length`.
+
+**`test/todo.test.js`** — added tests for `toggle` (flip + unknown-id throw), `remove` (true + false paths), `count`, and a copy-semantics check for `list`, all using `node:test` and `node:assert/strict`.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short usage example and per-method descriptions.
+
+`npm test` is green: 7 passed, 0 failed.

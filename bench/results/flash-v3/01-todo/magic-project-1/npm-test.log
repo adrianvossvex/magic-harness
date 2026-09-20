@@ -1,0 +1,26 @@
+
+> tiny-todo@0.1.0 test
+> node --test test/*.test.js
+
+✔ add and list (0.589917ms)
+✔ add assigns increasing ids with text and done false (0.512125ms)
+✔ list returns a copy (0.054166ms)
+✔ count is zero for a fresh store (0.034667ms)
+✔ count increases per add (0.038708ms)
+✔ count decreases after remove (0.04725ms)
+✔ toggle flips done and returns the item (0.047458ms)
+✔ toggle twice returns done to false (0.046334ms)
+✔ toggle returns the same object that list exposes (0.042917ms)
+✔ toggle throws for an unknown id (0.487833ms)
+✔ remove returns true and drops the item (0.045042ms)
+✔ remove returns false for an id that never existed (0.031ms)
+✔ remove returns false for an already removed id and leaves the store unchanged (0.042125ms)
+✔ add after remove does not reuse a live id (0.064542ms)
+ℹ tests 14
+ℹ suites 0
+ℹ pass 14
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 63.557834

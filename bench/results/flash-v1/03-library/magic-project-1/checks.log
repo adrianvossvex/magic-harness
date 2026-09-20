@@ -1,0 +1,270 @@
+✖ add-book prints the book with copies and availability (44.098084ms)
+✖ a second book gets the next id and one copy by default (41.889167ms)
+✖ add-member prints the member (40.960542ms)
+✖ checkout computes the due date and decrements availability (43.260042ms)
+✖ checkout fails with exit 2 when no copy is available (42.1525ms)
+✖ list-books --available hides fully lent books (41.474542ms)
+✖ a member may not hold more than 3 active loans (125.911167ms)
+✖ list-loans filters by member and overdue (41.017125ms)
+✖ returning late charges 0.50 per day, capped at 20 (0.251333ms)
+✖ returning on time charges nothing and returning twice fails (43.416708ms)
+✖ availability is restored after returns (41.4805ms)
+✖ report sums everything (41.087417ms)
+✖ unknown commands exit 1 and errors go to stderr as JSON (84.265792ms)
+✖ the data file is JSON and the README documents the commands (0.315791ms)
+✖ the repository's own tests pass (88.97725ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 0
+ℹ fail 15
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 782.367167
+
+✖ failing tests:
+
+test at ../../../../../checks/03-library.check.mjs:25:1
+✖ add-book prints the book with copies and availability (44.098084ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1478
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/03-library/magic-project-1/workspace/bin/library.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+      at Module._load (node:internal/modules/cjs/loader:1261:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v26.0.0
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:25:176)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:26:1
+✖ a second book gets the next id and one copy by default (41.889167ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:26:86)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:27:1
+✖ add-member prints the member (40.960542ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:27:57)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:28:1
+✖ checkout computes the due date and decrements availability (43.260042ms)
+  AssertionError [ERR_ASSERTION]: node:internal/modules/cjs/loader:1478
+    throw err;
+    ^
+  
+  Error: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/03-library/magic-project-1/workspace/bin/library.js'
+      at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)
+      at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)
+      at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)
+      at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)
+      at Module._load (node:internal/modules/cjs/loader:1261:25)
+      at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)
+      at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)
+      at node:internal/main/run_main_module:33:47 {
+    code: 'MODULE_NOT_FOUND',
+    requireStack: []
+  }
+  
+  Node.js v26.0.0
+  
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:28:179)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:29:1
+✖ checkout fails with exit 2 when no copy is available (42.1525ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:29:83)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:30:1
+✖ list-books --available hides fully lent books (41.474542ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:30:83)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:31:1
+✖ a member may not hold more than 3 active loans (125.911167ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:33:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:37:1
+✖ list-loans filters by member and overdue (41.017125ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:38:16)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:42:1
+✖ returning late charges 0.50 per day, capped at 20 (0.251333ms)
+  TypeError: Cannot read properties of undefined (reading 'id')
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:43:56)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:46:1
+✖ returning on time charges nothing and returning twice fails (43.416708ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:46:93)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:47:1
+✖ availability is restored after returns (41.4805ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:47:76)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:48:1
+✖ report sums everything (41.087417ms)
+  SyntaxError: Unexpected end of JSON input
+      at JSON.parse (<anonymous>)
+      at json (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:20:24)
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:48:56)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7)
+
+test at ../../../../../checks/03-library.check.mjs:49:1
+✖ unknown commands exit 1 and errors go to stderr as JSON (84.265792ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:49:219)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:50:1
+✖ the data file is JSON and the README documents the commands (0.315791ms)
+  Error: ENOENT: no such file or directory, open '/var/folders/sp/3v3zx3q12jv83jm0x6yl5hzw0000gn/T/library-check-c1hPcL/lib.json'
+      at async open (node:internal/fs/promises:1281:25)
+      at async readFile (node:internal/fs/promises:1929:14)
+      at async TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/03-library.check.mjs:50:94)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    errno: -2,
+    code: 'ENOENT',
+    syscall: 'open',
+    path: '/var/folders/sp/3v3zx3q12jv83jm0x6yl5hzw0000gn/T/library-check-c1hPcL/lib.json'
+  }
+
+test at ../../../../../checks/03-library.check.mjs:51:1
+✖ the repository's own tests pass (88.97725ms)
+  Error: Command failed: npm test
+  npm error Missing script: "test"
+  npm error
+  npm error To see a list of scripts, run:
+  npm error   npm run
+  npm error A complete log of this run can be found in: /Users/squirrel/.npm/_logs/2026-09-20T03_16_17_532Z-debug-0.log
+  
+      at genericNodeError (node:internal/errors:998:15)
+      at wrappedFn (node:internal/errors:543:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:509:20)
+      at maybeClose (node:internal/child_process:1108:16)
+      at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: 'npm test',
+    stdout: '',
+    stderr: 'npm error Missing script: "test"\nnpm error\nnpm error To see a list of scripts, run:\nnpm error   npm run\nnpm error A complete log of this run can be found in: /Users/squirrel/.npm/_logs/2026-09-20T03_16_17_532Z-debug-0.log\n'
+  }

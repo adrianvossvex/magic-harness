@@ -1,0 +1,30 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook stores a book and creates the data file (3.528208ms)
+✔ addBook validates its arguments (0.9815ms)
+✔ listBooks returns every book and filters by availability (2.611292ms)
+✔ add-book and list-books round trip through the CLI (100.623125ms)
+✔ the default data file is created relative to the working directory (47.89275ms)
+✔ a full checkout, return and report flow works (345.170666ms)
+✔ unknown commands and missing options exit 1 (148.36875ms)
+✔ domain failures exit 2 with an error message (245.570625ms)
+✔ checkout creates an active loan with a due date (3.213792ms)
+✔ checkout defaults to a 14 day loan starting today (0.543917ms)
+✔ checkout fails when the book is unknown, unavailable or over the member limit (1.096042ms)
+✔ returnLoan records the return and charges no fine when on time (0.643125ms)
+✔ returnLoan charges 0.50 per late day, capped at 20.00 (0.695375ms)
+✔ returnLoan fails for an unknown or already returned loan (0.655417ms)
+✔ listLoans filters by member and by overdue status (1.095083ms)
+✔ report summarises the library (0.81775ms)
+✔ addMember returns a member with an id starting at 1 (1.972334ms)
+✔ addMember validates its argument (0.367875ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 964.019417

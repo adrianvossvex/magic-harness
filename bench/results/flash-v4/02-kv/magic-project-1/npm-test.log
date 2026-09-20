@@ -1,0 +1,58 @@
+
+> kv-store@0.1.0 test
+> node --test test/*.test.js
+
+✔ set then get round-trips a multi-word value joined with single spaces (112.539042ms)
+✔ set prints nothing on stdout and stderr (56.749708ms)
+✔ set overwrites an existing key (165.654833ms)
+✔ get on a missing key reports not found on stderr and exits 1 (58.140583ms)
+✔ get on a missing key does not create the store file (51.112958ms)
+✔ del removes a key, prints deleted and exits 0; a repeat del exits 1 (201.944792ms)
+✔ del on a never-existing key does not create the store file (53.156292ms)
+✔ list prints keys sorted one per line (277.801791ms)
+✔ list prints nothing for an empty store and does not create the file (54.553459ms)
+✔ list drops deleted keys (205.156917ms)
+✔ separate invocations share the same store file (252.644875ms)
+✔ invalid keys for set print invalid key and exit 1 (226.548584ms)
+✔ invalid keys for get print invalid key and exit 1 (220.502542ms)
+✔ invalid keys for del print invalid key and exit 1 (202.04ms)
+✔ tokens starting with a dash other than --file/--ttl are positional (164.3215ms)
+✔ an unknown command prints usage on stderr and exits 2 (60.844125ms)
+✔ no command prints usage on stderr and exits 2 (54.611084ms)
+✔ an unknown command with --file still exits 2 without touching the store (59.694375ms)
+✔ wrong positional counts exit 2 with usage (370.987ms)
+✔ --ttl with a non-set command exits 2 with usage (150.305833ms)
+✔ a missing or empty flag value exits 2 with usage (243.663ms)
+✔ a store file that is not valid JSON reports cannot read store and exits 1 (48.216125ms)
+✔ a store file that is not a JSON object reports cannot read store and exits 1 (47.787542ms)
+✔ a failed read stops set from writing anything (49.507833ms)
+✔ the store file uses the frozen on-disk shape with a trailing newline (55.389208ms)
+✔ a write leaves no temporary files behind (170.335708ms)
+✔ an omitted --file writes .kv.json in the current working directory (114.9785ms)
+✔ --file selects the store used by every command (264.035875ms)
+✔ --file before the command is honoured too (101.380833ms)
+✔ --file creates missing parent directories and keeps the temp file next to the target (55.019875ms)
+✔ an absolute --file path is accepted (108.699625ms)
+✔ a hand-seeded file is read and rewritten in the frozen format (52.6315ms)
+✔ a key written with --ttl loses its expiry on a plain set (107.068375ms)
+✔ set prunes expired entries as a side effect (51.1625ms)
+✔ get treats a past expiresAt as missing and removes the entry (56.19975ms)
+✔ del treats a past expiresAt as missing, exits 1 and removes the entry (53.698167ms)
+✔ get returns a value whose expiresAt is still in the future (53.385458ms)
+✔ list omits expired keys and does not rewrite the file (54.900916ms)
+✔ list prints nothing when every key is expired (52.276959ms)
+✔ get on a missing key in an existing store does not rewrite the file (53.953042ms)
+✔ a short --ttl expires: set --ttl 0.05, wait, then get exits 1 (471.958708ms)
+✔ a value with a generous --ttl is readable immediately (107.637333ms)
+✔ --ttl 0 stores a key that is already expired (111.416375ms)
+✔ --ttl 60 stores an absolute expiry about a minute ahead and stays readable (161.849875ms)
+✔ a negative or non-numeric --ttl prints invalid ttl and exits 1 (256.322875ms)
+✔ an expired key can be replaced by a plain set (100.256208ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1969.710041

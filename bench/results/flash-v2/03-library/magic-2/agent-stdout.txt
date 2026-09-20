@@ -1,0 +1,22 @@
+I'll start by exploring the repository to see what's already here.Empty scaffold with just `package.json` and `.gitignore`. I'll build the modules, CLI, tests, and docs. Starting with the core support modules (validation and storage).Core entity modules are in. Now the loans module with the checkout/return rules, then the CLI.Now the tests. I'll cover each module plus storage and the CLI end-to-end.Now the package script, gitignore, and README, then I'll run the suite.All 41 tests pass. The runner also picked up `test/helpers.js` as an empty test file; I'll scope the test script to `*.test.js` so only real tests are collected.40 tests pass and only real test files are collected. Let me do a quick manual end-to-end run of the CLI to confirm the output shapes before documenting.Everything behaves as specified. Now the README documenting modules, commands, and rules.Final verification: full test run and a check that the repo has no stray data file.The library system is built and `npm test` passes with 40 tests across 5 test files.
+
+**What's there**
+
+- **`src/storage.js`** — loads/creates/saves the single JSON file (`{ books, members, loans }`), creates the parent directory on first use, and assigns per-entity ids as `max(id) + 1`. Default path is `data/library.json` under the current directory.
+- **`src/validate.js`** — shared input checks and date helpers (strict `YYYY-MM-DD` parsing, UTC-safe day arithmetic, `today` default).
+- **`src/books.js`** — `addBook`, `listBooks`. A book's `available` is the count of copies on the shelf (starts at `copies`).
+- **`src/members.js`** — `addMember`.
+- **`src/loans.js`** — `checkout`, `returnLoan`, `listLoans`, `report`, with the 3-active-loan cap, no-copy rejection, double-return rejection, and the 0.50/day fine capped at 20.00.
+- **`src/cli.js` + `bin/library.js`** — argument parsing and dispatch.
+
+Each module function takes an optional second argument `{ data }` with the data-file path, which is what the CLI's `--data` and the tests use to work against a temp file.
+
+**CLI behavior**
+
+Success prints one JSON value on stdout and exits 0. Domain/validation failures print `{"error":"..."}` on stderr and exit 2. Unknown commands, missing required options, options with no value, and unknown options exit 1. I verified this by hand for all seven commands plus each failure mode; the default file is created at `data/library.json` and `--data <path>` redirects it.
+
+**Tests and docs**
+
+`test/` has one file per module (`books`, `members`, `loans`, `storage`) plus `cli.test.js`, which spawns the real `bin/library.js` in a child process and checks stdout/stderr/exit codes. Every test uses its own `mkdtemp` data file, so nothing touches the repo. `package.json` adds `"test": "node --test \"test/**/*.test.js\""` (scoped so `test/helpers.js` isn't collected as an empty test file). `README.md` documents the storage format, modules, every command with a real example, and the rules; `data/` was added to `.gitignore`.
+
+No remaining work — the suite is green and the repository is clean apart from the new source.

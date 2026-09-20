@@ -1,0 +1,17 @@
+I'll start by exploring the repository to understand its current state.This is a fresh repo with just a `package.json` and `.gitignore`. I'll build the CLI as a small library module plus the entry point, then add tests and docs.Now the tests:I left a broken line in the storage test; let me fix it.Now let me run the tests and a few manual smoke checks.Everything behaves as specified. Let me add the default store file to `.gitignore` and clean up my scratch directory.The CLI is built and `npm test` passes with 26 tests across 7 suites.
+
+## What I added
+
+- **`bin/kv.js`** — the CLI entry point. Parses `--file` (defaults to `.kv.json`) and `--ttl`, validates keys against `/^[A-Za-z0-9_.-]+$/`, and dispatches the four commands with the specified output and exit codes (0 success, 1 invalid key / invalid TTL / `not found`, 2 usage for unknown command or missing key argument).
+- **`lib/store.js`** — store I/O kept separate from the CLI: load (a missing or empty file reads as an empty store), `saveStore` (writes a temp file in the same directory then `renameSync`s it into place), and `purgeExpired` (drops expired entries and reports whether the file needs rewriting).
+- **`test/kv.test.js`** — runs the CLI via `spawnSync` against files in a temp directory, covering every command, multi-argument value joining, empty values, sorted/empty `list`, all error cases, and TTL behavior.
+- **`README.md`** — documents every command, flags, exit codes, and the on-disk JSON format.
+- **`package.json`** — added `"test": "node --test"` and a `bin` entry; **`.gitignore`** now ignores the default `.kv.json`.
+
+## Notes on behavior
+
+Expiry is stored as an absolute epoch-millisecond `expiresAt` (or `null`). An expired key is purged from the file whenever it's touched — reading it with `get` removes it and reports `not found`, and `list`/`del` purge expired entries as a side effect. Re-`set`ting a key clears any previous TTL.
+
+For TTL tests I used both approaches the task allowed: pre-writing an already-expired timestamp directly into the store file (fast, deterministic, and lets me assert the entry is actually removed), plus one real `--ttl 1` set with a ~1.1s wait to confirm the clock behaves end to end. I verified the exit codes and atomic-write behavior manually as well (no leftover `.tmp` files, and the JSON stays valid).
+
+One judgment call worth flagging: a stray `--ttl` on `get`/`del`/`list` is parsed but ignored rather than rejected, since the spec only defines `--ttl` for `set`.

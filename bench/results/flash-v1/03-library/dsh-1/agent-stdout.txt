@@ -1,0 +1,24 @@
+Done. The library system is fully implemented and verified.
+
+## What was built
+
+**Core modules (`src/`, ES modules, no dependencies)**
+- `storage.js` — single-file JSON persistence. Default `data/library.json` relative to cwd, file+dirs auto-created on first use, `--data` override via `setDataFile`. Per-entity counters ensure ids start at 1 and increment in order.
+- `dates.js` — UTC-safe `YYYY-MM-DD` parsing, validation, `addDays`, `daysBetween`, `todayISO`.
+- `books.js` — `addBook({ title, author, copies = 1 })`, `listBooks({ available })`.
+- `members.js` — `addMember({ name })` (+ `listMembers()`).
+- `loans.js` — `checkout`, `returnLoan`, `listLoans`, `report` with the 3-active-loan limit, 0.50/day late fine capped at 20.00, and double-return rejection.
+
+**CLI (`bin/library.js`)**
+- All 7 commands with `--data` on every command.
+- Success: one JSON value on stdout, exit 0.
+- Failures: `{ "error": ... }` on stderr — usage errors exit 1, domain/validation failures exit 2.
+
+**Tests (`test/`, `node:test`)** — one suite per module plus CLI coverage, each test isolated in a temp data file. **`npm test` → 34 tests, 34 passing.**
+
+**Docs** — `README.md` documents the storage format, rules, every command with an example (and sample output), the module APIs, and the project layout. `package.json` now has `"test": "node --test"`.
+
+## Verification
+- `npm test`: 34/34 pass.
+- Manual CLI smoke test in a temp dir: default file creation, add/checkout/return with a 2.50 fine, report aggregation, and exit codes 1 (unknown command, missing option/value) and 2 (unknown book, bad integer) all confirmed.
+- `node --check` passes on every JS file.

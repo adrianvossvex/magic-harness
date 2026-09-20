@@ -1,0 +1,30 @@
+[8a014d2a] Glob
+[8a014d2a] Read
+[8a014d2a] Read
+[8a014d2a] Read
+[8a014d2a] Read
+[8a014d2a] Read
+[8a014d2a] Glob
+[8a014d2a] Read
+[8a014d2a] plan_write
+plan: 2 tasks, 1 milestones
+project: Task impl-methods started (Implement toggle, remove and count in src/todo.js with tests) · session 23ed0e19-7ae6-4e1f-a50a-885954102375
+[23ed0e19] Read
+[23ed0e19] Read
+[23ed0e19] Edit
+[23ed0e19] Edit
+[23ed0e19] Bash
+[23ed0e19] Bash
+[23ed0e19] task_report
+project: Task impl-methods done.
+project: Task write-readme started (Write README.md documenting the store API) · session c60f98a8-e07d-475c-9c36-498323f99ed6
+[c60f98a8] Read
+[c60f98a8] Read
+[c60f98a8] Read
+[c60f98a8] Write
+[c60f98a8] Bash
+[c60f98a8] task_report
+project: Task write-readme done.
+project: Milestone m1 (Extended store API (toggle, remove, count) with tests and README) is complete and waits for your approval. Try the result, then /project run continues or /project replan <note> revises the plan.
+milestone approved: m1
+project: Project complete: every task is done.

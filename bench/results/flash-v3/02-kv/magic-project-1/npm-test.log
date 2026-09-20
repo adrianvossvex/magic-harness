@@ -1,0 +1,30 @@
+
+> kv-store@0.1.0 test
+> node --test test/*.test.js
+
+✔ set then get round-trips a multi-word value joined with single spaces (100.166209ms)
+✔ set writes the value and a null expiry and leaves only the store file behind (48.560125ms)
+✔ overwriting a key replaces the value while the file stays valid JSON (148.35125ms)
+✔ del prints 'deleted' and a second del reports not found (155.128417ms)
+✔ list prints keys sorted, one per line, and nothing for an empty store (254.564375ms)
+✔ the store file survives every write as valid JSON in a directory with no leftovers (142.758166ms)
+✔ a run with cwd in the temp dir and no --file uses .kv.json there (96.053584ms)
+✔ get and del on a missing key fail with not found and no stdout (102.73325ms)
+✔ set with an invalid key reports it and writes nothing (144.135875ms)
+✔ get and del with an invalid key report it and read nothing (309.609709ms)
+✔ an unknown command and no arguments print usage and exit 2 (104.095209ms)
+✔ missing operands print usage and exit 2 without writing (237.560917ms)
+✔ a non-numeric --ttl is rejected without writing (49.33ms)
+✔ --ttl 0.05 expires after a short wait, prunes the file and hides from list (304.109208ms)
+✔ an entry with a past expiresAt behaves as expired and is pruned on read (102.860459ms)
+✔ a hand-written expired entry is also hidden from list and removed by it (51.788917ms)
+✔ a key with a future expiresAt is still readable and listed (101.925541ms)
+✔ a plain set clears a previous expiry (99.383042ms)
+ℹ tests 18
+ℹ suites 0
+ℹ pass 18
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1012.36475

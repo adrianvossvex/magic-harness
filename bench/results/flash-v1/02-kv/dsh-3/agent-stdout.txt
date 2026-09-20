@@ -1,0 +1,30 @@
+Done. The key-value store CLI is built and `npm test` passes (24/24).
+
+## What was created
+
+| File | Purpose |
+|------|---------|
+| `bin/kv.js` | CLI entry point: arg parsing, command dispatch, exit codes |
+| `lib/store.js` | Store load/save with **atomic writes** (temp file + `rename`), expiry purging, key validation |
+| `test/kv.test.js` | 24 `node:test` tests spawning the CLI against temp files |
+| `README.md` | Documents every command, keys, exit codes, and file format |
+| `package.json` | Added `"test": "node --test"` and a `bin` entry |
+| `.gitignore` | Ignores `.kv.json` and `*.tmp` |
+
+## Contract implemented
+
+- **`set <key> <value...> [--ttl <seconds>]** — joins remaining args with single spaces, prints nothing, exit 0; stores `expiresAt` as an absolute millisecond timestamp (or `null`).
+- **`get <key>`** — prints value + newline, exit 0; missing/expired → `not found: <key>` on stderr, exit 1, and purges the expired entry from the file.
+- **`del <key>`** — prints `deleted`, exit 0; missing/expired → `not found: <key>` on stderr, exit 1.
+- **`list`** — sorted non-expired keys, one per line; empty output for an empty store.
+- Keys validated against `/^[A-Za-z0-9_.-]+$/` → `invalid key: <key>` stderr, exit 1.
+- Unknown/missing command → usage on stderr, exit 2.
+- `--file <path>` works anywhere on the line and defaults to `.kv.json` in cwd.
+
+## Design notes
+
+- Writes go to a uniquely named `.tmp` file in the target directory, then `renameSync` over the store — tested to leave no leftovers.
+- The in-memory store uses a **null-prototype object**, so keys like `__proto__` or `constructor` are treated as plain data rather than polluting the prototype.
+- TTL expiry is tested both deterministically (injecting an already-expired timestamp) and with a real short TTL (`0.15s` + wait), plus a check that the on-disk expiry is an absolute ms value `now + ttl*1000`.
+
+Verified with `npm test` (exit 0) and a manual smoke test of every command, error case, and exit code.

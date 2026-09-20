@@ -1,0 +1,15 @@
+I'll start by exploring the repository to understand the existing structure.This is a clean repo, so I'll build the CLI, tests, package.json script, and README from scratch. Starting with the entry point.Now the tests, running the CLI as a child process against temporary files.Now let me run the test suite to verify everything works.All 16 tests pass. Let me do a quick manual smoke test to confirm behavior and see the on-disk format.Behavior matches the spec. Now the README documenting every command.Let me run the full suite once more to confirm the final state.Done. The key-value store CLI is built and `npm test` passes with all 16 tests.
+
+**What's in place**
+
+- `bin/kv.js` — the CLI. Parses `--file` (default `.kv.json`) anywhere in the arguments and `--ttl` for `set`. The store is a JSON object mapping keys to `{ value, expiresAt? }` entries, where `expiresAt` is an absolute epoch-milliseconds time. Writes go to a hidden temp file in the same directory and are then `rename`d into place, so the store is never left half-written. Keys are validated against `/^[A-Za-z0-9_.-]+$/` across `set`, `get`, and `del`.
+- `test/kv.test.js` — 16 `node:test` tests that spawn `node bin/kv.js` as a child process against a temp file, covering `set`/`get`/`del`/`list`, multi-argument value joining, overwrite, missing-key errors (exit 1), invalid keys (exit 1), unknown command usage (exit 2), the `.kv.json` default, and TTL. Expiry is tested deterministically by writing an already-past `expiresAt` into the file, plus a `--ttl 0` case and a check that reading an expired key prunes it from the file.
+- `package.json` — added `"test": "node --test"`.
+- `README.md` — documents every command, both options, exit codes, and the store file format.
+
+**Two judgment calls worth flagging**, since the spec didn't pin them down:
+
+- Missing arguments (e.g. `get` with no key) print the usage text to stderr and exit 2, matching the unknown-command error path. An unknown option value like a non-numeric `--ttl` also exits 2.
+- `del` and `list` also treat expired keys as absent; `del` prunes an expired entry from the file, and `list` simply filters them out without rewriting. The spec only requires removal-on-read for `get`, which is implemented as specified.
+
+Verified with a manual smoke run as well: `set`, `list`, `get`, a missing-key `get` (exit 1), and an unknown command (exit 2) all behave as documented, and no temp files are left behind.

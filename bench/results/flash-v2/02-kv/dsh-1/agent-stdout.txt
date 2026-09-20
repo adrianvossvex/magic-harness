@@ -1,0 +1,27 @@
+All done. Here's a summary of what I built.
+
+## Files
+
+- **`bin/kv.js`** — the CLI (ES modules, zero dependencies)
+- **`test/kv.test.js`** — 20 `node:test` tests that spawn the CLI against temp files
+- **`package.json`** — added `"test": "node --test"` plus a `bin` entry
+- **`README.md`** — documents every command, option, exit code, and the store format
+
+## Behavior implemented
+
+| Command | Result |
+|---|---|
+| `set <key> <value...>` | Joins remaining args with single spaces, prints nothing, exit 0; optional `--ttl <seconds>` stores an absolute `Date.now() + s*1000` expiry |
+| `get <key>` | Prints value + newline, exit 0; missing/expired → `not found: <key>` on stderr, exit 1; expired entries are purged from the file on read |
+| `del <key>` | Prints `deleted`, exit 0; missing/expired → `not found: <key>` on stderr, exit 1 |
+| `list` | Sorted non-expired keys, one per line, nothing when empty |
+| invalid key | `/^[A-Za-z0-9_.-]+$/`, else `invalid key: <key>` on stderr, exit 1 |
+| unknown command | Usage on stderr, exit 2 |
+
+`--file <path>` selects the store (defaults to `.kv.json` in the cwd) and is accepted before or after the command. Writes are atomic: a temp file is written in the target directory, then `rename`d over the store. The JSON format is `{ key: { value, expiresAt? } }` with epoch-ms expiry.
+
+## Verification
+
+`npm test` passes all 20 tests, covering every command, error cases/exit codes, argument joining, sorted listing, default vs. custom `--file`, absolute-ms expiry values, TTL expiry via an already-expired timestamp (deterministic) and a real 1-second TTL, plus a check that no temp files are left behind.
+
+Note: `node --test test/` fails on Node 26 (it tries to load the directory as a module), so the test script uses `node --test`, which auto-discovers `test/`.

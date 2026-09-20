@@ -1,0 +1,44 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook assigns ids in order starting at 1 and defaults to one copy (2.196458ms)
+✔ listBooks returns persisted books and preserves insertion order (0.642792ms)
+✔ listBooks with available filters out fully checked out books (1.516917ms)
+✔ addBook validates title, author and copies (0.958833ms)
+✔ successful commands print one JSON value on stdout (340.520334ms)
+✔ list-loans --overdue keeps only active late loans (291.170166ms)
+✔ the default data file is data/library.json relative to the working directory (50.157375ms)
+✔ --data keeps separate files independent (189.131583ms)
+✔ domain failures report an error on stderr and exit 2 (234.853958ms)
+✔ usage failures exit 1 (284.750416ms)
+✔ parseDate accepts YYYY-MM-DD and rejects everything else (1.542458ms)
+✔ addDays crosses month and year boundaries (0.077792ms)
+✔ daysBetween counts whole days forward and backward (0.072708ms)
+✔ today returns the current date as YYYY-MM-DD (0.283667ms)
+✔ checkout records the loan and decrements availability (2.666792ms)
+✔ checkout defaults its start date to the current day (0.882625ms)
+✔ checkout fails when the book has no available copy (0.599917ms)
+✔ checkout fails once a member holds three active loans (0.598709ms)
+✔ checkout rejects unknown books and members (0.380416ms)
+✔ returning on time restores availability without a fine (0.540375ms)
+✔ returning late charges 0.50 per day (0.48525ms)
+✔ returning late caps the fine at 20.00 (0.454458ms)
+✔ a loan cannot be returned twice (0.528041ms)
+✔ listLoans filters by member and by overdue (0.750334ms)
+✔ report summarises the library (0.586166ms)
+✔ addMember assigns ids in order starting at 1 (1.877833ms)
+✔ addMember requires a non-empty name (0.309083ms)
+✔ resolveDataFile defaults to data/library.json in the current directory (0.606417ms)
+✔ read returns an empty database when the file does not exist (0.943083ms)
+✔ write creates missing directories and round-trips through read (0.539625ms)
+✔ read rejects a file that is not valid JSON (0.530125ms)
+✔ nextId assigns ids in order starting at 1 (0.060375ms)
+ℹ tests 32
+ℹ suites 0
+ℹ pass 32
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1479.110667

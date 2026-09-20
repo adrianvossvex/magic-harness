@@ -1,0 +1,40 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+✔ CLI drives the full invoice lifecycle with formatted money (563.450083ms)
+✔ CLI void and show (147.717459ms)
+✔ CLI uses the default data path relative to the working directory (53.592458ms)
+✔ CLI accepts --data before the command (47.853834ms)
+✔ CLI reports usage errors with exit code 1 (180.452375ms)
+✔ CLI reports runtime errors as JSON with exit code 2 (364.346791ms)
+✔ addCustomer assigns sequential integer ids and persists (1.926959ms)
+✔ addCustomer validates name and email (0.332375ms)
+✔ test/helpers.js (59.792125ms)
+✔ createInvoice creates an empty draft with sensible defaults (3.949791ms)
+✔ addLine stores the product snapshot and recomputes totals (0.787792ms)
+✔ addLine applies discounts and rounds half up (0.4955ms)
+✔ addLine validates quantity and discount and only touches drafts (1.004083ms)
+✔ issue numbers invoices per year and computes the due date (0.638375ms)
+✔ issue refuses drafts without lines or that are not drafts (0.361917ms)
+✔ pay records partial payments and settles the invoice (0.461792ms)
+✔ pay rejects overpayments and invalid states (0.438ms)
+✔ voidInvoice voids drafts and unpaid issued invoices only (0.630125ms)
+✔ listInvoices filters by status, customer and overdue (0.628917ms)
+✔ parseMoney converts decimal strings to integer cents (0.665625ms)
+✔ parseMoney rejects letters, negatives and more than two decimals (0.22825ms)
+✔ formatMoney renders exactly two decimals (0.06425ms)
+✔ roundCents rounds half up (0.05025ms)
+✔ addProduct stores price in cents and defaults taxRate to 0 (1.778875ms)
+✔ addProduct accepts integer cents and validates inputs (0.397333ms)
+✔ aging buckets issued invoice balances by days past due (5.486125ms)
+✔ aging ignores drafts, paid invoices and partial balances are respected (0.614791ms)
+✔ revenue groups issued and paid invoices by issue month (1.02875ms)
+ℹ tests 28
+ℹ suites 0
+ℹ pass 28
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1433.419834

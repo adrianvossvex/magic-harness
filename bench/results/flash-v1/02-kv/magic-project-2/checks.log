@@ -1,0 +1,254 @@
+✖ set then get returns the value (42.973375ms)
+✖ get of a missing key exits 1 with the message on stderr (40.662333ms)
+✖ list prints sorted keys (123.712459ms)
+✖ del removes and reports (41.864625ms)
+✖ del of a missing key exits 1 (41.247709ms)
+✖ invalid keys are rejected (41.639792ms)
+✖ unknown commands exit 2 (40.923ms)
+✖ ttl expiry hides and purges the key (42.301292ms)
+✖ the store survives a garbage temp file and keeps other keys (41.164583ms)
+✖ the repository's own tests pass (89.354083ms)
+ℹ tests 10
+ℹ suites 0
+ℹ pass 0
+ℹ fail 10
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 607.487833
+
+✖ failing tests:
+
+test at ../../../../../checks/02-kv.check.mjs:21:1
+✖ set then get returns the value (42.973375ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:21:61)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:22:1
+✖ get of a missing key exits 1 with the message on stderr (40.662333ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /not found: nope/. Input:
+  
+  'node:internal/modules/cjs/loader:1478\n' +
+    '  throw err;\n' +
+    '  ^\n' +
+    '\n' +
+    "Error: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n" +
+    '    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n' +
+    '    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n' +
+    '    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n' +
+    '    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n' +
+    '    at Module._load (node:internal/modules/cjs/loader:1261:25)\n' +
+    '    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n' +
+    '    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n' +
+    '    at node:internal/main/run_main_module:33:47 {\n' +
+    "  code: 'MODULE_NOT_FOUND',\n" +
+    '  requireStack: []\n' +
+    '}\n' +
+    '\n' +
+    'Node.js v26.0.0\n'
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:22:147)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "node:internal/modules/cjs/loader:1478\n  throw err;\n  ^\n\nError: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n    at Module._load (node:internal/modules/cjs/loader:1261:25)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: []\n}\n\nNode.js v26.0.0\n",
+    expected: /not found: nope/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:23:1
+✖ list prints sorted keys (123.712459ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '' !== 'a\nb\nname\n'
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:23:139)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: 'a\nb\nname\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:24:1
+✖ del removes and reports (41.864625ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:24:87)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:25:1
+✖ del of a missing key exits 1 (41.247709ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /not found: zzz/. Input:
+  
+  'node:internal/modules/cjs/loader:1478\n' +
+    '  throw err;\n' +
+    '  ^\n' +
+    '\n' +
+    "Error: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n" +
+    '    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n' +
+    '    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n' +
+    '    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n' +
+    '    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n' +
+    '    at Module._load (node:internal/modules/cjs/loader:1261:25)\n' +
+    '    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n' +
+    '    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n' +
+    '    at node:internal/main/run_main_module:33:47 {\n' +
+    "  code: 'MODULE_NOT_FOUND',\n" +
+    '  requireStack: []\n' +
+    '}\n' +
+    '\n' +
+    'Node.js v26.0.0\n'
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:25:119)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "node:internal/modules/cjs/loader:1478\n  throw err;\n  ^\n\nError: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n    at Module._load (node:internal/modules/cjs/loader:1261:25)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: []\n}\n\nNode.js v26.0.0\n",
+    expected: /not found: zzz/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:26:1
+✖ invalid keys are rejected (41.639792ms)
+  AssertionError [ERR_ASSERTION]: The input did not match the regular expression /invalid key: bad key/. Input:
+  
+  'node:internal/modules/cjs/loader:1478\n' +
+    '  throw err;\n' +
+    '  ^\n' +
+    '\n' +
+    "Error: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n" +
+    '    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n' +
+    '    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n' +
+    '    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n' +
+    '    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n' +
+    '    at Module._load (node:internal/modules/cjs/loader:1261:25)\n' +
+    '    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n' +
+    '    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n' +
+    '    at node:internal/main/run_main_module:33:47 {\n' +
+    "  code: 'MODULE_NOT_FOUND',\n" +
+    '  requireStack: []\n' +
+    '}\n' +
+    '\n' +
+    'Node.js v26.0.0\n'
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:26:125)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: "node:internal/modules/cjs/loader:1478\n  throw err;\n  ^\n\nError: Cannot find module '/Users/squirrel/Desktop/harness/bench/results/flash-v1/02-kv/magic-project-2/workspace/bin/kv.js'\n    at Module._resolveFilename (node:internal/modules/cjs/loader:1475:15)\n    at wrapResolveFilename (node:internal/modules/cjs/loader:1048:27)\n    at defaultResolveImplForCJSLoading (node:internal/modules/cjs/loader:1072:10)\n    at resolveForCJSWithHooks (node:internal/modules/cjs/loader:1093:12)\n    at Module._load (node:internal/modules/cjs/loader:1261:25)\n    at wrapModuleLoad (node:internal/modules/cjs/loader:255:19)\n    at Module.executeUserEntryPoint [as runMain] (node:internal/modules/run_main:154:5)\n    at node:internal/main/run_main_module:33:47 {\n  code: 'MODULE_NOT_FOUND',\n  requireStack: []\n}\n\nNode.js v26.0.0\n",
+    expected: /invalid key: bad key/,
+    operator: 'match',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:27:1
+✖ unknown commands exit 2 (40.923ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 2
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:27:89)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 2,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:28:1
+✖ ttl expiry hides and purges the key (42.301292ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  1 !== 0
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:29:10)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: 1,
+    expected: 0,
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:39:1
+✖ the store survives a garbage temp file and keeps other keys (41.164583ms)
+  AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:
+  
+  '' !== '1\n'
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/02-kv.check.mjs:39:147)
+      at process.processTicksAndRejections (node:internal/process/task_queues:104:5)
+      at async Test.run (node:internal/test_runner/test:1208:7)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: '',
+    expected: '1\n',
+    operator: 'strictEqual',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/02-kv.check.mjs:40:1
+✖ the repository's own tests pass (89.354083ms)
+  Error: Command failed: npm test
+  npm error Missing script: "test"
+  npm error
+  npm error To see a list of scripts, run:
+  npm error   npm run
+  npm error A complete log of this run can be found in: /Users/squirrel/.npm/_logs/2026-09-20T02_31_55_680Z-debug-0.log
+  
+      at genericNodeError (node:internal/errors:998:15)
+      at wrappedFn (node:internal/errors:543:14)
+      at ChildProcess.exithandler (node:child_process:417:12)
+      at ChildProcess.emit (node:events:509:20)
+      at maybeClose (node:internal/child_process:1108:16)
+      at ChildProcess._handle.onexit (node:internal/child_process:305:5) {
+    code: 1,
+    killed: false,
+    signal: null,
+    cmd: 'npm test',
+    stdout: '',
+    stderr: 'npm error Missing script: "test"\nnpm error\nnpm error To see a list of scripts, run:\nnpm error   npm run\nnpm error A complete log of this run can be found in: /Users/squirrel/.npm/_logs/2026-09-20T02_31_55_680Z-debug-0.log\n'
+  }

@@ -1,0 +1,23 @@
+I'll start by looking at what's already in the repository.The repo is essentially empty, so I'll build the whole thing. Let me lay out the core: a small store module for persistence, then the three feature modules, the CLI, tests, and docs.Now the CLI:Now the tests, starting with a shared helper for isolated temp data files:I introduced a bug in that last test (checkout without a member). Let me fix it:Now a CLI integration test:Let me run the tests:All 36 tests pass. Let me smoke-test the CLI by hand to confirm output shape, persistence, and exit codes:Everything behaves as specified. Now the README:Let me verify the default `data/library.json` behavior (no `--data`) in a throwaway directory:Done. The library system is built, and `npm test` passes with 36 tests.
+
+## What's there
+
+**Modules** (`src/`, ES modules, no dependencies):
+- `src/store.js` — JSON persistence. `load()` creates the data file on first use and returns a snapshot; `save()` writes it back (creating parent dirs); `nextId()` assigns per-type ids from 1. `setDataFile(path)` is how the CLI applies `--data`.
+- `src/dates.js` — `YYYY-MM-DD` validation, `addDays`, `daysBetween`, local `todayISO`.
+- `src/books.js` — `addBook`, `listBooks`.
+- `src/members.js` — `addMember`.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`, with the 3-active-loan limit, the 0.50/day fine capped at 20.00, and the double-return error.
+
+**CLI** (`bin/library.js`): parses `--data` from anywhere in the argument list, validates each command's options against a small per-command schema. Success prints one compact JSON value on stdout, exit 0. Failure prints `{"error":"..."}` on stderr, exit 2 — or exit 1 for unknown command, missing required option, unknown option, or a missing option value. Invalid option values (e.g. `--copies abc`) are validation failures at exit 2, as are business-rule rejections.
+
+**Tests** (`test/`, `node:test`): one file per module plus a CLI end-to-end file. Each test points the store at a fresh temp file via `test/helpers.js`, so nothing touches `data/library.json`.
+
+**`package.json`** gained `"scripts": { "test": "node --test" }`; **`README.md`** documents the modules, every command with an example, the rules, and the tests.
+
+## Verification
+- `npm test`: 36 pass, 0 fail.
+- Manual CLI run confirmed stdout JSON and exit codes 0 / 1 / 2 for the success, usage-error, and validation-error paths respectively.
+- Ran with no `--data` in a scratch directory: it created `data/library.json` on the first (read-only) command and reused it afterward.
+
+One thing worth flagging: `test/helpers.js` has no tests itself, but Node's runner still loads it as a test file and reports it as a passing empty file — harmless, though it does add a `✔ test/helpers.js` line to the output.

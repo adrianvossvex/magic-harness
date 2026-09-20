@@ -1,0 +1,307 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+Usage: node bin/invoice.js <command> [options] [--data <path>]
+
+Commands:
+  add-customer --name <n> --email <e>
+  add-product  --name <n> --price <amount> [--tax <percent>]
+  create       --customer <id> [--terms <days>]
+  add-line     --invoice <id> --product <id> [--quantity <n>] [--discount <percent>]
+  issue        --invoice <id> [--today <date>]
+  pay          --invoice <id> --amount <amount> [--today <date>]
+  void         --invoice <id>
+  show         --invoice <id>
+  list         [--status <s>] [--customer <id>] [--overdue] [--today <date>]
+  report aging [--today <date>]
+  report revenue
+  export       --invoice <id>
+
+Options:
+  --data <path>   Path to the JSON data file (default data/invoicing.json).
+{"error":"email must contain \"@\""}
+{"error":"invalid amount: \"1.234\""}
+{"error":"invoice not found: 99"}
+{"error":"invoice not found: 99"}
+✔ CLI drives a full invoice workflow (571.772083ms)
+✔ CLI prints usage and exits 1 for unknown commands or missing options (786.130791ms)
+✔ CLI prints a JSON error and exits 2 for validation failures (217.694625ms)
+✔ addCustomer creates customers with incrementing ids and persists (1.7445ms)
+✔ addCustomer creates the data file and directory on first use (0.3545ms)
+✔ addCustomer validates name and email (0.251708ms)
+✔ createInvoice produces an empty draft (2.532666ms)
+✔ createInvoice rejects unknown customers (0.330375ms)
+✔ addLine computes net, tax and totals in cents (0.643042ms)
+✔ addLine rounds net and tax half up (0.415792ms)
+✔ addLine defaults quantity to 1 and discount to 0 (0.3745ms)
+✔ addLine appends and recomputes across multiple lines (0.400083ms)
+✔ addLine validates id, quantity, discount and invoice state (1.045333ms)
+✔ issue sets number, issue date and due date (0.433541ms)
+✔ issue requires at least one line and a draft (0.477541ms)
+✔ invoice numbers restart each year (0.805417ms)
+✔ issue validates the date (0.359583ms)
+✔ pay records partial payments and closes the invoice when fully paid (0.547708ms)
+✔ pay rejects overpayment and non-issued invoices (0.486084ms)
+✔ voidInvoice voids drafts and unpaid issued invoices only (0.602584ms)
+✔ voidInvoice can void an issued invoice without payments (0.391917ms)
+✔ listInvoices filters by status, customer and overdue (0.755875ms)
+✔ getInvoice returns a stored invoice and throws when missing (0.305792ms)
+✔ parseMoney parses decimal strings into cents (0.982209ms)
+✔ parseMoney rejects malformed amounts (0.545875ms)
+✔ formatMoney always shows exactly two decimals (0.162625ms)
+✔ roundCents rounds half up (0.116375ms)
+✔ toCents accepts strings and integer cents (0.26875ms)
+✔ addProduct stores price in cents and defaults taxRate to 0 (2.00775ms)
+✔ addProduct accepts a string tax rate and persists (0.283958ms)
+✔ addProduct validates its inputs (0.276959ms)
+✔ aging buckets issued balances by days past due (5.131208ms)
+✔ aging treats due today as current and excludes non-issued invoices (0.705667ms)
+✔ aging sums outstanding balances after partial payments (0.611417ms)
+✔ revenue groups issued and paid invoices by issue month (7.956542ms)
+✔ invoiceToCsv renders the required header and rows without trailing newline (1.221917ms)
+✔ invoiceToCsv escapes commas and quotes in descriptions (0.143084ms)
+✔ serializeInvoice formats every money field as a string (0.168375ms)
+✔ serializeProduct and report serializers format money (1.25175ms)
+ℹ tests 39
+ℹ suites 0
+ℹ pass 39
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1657.839042

@@ -1,0 +1,47 @@
+
+> kv-store@0.1.0 test
+> node --test
+
+▶ set
+  ✔ stores a plain value silently with exit code 0 (50.021084ms)
+  ✔ joins all remaining arguments with single spaces (50.193209ms)
+  ✔ overwrites an existing key (97.940875ms)
+  ✔ writes atomically and leaves no temporary files behind (49.842166ms)
+  ✔ --ttl stores an absolute expiry in milliseconds (48.556083ms)
+  ✔ rejects an invalid key (47.256791ms)
+  ✔ rejects an invalid ttl (47.65575ms)
+✔ set (392.08925ms)
+▶ get
+  ✔ prints the value followed by a newline (96.38ms)
+  ✔ prints not found on stderr and exits 1 for a missing key (48.694917ms)
+  ✔ rejects an invalid key (48.174709ms)
+✔ get (193.376583ms)
+▶ del
+  ✔ removes the key and prints deleted (96.632917ms)
+  ✔ prints not found on stderr and exits 1 for a missing key (49.218125ms)
+  ✔ rejects an invalid key (47.87125ms)
+✔ del (193.798667ms)
+▶ list
+  ✔ prints every key sorted, one per line (197.0425ms)
+  ✔ prints nothing for an empty store (47.278291ms)
+✔ list (244.376042ms)
+▶ ttl expiry
+  ✔ an already-expired key is reported missing, removed and hidden from list (97.729125ms)
+  ✔ a future expiry is still readable (48.52525ms)
+  ✔ a short ttl expires after the clock passes it (95.787167ms)
+✔ ttl expiry (242.111875ms)
+▶ arguments and errors
+  ✔ an unknown command prints usage on stderr and exits 2 (47.826458ms)
+  ✔ no command prints usage on stderr and exits 2 (49.11925ms)
+  ✔ a missing key argument prints usage and exits 2 (49.548417ms)
+  ✔ defaults to .kv.json in the current directory (99.075625ms)
+  ✔ --file selects an alternate store (48.705708ms)
+✔ arguments and errors (294.39725ms)
+ℹ tests 23
+ℹ suites 6
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1624.860875

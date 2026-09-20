@@ -1,0 +1,8 @@
+I'll start by looking at the existing library and tests.Now I'll implement the three methods.Done. All 7 tests pass (`npm test` is green).
+
+What changed:
+- `src/todo.js`: added `toggle(id)` (flips `done`, returns the item, throws `Error` with `Unknown id` in the message for unknown ids), `remove(id)` (splices the item and returns `true`, or `false` when unknown), and `count()`. `add` and `list` are untouched, so `list()` still returns a copy.
+- `test/todo.test.js`: added tests for toggling (both directions and the unknown-id throw via `assert.throws`), removing (both outcomes), and counting, plus a test pinning the "list returns a copy" behavior.
+- `README.md`: documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short usage example.
+
+One thing worth flagging: `add` assigns `id: items.length + 1`, so after a `remove` a later `add` can reuse an id (add 1, 2, 3, remove 2, add again → id 3 collides). I left it alone since you asked to keep `add` working as-is, but if you want stable ids that's a small follow-up change.

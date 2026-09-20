@@ -1,0 +1,52 @@
+
+> library-system@0.1.0 test
+> node --test "test/**/*.test.js"
+
+✔ addBook stores a book with defaults (5.029291ms)
+✔ addBook accepts copies and trims text (1.346542ms)
+✔ ids are assigned in order per entity type and persist (2.748042ms)
+✔ listBooks returns every book by default (1.794667ms)
+✔ listBooks filters by availability (4.199833ms)
+✔ addBook validates its input (0.653084ms)
+✔ add-book prints the book and exits 0 (54.169209ms)
+✔ commands share the same data file (326.52125ms)
+✔ list-books --available keeps only books on the shelf (280.594041ms)
+✔ list-loans --overdue keeps only late active loans (281.30175ms)
+✔ a missing required option exits 1 (45.155125ms)
+✔ an option without a value exits 1 (45.046917ms)
+✔ an unknown command exits 1 (45.342708ms)
+✔ an unknown option exits 1 (46.74125ms)
+✔ a domain failure exits 2 and prints an error object (46.626875ms)
+✔ an invalid option value exits 2 (45.300291ms)
+✔ an invalid date exits 2 (142.496709ms)
+✔ checkout creates a loan due in 14 days by default (7.258833ms)
+✔ checkout accepts a custom number of days and decrements availability (2.485167ms)
+✔ checkout rejects an unknown book or member (2.636958ms)
+✔ checkout fails when no copy is available (1.662042ms)
+✔ checkout fails when the member already has three active loans (2.554958ms)
+✔ returning on time charges no fine and restores availability (1.659333ms)
+✔ returning late charges 0.50 per day (1.379875ms)
+✔ fines are capped at 20.00 (0.761791ms)
+✔ returning a loan twice fails (0.836917ms)
+✔ returning an unknown loan fails (0.577875ms)
+✔ checkout rejects invalid input (0.556459ms)
+✔ listLoans filters by member and by overdue status (1.641833ms)
+✔ report summarises the library (1.1625ms)
+✔ report uses the current date when none is given (0.480667ms)
+✔ addMember stores a member (4.062292ms)
+✔ member ids are assigned in order and persist (1.913708ms)
+✔ member ids are independent from book ids (1.041958ms)
+✔ addMember validates its input (0.395917ms)
+✔ the data file is created on first use (4.180375ms)
+✔ the default data file lives at data/library.json under the cwd (0.106833ms)
+✔ data written by one call is visible to the next (1.663084ms)
+✔ a corrupt data file is reported (1.265458ms)
+✔ a data file with a non-object root is reported (1.111583ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1429.022209

@@ -1,0 +1,52 @@
+
+> kv-store@0.1.0 test
+> node --test
+
+▶ set
+  ✔ stores a value quietly with exit code 0 (46.892541ms)
+  ✔ joins remaining arguments with single spaces (46.686542ms)
+  ✔ overwrites an existing key (100.967459ms)
+  ✔ accepts keys with letters, digits, underscore, dot and dash (46.476958ms)
+✔ set (241.614542ms)
+▶ get
+  ✔ prints the value with a trailing newline (95.594875ms)
+  ✔ prints a missing key to stderr and exits 1 (47.254209ms)
+  ✔ prints an empty value as just a newline (93.301375ms)
+  ✔ works when the store file does not exist yet (47.54675ms)
+✔ get (283.87375ms)
+▶ del
+  ✔ removes the key and prints deleted (95.260416ms)
+  ✔ prints not found to stderr and exits 1 for a missing key (47.946708ms)
+✔ del (143.305792ms)
+▶ list
+  ✔ prints sorted keys, one per line (186.020291ms)
+  ✔ prints nothing for an empty store (45.216708ms)
+✔ list (231.312708ms)
+▶ ttl
+  ✔ a key with a future expiry is still visible (94.754958ms)
+  ✔ an already-expired key is not found, and is removed from the file (48.21075ms)
+  ✔ expired keys are hidden from list and rejected by del (94.828292ms)
+  ✔ a short ttl actually expires after waiting (1287.052875ms)
+  ✔ re-setting a key clears a previous ttl (94.219417ms)
+  ✔ rejects a non-numeric ttl (47.296375ms)
+✔ ttl (1666.525125ms)
+▶ argument validation
+  ✔ rejects an invalid key on set (47.482917ms)
+  ✔ rejects an invalid key on get and del (143.388208ms)
+  ✔ rejects a missing key (46.585ms)
+  ✔ an unknown command prints usage to stderr and exits 2 (46.907917ms)
+  ✔ no command prints usage to stderr and exits 2 (47.988667ms)
+✔ argument validation (332.473958ms)
+▶ storage
+  ✔ defaults to .kv.json without --file (47.884125ms)
+  ✔ leaves no temporary files behind (46.504459ms)
+  ✔ persists across invocations (95.333167ms)
+✔ storage (189.797125ms)
+ℹ tests 26
+ℹ suites 7
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3153.319167

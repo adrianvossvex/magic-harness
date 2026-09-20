@@ -1,0 +1,48 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+✔ CLI runs a full invoice lifecycle with formatted money (488.495709ms)
+✔ CLI export prints the CSV as a JSON string (236.953833ms)
+✔ CLI supports partial payment, overdue listing and void (614.434708ms)
+✔ CLI reports domain errors as JSON on stderr with exit 2 (93.909625ms)
+✔ CLI reports usage errors with exit 1 (92.85175ms)
+✔ addCustomer assigns sequential ids and stores fields (1.960375ms)
+✔ addCustomer requires an "@" in the email (0.446333ms)
+✔ addCustomer requires a name (0.310791ms)
+✔ findCustomer returns the stored record or undefined (0.385916ms)
+✔ test/helpers.js (58.957292ms)
+✔ createInvoice returns a draft with zeroed totals (4.265875ms)
+✔ createInvoice rejects an unknown customer (0.475333ms)
+✔ addLine computes net, tax and totals with half-up rounding (0.707875ms)
+✔ addLine stores the product name as the description (0.514333ms)
+✔ addLine is rejected on non-draft invoices and bad input (1.293834ms)
+✔ issue numbers invoices per year and sets issued/due dates (0.960083ms)
+✔ issue requires a draft with at least one line (0.597708ms)
+✔ pay records partial payments and marks the invoice paid (0.656791ms)
+✔ pay rejects overpayment and non-issued invoices (0.644083ms)
+✔ voidInvoice voids drafts and unpaid issued invoices only (0.918667ms)
+✔ listInvoices filters by status, customer and overdue (0.760208ms)
+✔ getInvoice throws for a missing id (0.289834ms)
+✔ parseMoney accepts decimal strings with up to two decimals (0.641959ms)
+✔ parseMoney rejects malformed, negative, or over-precise amounts (0.232541ms)
+✔ formatMoney renders exactly two decimals (0.066167ms)
+✔ roundCents rounds half up (0.052167ms)
+✔ parseMoney and formatMoney round-trip (0.062709ms)
+✔ addProduct parses the price into cents and defaults taxRate to 0 (1.849917ms)
+✔ addProduct stores an explicit integer taxRate (0.404417ms)
+✔ addProduct rejects a bad price (0.426083ms)
+✔ addProduct rejects a taxRate outside 0-100 (0.321875ms)
+✔ aging buckets issued invoice balances by days past due (4.476584ms)
+✔ aging ignores drafts, paid and void invoices (1.193667ms)
+✔ aging uses only the outstanding balance of partially paid invoices (0.646666ms)
+✔ revenue groups issued and paid invoices by issue month (1.254709ms)
+✔ revenue is empty when nothing is issued (0.298125ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1606.449083

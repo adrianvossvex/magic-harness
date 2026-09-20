@@ -1,0 +1,27 @@
+Done. The library management system is built and `npm test` passes (30/30).
+
+## What was created
+
+**Core modules (ES modules, zero dependencies)**
+- `src/storage.js` — single-file JSON persistence (`data/library.json` default), creates file + parent dir on first use, per-type integer id counters, path override support.
+- `src/books.js` — `addBook`, `listBooks` (with `available` filter).
+- `src/members.js` — `addMember`.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`, plus `todayISO`; all date/fine logic.
+- `src/errors.js` — `LibraryError` for expected, user-facing failures.
+
+**CLI** — `bin/library.js`
+- Commands: `add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`; `--data <path>` accepted on every command (also `--data=path`).
+- Success → one JSON value on stdout, exit `0`.
+- Domain failure → `{"error":"…"}` on stderr, exit `2`.
+- Unknown command / missing or unknown option → JSON error on stderr, exit `1`.
+
+**Tests** — `test/{books,members,loans,storage,cli}.test.js` using `node:test` and `node:assert/strict`, covering every rule (availability, 3-loan cap, 14-day default, overdue detection, 0.50/day fines capped at 20.00, double-return rejection, reports) and the CLI end to end including exit codes.
+
+**Docs/config**
+- `README.md` — module API, every command with examples, rules, storage format, project layout.
+- `package.json` — added `"test": "node --test"` (and a `bin` entry).
+- `.gitignore` — ignores the runtime `data/` directory.
+
+## Verified behavior
+- `npm test` exits 0 with 30 passing tests.
+- Manual smoke test confirmed ids per type, checkout/return, overdue filtering, report totals, `--data=…` inline form, and exit codes 0/1/2 with correct JSON on stdout/stderr.

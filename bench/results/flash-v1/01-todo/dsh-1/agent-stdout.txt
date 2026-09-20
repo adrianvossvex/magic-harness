@@ -1,0 +1,15 @@
+Done. All 7 tests pass.
+
+**Changes:**
+
+- **`src/todo.js`** — added `toggle(id)`, `remove(id)`, and `count()` to the store. `add` and `list` keep their behavior (`list` still returns a copy); I switched id generation to a monotonic counter so ids stay unique after removals.
+- **`test/todo.test.js`** — added `node:test` coverage for list-copy semantics, toggle (flip + return value), toggle unknown-id throwing `/Unknown id/`, remove true/false, and count.
+- **`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short example.
+
+`npm test` result:
+
+```
+ℹ tests 7
+ℹ pass 7
+ℹ fail 0
+```

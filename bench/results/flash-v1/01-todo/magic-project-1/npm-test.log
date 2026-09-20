@@ -1,0 +1,23 @@
+
+> tiny-todo@0.1.0 test
+> node --test test/*.test.js
+
+✔ count is 0, 2 and 1 across add and remove (0.620875ms)
+✔ toggle returns the item from add and flips done (0.0585ms)
+✔ toggle flips done back on a second call (0.039583ms)
+✔ toggle keeps the store list in sync with the returned item (0.057333ms)
+✔ toggle throws Unknown id for an unknown id (0.470583ms)
+✔ toggle throws an Error instance for an unknown id (0.088583ms)
+✔ remove returns true and drops the item (0.209834ms)
+✔ remove returns false for an unknown id and changes nothing (0.045916ms)
+✔ remove returns false for an already removed id (0.052875ms)
+✔ list returns a copy (0.097584ms)
+✔ add and list (0.504ms)
+ℹ tests 11
+ℹ suites 0
+ℹ pass 11
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 62.171208

@@ -1,0 +1,21 @@
+
+> tiny-todo@0.1.0 test
+> node --test test/*.test.js
+
+✔ add and list (0.542916ms)
+✔ add returns the created item and ids increment (0.504166ms)
+✔ list returns a copy (0.039792ms)
+✔ toggle flips done and returns the item (0.058459ms)
+✔ toggle throws for an unknown id (0.137042ms)
+✔ remove deletes the item and returns true (0.05125ms)
+✔ remove returns false and keeps items for an unknown id (0.038084ms)
+✔ removed ids are not reused (0.033333ms)
+✔ count reflects the number of items (0.050875ms)
+ℹ tests 9
+ℹ suites 0
+ℹ pass 9
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 60.264

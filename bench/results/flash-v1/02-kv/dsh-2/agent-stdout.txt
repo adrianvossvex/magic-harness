@@ -1,0 +1,27 @@
+Done. Here's what I built.
+
+## Files
+
+- **`bin/kv.js`** — the CLI entry point. Exports `run(argv)` and self-invokes only when executed directly.
+- **`test/kv.test.js`** — 23 `node:test` cases spawning the CLI as a child process against temp files.
+- **`package.json`** — added the `"test": "node --test"` script (plus `bin` mapping).
+- **`README.md`** — documents every command, option, exit code, and the store format.
+
+## Behavior
+
+| Concern | Implementation |
+|---|---|
+| Store path | `--file <path>` parsed anywhere on the command line; defaults to `.kv.json` in cwd |
+| Atomic writes | writes a unique `.tmp` sibling then `fs.renameSync` into place; temp file cleaned up on failure |
+| `set <key> <value...>` | joins remaining args with single spaces, prints nothing, exit 0; `--ttl <seconds>` stores absolute `expiresAt = Date.now() + s*1000`; re-setting without `--ttl` clears expiry |
+| `get <key>` | prints value + newline, exit 0; missing/expired → `not found: <key>` stderr, exit 1; expired keys are deleted from the file when read |
+| `del <key>` | prints `deleted`, exit 0; missing/expired → `not found: <key>` stderr, exit 1 |
+| `list` | sorted non-expired keys, one per line, nothing when empty |
+| Validation | keys must match `/^[A-Za-z0-9_.-]+$/` else `invalid key: <key>` stderr, exit 1 |
+| Unknown/usage errors | usage on stderr, exit 2 |
+
+## Verification
+
+`npm test` passes **23/23** (all commands, error cases, invalid keys, unknown command, short-TTL expiry, already-expired timestamps, expired-key removal, TTL metadata, atomic/no-temp-file check, default file location, flag ordering). A manual smoke test confirmed joined values, expiry, deletion, and that no temp files remain.
+
+One design note: expired keys are purged on `get`/`del`, but `list` filters them in memory without rewriting the file. If you'd prefer `list` to also clean up the store, that's a one-line change.

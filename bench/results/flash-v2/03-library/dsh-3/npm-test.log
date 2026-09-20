@@ -1,0 +1,48 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook creates a book with an id and available copies (2.089958ms)
+✔ addBook defaults copies to 1 and persists across calls (1.486458ms)
+✔ ids increment per entity type (0.750667ms)
+✔ listBooks returns every book by default (0.51375ms)
+✔ listBooks with available keeps only books with copies on hand (0.384834ms)
+✔ addBook validates title, author and copies (0.432625ms)
+✔ the store file is created on first use (0.291458ms)
+✔ add-book prints the book and exits 0 (53.268792ms)
+✔ add-member prints the member and exits 0 (50.638625ms)
+✔ a full checkout/return/report flow works through the CLI (246.720291ms)
+✔ list-books --available filters out unavailable books (193.475833ms)
+✔ list-loans --overdue keeps only overdue active loans (245.62675ms)
+✔ unknown command and missing options exit 1 with an error object (198.926542ms)
+✔ validation and business failures exit 2 with an error object (100.914583ms)
+✔ an invalid data file exits 2 (49.296291ms)
+✔ the default data file is created relative to the current directory (49.5305ms)
+✔ --data may be given before the command (49.206708ms)
+✔ checkout creates a loan with a due date and decrements availability (3.108625ms)
+✔ checkout supports explicit days and today (0.52575ms)
+✔ a member may hold several active loans up to the limit (0.852167ms)
+✔ checkout fails for unknown book or member (0.46625ms)
+✔ checkout fails when no copy is available (0.53775ms)
+✔ checkout validates ids, days and dates (0.439ms)
+✔ returning on the due date charges no fine and restores availability (0.526166ms)
+✔ returning before the due date charges no fine (0.44125ms)
+✔ late returns charge 0.50 per day (0.641916ms)
+✔ late fines are capped at 20.00 (0.487875ms)
+✔ returning a loan twice fails and unknown loans fail (0.5055ms)
+✔ listLoans filters by member and by overdue status (0.64275ms)
+✔ overdue uses a strict due date comparison (0.40125ms)
+✔ report summarises the library (0.715084ms)
+✔ report with no activity is all zeroes (0.263417ms)
+✔ finesOwed sums fines across every returned loan (0.558542ms)
+✔ addMember creates a member with an id (3.63025ms)
+✔ member ids increment independently from other entities (1.471458ms)
+✔ addMember validates the name (0.485958ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1311.957625

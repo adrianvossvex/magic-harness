@@ -1,0 +1,43 @@
+I'll start by exploring the repository to understand its structure and conventions.The repo is a near-empty ES-module package. Let me confirm the toolchain available (node/npm versions) and that no other config exists.The repository is essentially empty: `package.json` (`"type": "module"`, no scripts, no deps) and a `.gitignore`. No `bin/`, `test/`, README, or existing tooling to conform to, so the plan defines the conventions. Let me lay out the design and task tree.The plan was accepted. Here's what I found and what I'm proposing.
+
+The repository is a blank slate: `package.json` (name `kv-store`, version 0.1.0, `"type": "module"`, no scripts, no dependencies) and a `.gitignore`. There is no `bin/`, `test/`, README, build tooling, or CI to conform to, so the design document itself fixes the conventions (ES modules, `node:`-prefixed builtin imports, no dependencies, `npm test` as the single verification entry point).
+
+Design decisions worth flagging, since the brief leaves them open:
+
+- **Single production file.** All logic lives in `bin/kv.js`; no `lib/` split, because the tests exercise the CLI end to end and a library would add an interface nothing depends on.
+- **Frozen store schema**, since tests must fabricate expired entries by writing the file directly: a JSON object mapping key to `{ "value": string, "expiresAt": number|null }`, with `expiresAt` an absolute epoch time in milliseconds.
+- **Argument parsing**: `--file` and `--ttl` are scanned out of the args anywhere after the command; the `--file=path` equals form is not supported. `--ttl` is only meaningful for `set` and ignored elsewhere.
+- **Error/exit contract**: exit 1 for not-found, invalid key, invalid TTL and unreadable store; exit 2 for usage errors (unknown command, wrong arity). Exact messages `not found: <key>`, `invalid key: <key>`, `deleted`, and a usage block on stderr are specified verbatim.
+- **Expiry**: an entry is expired when `expiresAt <= Date.now()`; `get` prunes and rewrites atomically, `del` prunes and treats it as missing, `list` filters without rewriting.
+- **Atomic writes**: temp file in the same directory plus `fs.renameSync`.
+
+The task tree is three tasks over two milestones:
+
+1. `kv-cli` (milestone m1-core, user approval) — the whole CLI in `bin/**`, verified with happy-path commands plus `sh -c '...; test $? -eq N'` checks for the error exit codes.
+2. `cli-tests` (m2-verify) — `test/**` and the `package.json` `test` script, with child-process tests against temp files covering every command, error case and TTL expiry; `npm test` must pass.
+3. `readme-docs` (m2-verify) — `README.md` documenting every command, flag, exit code and the store schema.
+
+Tasks 2 and 3 both depend only on `kv-cli` and touch disjoint paths (`test/**` + `package.json` vs `README.md`), so they can run in parallel after the core CLI lands. The first milestone is deliberately the whole core idea, so you can try `node bin/kv.js` by hand before tests and docs are built.I'll start by looking at the current repository state.The repo is a bare skeleton — `bin/` doesn't exist yet. Now I'll write the CLI.Now let me run the acceptance commands.All acceptance commands pass. Now let me verify the manual review items the acceptance commands can't cover.All checks pass. The implementation matches the design exactly, including edge cases.
+
+**What I built:** `bin/kv.js` — a single dependency-free ES module implementing the `kv` CLI. It parses global flags (`--file`, `--ttl`, no equals form), dispatches `set`/`get`/`del`/`list`, validates keys against `/^[A-Za-z0-9_.-]+$/`, handles TTL expiry (absolute ms timestamps), and writes the store atomically via a same-directory temp file plus `fs.renameSync`. Errors go to stderr, results to stdout, and exit codes are set with `process.exitCode` (via an internal unwind so stdout always flushes).
+
+**Verification:** All 10 acceptance commands from the task exited 0. I also confirmed by hand every item in the review list:
+
+- `set` success prints nothing (stdout and stderr both empty, exit 0); `set k alpha beta gamma` stores `alpha beta gamma` (tokens joined with single spaces).
+- `get` of a missing key writes `not found: <key>` to stderr only and exits 1; `del` on a missing key exits 1 with the same message.
+- `list` with `b` set before `a` prints `a` then `b`; on an empty/missing store it prints nothing and does not create the file.
+- Unknown command, missing argument, extra argument, and a missing flag value all print the usage block to stderr and exit 2; `--file=x` is treated as the command (exit 2), as specified.
+- Expired-key `get` exits 1 and leaves the file as `{}` (key removed); `list` ignores expired keys without rewriting the file; `del`/`get` on invalid keys report `invalid key: <key>` (exit 1) before any file access, so no file is created.
+- Invalid ttl (`abc`) prints `invalid ttl: abc` and exits 1; bad JSON prints `error: cannot read store: <path>` and exits 1.
+- No `.tmp-` files are left behind; writes go through the temp-file + rename path.
+
+I stayed within scope: only `bin/kv.js` was created. `package.json`, `test/` and `README.md` are untouched (owned by the other tasks), and I did not commit anything.`bin/kv.js` is implemented and verified. All acceptance commands pass, and the manual review items (output streams, exit codes, sorted list, TTL expiry removal, atomic write path) were confirmed by hand. I stayed inside my file scope and made no commits.I'll start by reading the existing implementation and package.json to align the tests with the frozen contract.I'll start by reading the implementation to make sure the README matches actual behavior.Now let me verify the actual behavior of a few commands so the examples are accurate.Behavior confirmed. Now writing the README.Now running the acceptance commands.All ten acceptance checks pass. Let me confirm no other files changed.Now I'll create the test helpers and suites.README.md is written and verified. It documents every command with verified examples, the exit-code table, exact error strings, `--ttl`/`--file`, atomic writes, and the store JSON schema, and all ten acceptance checks pass.Now I'll add the test script to package.json.Now let me run the acceptance command.The test script form `node --test test/` fails on Node 26 (it treats the path as a module). Let me investigate the right form while keeping close to the spec.The bare form passes but discovers an extra test from somewhere. Let me check what's in the repo and verify the quoted-glob form.There's no stray test file; bare discovery just picks up something extra. Let me settle on the most robust working script form and verify through npm.All 40 tests pass. Let me confirm the raw exit code and that no files were written into the repo tree.`npm test` exits 0 with all 40 tests passing and nothing written into the repo tree. I'll record the one deviation from the prescribed script string.Done. The suite is in place and `npm test` exits 0.
+
+What I built:
+- `test/helpers.js` — `BIN` (absolute path from the test file), `runCli(args, opts)` via `spawnSync` returning `{ status, stdout, stderr }`, `makeTempDir(t)`/`makeTempFile(t)` with `t.after` cleanup, direct `readStore`/`writeStore`, and `sleepSync`.
+- Six suites spawning the real CLI against temp `--file`s, covering set/get round trip (multi-token and empty value), get missing, del existing/missing, list sorted/empty/expired-excluded, invalid keys for set/get/del, unknown and missing command plus bad arity (exact usage on stderr, exit 2), `--ttl` set-and-read, deterministic expiry via an already-expired record (asserting exit 1 and removal from the on-disk JSON), a short-TTL wall-clock case with a 300ms guard, and default `.kv.json` resolution with `cwd`.
+- `package.json` gained only `scripts.test`.
+
+Result: `npm test` → 40 tests, 40 pass, exit 0; `git status` confirms no stray files written into the repo.
+
+One deviation worth flagging: the design's exact script `node --test test/` fails on the installed Node v26.0.0 (directory args are no longer expanded; it tries to load `test/` as a module and exits 1). I used `node --test "test/**/*.test.js"`, which selects exactly the six test files and keeps `npm test` green. `bin/kv.js` and `README.md` were not modified.

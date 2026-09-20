@@ -1,0 +1,16 @@
+Done. Here's what I changed:
+
+**`src/todo.js`** — added the three methods:
+- `toggle(id)` flips `done`, returns the item, and throws `new Error("Unknown id: ...")` when not found.
+- `remove(id)` splices the item out and returns `true`, or `false` if unknown.
+- `count()` returns `items.length`.
+
+I also switched id generation from `items.length + 1` to a monotonic `nextId` counter. This keeps `add(text)` behavior/signature and the `{ id, text, done }` shape exactly as before, but prevents id reuse (and thus ambiguous `toggle`/`remove`) after a removal.
+
+**`test/todo.test.js`** — kept the original `add and list` test and added coverage for: `add`'s return value, `list` returning a copy, `toggle` flipping/returning/ throwing `Unknown id`, `remove` true/false, `count`, and id uniqueness after removal.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count`, with a short runnable example and a note that `list()` returns a copy.
+
+`npm test` is green: 8 tests, 8 passing.
+
+One design note worth flagging: I interpreted "keep `add(text)` working as they are" as preserving its contract, not its exact internal id formula. If you specifically need ids to equal `items.length + 1` (reusing ids after removal), let me know and I'll revert that detail.

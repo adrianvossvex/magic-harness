@@ -1,0 +1,23 @@
+I'll explore the repository structure first to understand what exists.The repo is tiny and clear: an ESM package with `src/todo.js` (exporting `createStore`), one `node:test` file, and `npm test` → `node --test test/*.test.js`. One subtlety worth noting in the plan: `add` currently derives the id from `items.length + 1`, which collides with surviving ids once `remove` shrinks the array, so the implementation task must switch to a monotonic counter.
+
+Submitting the plan now.The plan was accepted.
+
+**Milestones and tasks**
+
+- **m1-core** (user approval): `impl-core-methods` adds `toggle`, `remove` and `count` to `src/todo.js`, and `test-new-methods` (depends on it) adds `node:test` coverage in `test/**`. This milestone is the demonstrable core, so the project pauses there for you to try `npm test`.
+- **m2-docs** (auto): `write-readme` documents `createStore`, `add`, `list`, `toggle`, `remove` and `count` with a short example in `README.md`.
+
+**One design decision worth flagging:** the current `add` sets `id: items.length + 1`. That works today, but as soon as `remove` shrinks the array it would hand out an id that a surviving item still holds. The plan therefore requires an internal monotonically increasing counter for id generation, and the test task explicitly covers "ids are not reused after a removal." Everything else (contracts, return values, the `Unknown id` message, `list` copy semantics, file scopes and `npm test` acceptance) is spelled out in the design document.I'll start by reading the existing source and test files.Now I'll implement the three methods plus the monotonic id counter in `src/todo.js`.I'll verify the whole contract with an inline check and run the acceptance command.Implemented. All checks pass.
+
+**What changed** — `src/todo.js` only:
+- Added `let nextId = 1` and `add` now uses `id: nextId++`, so removal can never cause an id to be reused by a later add.
+- `toggle(id)` finds the item, flips `done`, returns the live stored object; throws `new Error('Unknown id: ' + id)` when nothing matches.
+- `remove(id)` splices the matching item out and returns `true`, or `false` on an unknown id (no throw).
+- `count()` returns `items.length`.
+- `add` and `list` kept their original shape; `list` still returns `items.slice()`. New methods follow the existing compact single-line style, 2-space indent, no new deps or files.
+
+**Verification**
+- `npm test` exits 0 with the existing test (`add and list`) passing.
+- An inline node check against `node:assert/strict` confirmed: count 0 then 2; ids 1,2; `toggle` returns the same object and flips `done` both ways; unknown toggle throws with message containing "Unknown id"; `remove` returns true then false; after removing id 1 the next add gets id 3 (no reuse); `list()` is a new array (pushing to it doesn't affect the store).
+
+**Note** — tests for the new methods and the README are separate tasks; they are outside this task's file scope (`src/todo.js`), so I did not touch `test/` or add `README.md`.Done. `src/todo.js` now has `toggle`, `remove` and `count` plus a monotonic id counter; `npm test` is green and the full contract was verified with an inline assertion script. Tests and README belong to other tasks and were left untouched.I'll start by reading the existing source and test files to match the current style.The source and tests are both compact single-line style. I'll extend `test/todo.test.js` in the same style.All 8 tests pass. Reporting.Tests are in place and `npm test` is green (8 passing, 0 failing).I'll start by reading the source and tests to document the exact contract.Contract confirmed. Now I'll write the README and verify the example actually runs.README is written. Now I'll run the tests and execute the README's example code verbatim (with only the import path made absolute so it can run from /tmp).Example output matches every comment exactly, and the test suite passes. Running the acceptance checks now.All acceptance checks pass and the README example runs with output matching its comments one-for-one.README.md is written and verified. It documents `createStore()` and all five methods with their exact return values and edge cases (list returns a copy, `toggle` throws an error containing "Unknown id", `remove` returns `false` for an unknown id, plus the never-reused-id guarantee). The fenced example runs correctly — I extracted it from the README and executed it, and its output (`2`, `2`, `true`, `Unknown id: 999`, `true`, `false`, `1`) matches each inline comment. `npm test` passes 8/8, and all six acceptance greps succeeded. I only created README.md; the other files in the tree are the other executors' work.

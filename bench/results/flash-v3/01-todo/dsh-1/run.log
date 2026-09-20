@@ -1,0 +1,26 @@
+dsh: reasoning:
+Let me start by exploring the workspace.
+dsh: reasoning:
+Now let me implement the changes. Add toggle,, remove count to.js. Add src/todo tests. Write README.
+
+Let me think about toggle behavior: flips done flag and returns the item. Unknown id throws Error whose message contains "Unknown id". remove returns true/false. count returns number of items.
+
+Let me write the new src/todo.js.
+dsh: reasoning:
+All tests pass. Let me verify final state Done quickly. Summarize..
+Done. All 7 tests pass.
+
+## What changed
+
+**`src/todo.js`** — added three methods to the store returned by `createStore()`:
+- `toggle(id)`: finds the item, flips `done`, returns the item; throws `Error("Unknown id: <id>")` if not found.
+- `remove(id)`: splices the item out and returns `true`, or `false` for an unknown id.
+- `count()`: returns `items.length`.
+
+`add(text)` and `list()` (copy) are unchanged.
+
+**`test/todo.test.js`** — added `node:test` coverage for the new methods (toggle flip/return, toggle unknown id, remove true, remove unknown false, count tracking) plus a `list()` copy regression test. The original add/list test is retained.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short usage example, API notes, and the `npm test` command.
+
+`npm test` output: 7 pass, 0 fail.

@@ -1,0 +1,22 @@
+Done. The library management system is complete and `npm test` passes (37/37).
+
+## What was built
+
+**Core modules (ES modules, no dependencies)**
+- `src/storage.js` — single-JSON-file persistence. Defaults to `data/library.json` (relative to cwd), creates the file/dirs on first use, and exposes `setDataFile()` so the CLI can wire `--data <path>`.
+- `src/dates.js` — `YYYY-MM-DD` parsing/validation, local "today", day arithmetic, day differences.
+- `src/books.js` — `addBook`, `listBooks({ available })`; ids increment per entity type from 1.
+- `src/members.js` — `addMember`, plus `listMembers` for the report.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`, with the 3-active-loan limit, the 14-day default, and fines of 0.50/day capped at 20.00.
+
+**CLI** — `bin/library.js`
+- All commands: `add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`.
+- One JSON value on stdout + exit 0 on success; `{"error": "..."}` on stderr.
+- Unknown command / missing option/value → exit 1; validation and rule failures → exit 2.
+- Global `--data <path>`, supports `--key value` and `--key=value`.
+
+**Tests** — `test/books.test.js`, `test/members.test.js`, `test/loans.test.js`, and `test/cli.test.js` (spawns the real binary to verify output and exit codes). Each uses an isolated temp data file.
+
+**Docs & config** — `package.json` now has `"test": "node --test"`; `README.md` documents every module, every command with examples, the JSON state shape, and all rules. `.gitignore` ignores `data/`.
+
+Example verified end-to-end: checkout → late return (`2024-01-08` due, returned `2024-01-15` → fine `3.5`), and report totals `{books:1, copies:2, available:1, members:1, activeLoans:1, overdue:1, finesOwed:3.5}`.

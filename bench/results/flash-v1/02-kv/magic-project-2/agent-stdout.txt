@@ -1,0 +1,1 @@
+I'll start by exploring the repository to understand its current structure and conventions.The repository is essentially empty — just a `package.json` (`kv-store`, ESM, no scripts) and a `.gitignore`. So the plan is greenfield; I'll write the design around a single-file CLI, with tests and docs as the follow-up milestone.

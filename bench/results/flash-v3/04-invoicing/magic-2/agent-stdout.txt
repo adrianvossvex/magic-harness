@@ -1,0 +1,28 @@
+I'll start by exploring the repository to see what's already here.The repo is essentially empty (just `package.json` with `"type": "module"`). The spec is fully detailed, so I'll implement directly. Let me build the modules, CLI, tests, and docs.
+
+Starting with the core library modules.I made an error in that file (wrong helper name and missing import). Let me fix it.Now the invoices module, which holds most of the business rules.Now the presentation layer that turns cents into formatted strings for the CLI.Now the CLI entry point.Now update `package.json` and run a quick smoke test before writing the full test suite.The CLI works end to end and the math checks out. Now the test suite.Now let's run the full test suite.The bug is that `write` reloads from disk each call, so the object a test holds goes stale after a later mutation. I'll add an in-memory cache keyed by path so repeated calls share object identity (and it also avoids re-reading the file).All 37 tests pass. One refinement: "half up" conventionally means ties round toward positive infinity (matching `Math.round` for the non-negative amounts in this domain). Let me align `roundCents` with that.Now the README.Let me rerun the suite and exercise a few more edge cases manually.All behaviors check out, including month-boundary due dates and CSV quoting. One storage detail to make more faithful to "create the file on first use": currently a pure read on a missing file doesn't create it. I'll have `load` materialize the file.The invoicing system is complete and `npm test` passes (37 tests, 0 failures).
+
+## What was built
+
+**Library modules** (`src/`):
+- `money.js` — `parseMoney` (strict non-negative decimal strings, ≤2 decimals), `formatMoney`, `roundCents` (half up).
+- `customers.js` — `addCustomer`, requires `@` in email.
+- `products.js` — `addProduct`, price parsed to cents, `taxRate` integer 0–100 defaulting to 0.
+- `invoices.js` — the full lifecycle: `createInvoice` (draft), `addLine` (line math with half-up rounding), `issue` (per-year `INV-<year>-<nnnn>` counter, due = issued + terms), `pay` (partials allowed, overpay rejected, auto-`paid`), `voidInvoice`, `listInvoices`, `getInvoice`.
+- `report.js` — `aging` (five buckets by days past due) and `revenue` (per issue month).
+- Supporting: `store.js` (single JSON file with `--data` override, ids/counters, in-memory cache), `dates.js` (UTC date arithmetic), `errors.js` (`UsageError`), `present.js` (cents → formatted-string JSON shapes, CSV export).
+
+**CLI** (`bin/invoice.js`) — all 12 commands. Success prints one JSON value and exits 0; money fields are formatted strings. Domain failures print `{"error":"..."}` on stderr and exit 2; unknown command or missing required option prints usage and exits 1.
+
+**Tests** (`test/`) — one file per module plus an end-to-end CLI test that spawns the binary and asserts exit codes, stdout/stderr JSON, and money formatting.
+
+**Docs** — `README.md` documents the money/date rules, every module API, and every command with a real example. `package.json` now has `"test": "node --test"`.
+
+## Notable implementation decisions
+- **All money is integer cents end to end**, with integer arithmetic for parsing and rounding, so no floating-point drift creeps in.
+- **Dates use UTC** so due-date math is timezone-independent; `today` defaults to the local current date throughout.
+- **`store.load()` caches the parsed file in memory** so repeated calls in one process share object identity — a record returned by `createInvoice` reflects later `addLine`/`issue`/`pay` mutations. This also means the first use (even a read like `list`) materializes `data/invoicing.json` and its directory.
+- **Ordering of validations is validate-before-mutate**, so a thrown error never leaves partially-mutated state to be persisted.
+
+## Verification
+`npm test` → 37 pass / 0 fail. I also manually exercised month-boundary due dates (Jan 31 + 30 days → Mar 1, 2024), CSV quoting for names containing commas, per-customer/overdue listing, aging and revenue totals, the default `data/invoicing.json` path in a scratch directory, and each exit-code path (2 for domain errors, 1 for usage). Git status shows only the intended new files and the modified `package.json`; no stray data files were left in the repo.

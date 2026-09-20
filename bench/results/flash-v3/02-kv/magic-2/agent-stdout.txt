@@ -1,0 +1,23 @@
+I'll start by exploring the repository to understand what's already here.The repo is empty (just `package.json` with `"type": "module"`), so I'll build from scratch: a small store module, the CLI entry point, tests, and a README.Now the test suite:Now the README, then I'll run the suite.`node --test test/` isn't accepted on this Node version — it tried to load `test/` as a module. Switching to plain auto-discovery:All 19 tests pass. A quick manual smoke test and a check that the workspace is clean:Done — the CLI is built and `npm test` passes all 19 tests.
+
+**What's there**
+
+- `bin/kv.js` — thin entry point (`process.exitCode = run(process.argv.slice(2))`), marked executable.
+- `src/cli.js` — argument parsing and command dispatch (`set`, `get`, `del`, `list`), key validation, usage output.
+- `src/store.js` — loads/saves the JSON file, atomic write (temp file in the same directory, then `rename`), and the expiry check.
+- `test/cli.test.js` — 19 `node:test` cases that spawn `node bin/kv.js` as a child process against per-test temp files.
+- `README.md` — documents every command, the options, exit codes, and the on-disk format.
+- `package.json` — added `"test": "node --test"` plus a `bin` entry.
+
+**Verification**
+
+`npm test` reports 19 pass / 0 fail. I also ran a manual smoke test end to end: `set`/`get` round-trip with a joined multi-word value, TTL expiry (`--ttl 0.1`, read 300 ms later → `not found`, exit 1), `list` excluding the expired key, invalid key, unknown command (usage on stderr, exit 2), and `del`. The store file ends up as expected and no temp files are left behind.
+
+**Decisions the spec left open** (all documented in the README):
+
+- Missing operands (`get` with no key, `set` with no value) are treated as usage errors: usage on stderr, exit 2. `set k ""` still stores an empty string, since that's one explicit argument.
+- `list` filters out expired keys but doesn't rewrite the file; only `get` and `del` purge, matching "an expired key is removed when it is read."
+- A store file that isn't a JSON object produces `error: ...` on stderr and exit 1.
+- TTL accepts fractional seconds, which let the tests use a 200 ms TTL instead of sleeping for a full second.
+
+One small snag worth noting: on this Node (v26), `node --test test/` tried to load `test/` as a module and failed, so the script uses plain `node --test`, which auto-discovers `test/cli.test.js`.

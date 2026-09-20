@@ -1,0 +1,1 @@
+I'll start by exploring the repository to see what's already here.The repo is a bare skeleton (only `package.json` with `"type": "module"` and a `.gitignore`), so the plan has to build everything from scratch. Here is the plan.

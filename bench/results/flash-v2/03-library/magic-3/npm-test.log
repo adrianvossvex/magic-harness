@@ -1,0 +1,35 @@
+
+> library-system@0.1.0 test
+> node --test "test/*.test.js"
+
+✔ addBook assigns sequential ids and defaults copies to 1 (1.912458ms)
+✔ addBook trims text and rejects invalid input (0.76925ms)
+✔ listBooks returns everything by default (0.3055ms)
+✔ listBooks filters on availability after a checkout (1.0285ms)
+✔ a full add/checkout/return/list/report flow (431.256042ms)
+✔ list-loans --overdue keeps only late active loans (333.649709ms)
+✔ the data file is created on first use (46.170666ms)
+✔ command failures exit 2 with an error object on stderr (518.094167ms)
+✔ unknown commands and missing options exit 1 (427.176292ms)
+✔ checkout records out/due dates and takes a copy off the shelf (3.180125ms)
+✔ checkout honours a custom loan length (0.369292ms)
+✔ checkout defaults `today` to the current date (0.383833ms)
+✔ checkout fails for unknown books, unknown members and bad ids (0.424709ms)
+✔ checkout fails when no copy is available (0.374625ms)
+✔ checkout fails once a member holds 3 active loans (0.79575ms)
+✔ returning on or before the due date costs nothing (0.346ms)
+✔ returning late charges 0.50 per day (0.327666ms)
+✔ the fine is capped at 20.00 (0.344584ms)
+✔ a loan cannot be returned twice, and unknown loans fail (0.427375ms)
+✔ listLoans filters by member and by overdue (0.917542ms)
+✔ report summarises the library (0.555542ms)
+✔ addMember assigns sequential ids (1.6015ms)
+✔ addMember trims the name and rejects empty names (0.332166ms)
+ℹ tests 23
+ℹ suites 0
+ℹ pass 23
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1822.349208

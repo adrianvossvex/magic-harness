@@ -1,0 +1,46 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook assigns ids in order and defaults copies to 1 (1.767458ms)
+✔ addBook creates the data file on first use (0.244583ms)
+✔ addBook persists books and counters (0.230916ms)
+✔ addBook rejects invalid input (0.259083ms)
+✔ listBooks returns every book (0.313875ms)
+✔ listBooks with available filters out books with no free copy (0.2ms)
+✔ add-book prints the created book and exits 0 (51.469916ms)
+✔ the default data path is data/library.json in the current directory (49.404667ms)
+✔ checkout, return, list and report work end to end (287.545208ms)
+✔ list-books prints an array and --available filters it (238.675791ms)
+✔ business failures print an error object and exit 2 (47.126ms)
+✔ missing options and unknown commands exit 1 (137.872ms)
+✔ an invalid option value is a failure and exits 2 (45.151625ms)
+✔ checkout records out/due and takes a copy off the shelf (5.04175ms)
+✔ checkout honours a custom loan length (1.340708ms)
+✔ checkout defaults to today and 14 days (1.33675ms)
+✔ checkout fails when there is no available copy (0.6275ms)
+✔ checkout fails when the member already has 3 active loans (0.511458ms)
+✔ returned loans free up the member active-loan slots (0.605625ms)
+✔ checkout fails for unknown books and members (0.30375ms)
+✔ checkout validates its arguments (0.294ms)
+✔ returning on time restores the copy and charges no fine (0.3945ms)
+✔ returning exactly on the due date is not late (0.439042ms)
+✔ a late return is fined 0.50 per day (0.357625ms)
+✔ the fine is capped at 20.00 (0.344167ms)
+✔ returning a loan twice fails (0.380166ms)
+✔ returning an unknown loan fails (0.24625ms)
+✔ listLoans can filter by member (0.544792ms)
+✔ listLoans with overdue keeps only active loans due before today (0.565416ms)
+✔ report summarizes the library (0.577916ms)
+✔ addMember assigns ids in order (1.89775ms)
+✔ addMember creates and persists the data file (0.31575ms)
+✔ member ids continue after pre-existing data (0.234333ms)
+✔ addMember rejects an empty name (0.238333ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 941.830292

@@ -1,0 +1,28 @@
+Done. The library management system is built and verified.
+
+## What was created
+
+```
+bin/library.js      CLI (exit 0 success / 2 business error / 1 usage error)
+src/storage.js      atomic JSON persistence, first-use file creation, per-type id sequences
+src/util.js         AppError/UsageError + UTC-safe date arithmetic
+src/books.js        addBook, listBooks
+src/members.js      addMember, listMembers
+src/loans.js        checkout, returnLoan, listLoans, report
+src/index.js        public re-exports
+test/*.test.js      node:test suites for books, members, loans, CLI (+ helpers)
+package.json        "test": "node --test test/*.test.js"
+README.md           modules, every command with examples, rules
+```
+
+## Key design decisions
+- **Storage** is a single JSON doc `{ books, members, loans, sequences }`; `setDataFile()` (driven by `--data`) configures it. `read()` creates the file on first use, and `write()` is atomic (temp file + rename). Ids come from persisted per-entity sequence counters, starting at 1.
+- **Dates** are `YYYY-MM-DD` strings handled through UTC timestamps, so day arithmetic is DST-proof. `today` defaults to the local current date and is validated when supplied.
+- **Rules**: `available` starts at `copies`, decrements on checkout, restores on return (capped at `copies`); checkout fails at 0 copies or 3 active loans; a 0.50/day late fine capped at 20.00; double return fails.
+- **CLI errors**: required/unknown options and unknown commands are `UsageError` → exit 1; validation/business failures → exit 2. Output is one JSON value per command.
+
+## Verification
+- `npm test`: **37/37 pass**.
+- Manual end-to-end run in a scratch cwd confirmed `data/library.json` creation, the full add → checkout → late-return → list → report flow, and all exit codes (`0`, `2`, `1`, `1`).
+
+One note: I interpreted a book's `available` as the *count* of free copies (used by the `--available`/`available` filters and the report), which is consistent with `copies` and the report totals.

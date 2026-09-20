@@ -1,0 +1,19 @@
+I'll start by looking at the current state of the repository.Fresh repo with Node v26. I'll build the library: a shared store + date helper, the three entity modules, the CLI, tests, and docs. Starting with the core modules.Now the three entity modules.Now the CLI.Now the tests.Now update package.json and write the README.Now let me run the tests.Two of my test expectations were wrong (miscounted available copies and missed that the second member's loan is also overdue). Fixing the tests.All 32 tests pass. Let me smoke-test the CLI end to end and verify the README examples and exit codes.Done. The library system is built and `npm test` passes with 32 tests across 6 test files.
+
+**What's there**
+
+- `src/store.js` and `src/dates.js` — shared plumbing: reading/writing the JSON file (creating missing parent dirs), next-id assignment, and UTC-safe `YYYY-MM-DD` parsing/arithmetic. Every API function takes an optional `data` key naming the file, defaulting to `data/library.json` relative to the cwd, which is how the CLI's `--data` reaches the modules without any global state.
+- `src/books.js` — `addBook`, `listBooks`.
+- `src/members.js` — `addMember`.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`, with the 3-active-loan limit and the 0.50/day fine capped at 20.00.
+- `bin/library.js` — the 7 commands. Success prints one JSON value to stdout and exits 0; domain/validation failures print `{"error":...}` to stderr and exit 2; unknown command and missing option/value exit 1.
+- `test/` — one file per module plus CLI tests (spawning the real binary, including the default-file path and `--data` isolation) and date tests.
+- `README.md` — modules, every command with a worked example, storage format, and the rules.
+
+**Checks I ran**
+
+- `npm test` → 32 pass, 0 fail.
+- Manual end-to-end CLI run reproducing the README examples; verified the JSON file contents.
+- Verified exit codes: unknown book → 2, invalid `--copies 0` → 2, missing `--title` → 1, unknown command → 1, `--data` with no value → 1, unknown option → 1.
+
+Two things worth flagging: I added the two helper modules beyond the three you listed, since persistence and date math are needed by all of them; and I treat a *provided but invalid* value (e.g. `--copies x`, `--book 0`) as exit 2, reserving exit 1 for an absent command/option per your spec. I did not commit anything — let me know if you'd like a commit.

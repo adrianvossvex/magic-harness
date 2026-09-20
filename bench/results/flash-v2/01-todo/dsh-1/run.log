@@ -1,0 +1,24 @@
+dsh: reasoning:
+Let me start by exploring the workspace.
+dsh: reasoning:
+Let me the existing test read file too.
+dsh: reasoning:
+Now implement. Note the existing list returns a copy. toggle should flip return the item and; remove returns true/false; count returns number.
+
+Let me edit src/todo.js.
+dsh: reasoning:
+All pass tests. Let me double-check the final src/todo.js. Note potential id collision: ids are based on items.length + 1. After removing, adding could create duplicate ids. That's a-existing design concern but pre the task says keep add working as it is. "Keep add(text) list and() working as they are" — so I shouldn't change add. Fine.
+
+All Let me confirm done. files.
+All 7 tests pass. Here's a summary of what I changed:
+
+**`src/todo.js`** — added three methods to the store while leaving `add`/`list` untouched:
+- `toggle(id)` — finds the item, flips `done`, returns it; throws `Error("Unknown id: <id>")` if not found.
+- `remove(id)` — splices the item out and returns `true`, or `false` if the id is unknown.
+- `count()` — returns `items.length`.
+
+**`test/todo.test.js`** — added tests for `toggle` (flip + unknown-id throw), `remove` (true + false paths), `count`, and a copy-semantics check for `list`, all using `node:test` and `node:assert/strict`.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short usage example and per-method descriptions.
+
+`npm test` is green: 7 passed, 0 failed.

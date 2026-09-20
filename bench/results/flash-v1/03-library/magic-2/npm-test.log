@@ -1,0 +1,38 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook stores a book with default copies and sequential ids (1.9545ms)
+✔ addBook rejects invalid input (0.763292ms)
+✔ listBooks returns every book and computes availability from active loans (1.648542ms)
+✔ the data file is created on first use (0.233375ms)
+✔ add-book prints the book and exits 0 (53.18325ms)
+✔ the end-to-end borrowing flow works (244.320292ms)
+✔ list-books and list-loans honour their filters (344.425167ms)
+✔ unknown command and missing options exit 1 (98.552875ms)
+✔ business-rule failures exit 2 with a JSON error on stderr (200.792583ms)
+✔ --data keeps separate libraries apart (147.212917ms)
+✔ test/helpers.js (68.912916ms)
+✔ checkout records out and due dates with a default of 14 days (4.440417ms)
+✔ checkout honours a custom number of days and crosses month boundaries (0.988125ms)
+✔ checkout validates ids, days and today (0.660125ms)
+✔ checkout fails when the book has no available copy (0.550666ms)
+✔ checkout fails when the member already has three active loans (0.493ms)
+✔ an on-time return incurs no fine and frees a copy (0.472666ms)
+✔ a late return charges 0.50 per day after the due date (0.41375ms)
+✔ fines are capped at 20.00 (0.346458ms)
+✔ returning a loan twice fails (0.43225ms)
+✔ listLoans filters by member and overdue status (0.634917ms)
+✔ report summarises the library (0.563917ms)
+✔ report on an untouched library is all zeroes (0.14475ms)
+✔ addMember assigns sequential ids starting at 1 (3.969542ms)
+✔ addMember rejects invalid input (0.287375ms)
+✔ members are persisted across calls (0.412167ms)
+ℹ tests 26
+ℹ suites 0
+ℹ pass 26
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1173.861375

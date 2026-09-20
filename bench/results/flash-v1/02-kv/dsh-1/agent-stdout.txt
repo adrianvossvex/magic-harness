@@ -1,0 +1,26 @@
+Done. The key-value store CLI is implemented and `npm test` passes (24/24).
+
+## What was built
+
+**`src/store.js`** — persistence layer:
+- Loads a JSON store (missing/empty file = empty store; malformed JSON is reported, not wiped).
+- Atomic writes: serialize to a temp file in the same directory, then `rename` over the target.
+- `isExpired` compares the entry's absolute `expiresAt` (Unix ms) against `Date.now()`.
+- Uses a null-prototype object so keys like `__proto__` behave as data.
+
+**`bin/kv.js`** — CLI entry point:
+- `set <key> <value...> [--ttl <seconds>]` — joins remaining args with spaces, silent, exit 0.
+- `get <key>` — prints value + newline (exit 0); `not found: <key>` on stderr (exit 1) and prunes expired entries.
+- `del <key>` — prints `deleted` (exit 0); `not found` on stderr (exit 1).
+- `list` — sorted non-expired keys, one per line, nothing when empty.
+- Key validation `/^[A-Za-z0-9_.-]+$/` → `invalid key: <key>` exit 1.
+- Unknown command / bad usage → usage on stderr, exit 2.
+- Global `--file <path>` (default `.kv.json`, also `--file=`) and `--` to stop option parsing.
+
+**`test/kv.test.js`** — 24 `node:test` cases spawning the CLI against temp files, covering every command, missing/expired keys, invalid keys, unknown commands, `--file` variants, the default `.kv.json`, the `--ttl` absolute-ms representation, an already-expired timestamp, and short-TTL expiry with file pruning.
+
+**`README.md`** — documents all commands, options, keys, exit codes, and the store file format.
+
+**`package.json`** — added `"scripts": { "test": "node --test" }` and a `bin` entry.
+
+Run it with `node bin/kv.js <command> ...`, or `npm test`.

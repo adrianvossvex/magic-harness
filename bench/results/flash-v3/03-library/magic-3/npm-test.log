@@ -1,0 +1,49 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook assigns sequential ids starting at 1 (2.050083ms)
+✔ addBook defaults to a single available copy (0.890167ms)
+✔ addBook records the given number of copies as available (0.365667ms)
+✔ addBook rejects missing fields (0.363292ms)
+✔ addBook rejects a non-positive copy count (0.200542ms)
+✔ listBooks returns every book by default (0.390125ms)
+✔ listBooks can filter to books with an available copy (1.362291ms)
+✔ data is persisted between calls (0.398583ms)
+▶ command line interface
+  ✔ report on a fresh file creates it and starts empty (52.201416ms)
+  ✔ add-book prints the book (45.369375ms)
+  ✔ add-member prints the member (47.131208ms)
+  ✔ checkout prints the loan (47.197625ms)
+  ✔ list-books prints an array (47.535416ms)
+  ✔ return prints the loan with its fine (47.31175ms)
+  ✔ list-loans prints an array (45.241833ms)
+  ✔ report summarises the library (47.838666ms)
+  ✔ list-loans --overdue keeps only late active loans (140.92275ms)
+  ✔ unknown command exits 1 (45.349667ms)
+  ✔ missing option exits 1 (45.638541ms)
+  ✔ a rejected operation exits 2 (46.131583ms)
+✔ command line interface (659.916042ms)
+✔ test/helpers.js (57.99ms)
+✔ checkout records the loan and marks a copy as taken (3.895333ms)
+✔ checkout honours a custom number of days (0.574542ms)
+✔ checkout fails when no copy is available (0.66825ms)
+✔ checkout fails once a member holds three active loans (0.670417ms)
+✔ returning a loan frees the copy and leaves an on-time fine at zero (0.582333ms)
+✔ a late return charges 0.50 per day (0.472958ms)
+✔ the late fine is capped at 20.00 (0.4765ms)
+✔ returning the same loan twice fails (0.496167ms)
+✔ checkout rejects unknown books, members and dates (0.432042ms)
+✔ listLoans filters by member and by overdue status (0.60575ms)
+✔ a returned loan is never reported as overdue (0.430084ms)
+✔ report summarises the library (0.736917ms)
+✔ addMember assigns sequential ids starting at 1 (1.894125ms)
+✔ addMember rejects a missing or blank name (0.36025ms)
+ℹ tests 36
+ℹ suites 0
+ℹ pass 36
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 733.521917

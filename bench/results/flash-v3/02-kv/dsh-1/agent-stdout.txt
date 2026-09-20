@@ -1,0 +1,26 @@
+Done. The key-value store CLI is built and all 19 tests pass (`npm test`, exit 0).
+
+## What was created
+
+**`bin/kv.js`** — entry point run as `node bin/kv.js <command> [args] [--file <path>]`.
+
+**`src/cli.js`** — argument parsing (flags anywhere on the line) and command dispatch, with a documented usage message.
+
+**`src/store.js`** — JSON load/save, key validation (`/^[A-Za-z0-9_.-]+$/`), and expiry checks. Writes are atomic: a uniquely named sibling temp file is written then `renameSync`'d over the target.
+
+**`test/kv.test.js`** — 19 `node:test` tests spawning the real CLI against temporary files, covering:
+- `set`/`get` round-trip, value joining with spaces, empty values
+- missing/expired keys → `not found: <key>` on stderr, exit 1
+- `del` success and missing-key failure
+- `list` sorted output and empty store
+- invalid keys for `set`/`get`/`del` (exit 1)
+- unknown command / missing args / invalid `--ttl` → usage, exit 2
+- TTL: future TTL stays readable, short TTL expires and `get` prunes it from the file, pre-seeded already-expired timestamps, `list` hides expired keys
+- `--file` selection plus the default `.kv.json` in the cwd
+- atomic-write check (no `.tmp` leftovers, valid JSON)
+
+**`package.json`** — added `"test": "node --test"` and a `bin` entry.
+
+**`README.md`** — documents every command, options, key rules, exit codes, storage format, and atomic-write behavior.
+
+Observed semantics: `list` uses default lexicographic (UTF-16 code-unit) ordering and expired keys are pruned on `get`/`del` but only filtered (not rewritten) on `list`. The store records absolute expiry as `expiresAt` in milliseconds, or `null` for non-expiring keys.

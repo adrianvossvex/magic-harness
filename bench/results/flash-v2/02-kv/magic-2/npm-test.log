@@ -1,0 +1,49 @@
+
+> kv-store@0.1.0 test
+> node --test
+
+✔ set stores a value and prints nothing (51.933791ms)
+✔ get prints the stored value followed by a newline (101.200625ms)
+✔ set joins the remaining arguments with single spaces (101.459375ms)
+✔ set overwrites an existing key (149.967625ms)
+✔ keys may contain letters, digits, dots, dashes and underscores (102.163916ms)
+✔ get on a missing key writes not found to stderr and exits 1 (48.871ms)
+✔ del removes a key, prints deleted and exits 0 (150.940667ms)
+✔ del on a missing key writes not found to stderr and exits 1 (49.589541ms)
+✔ list prints non-expired keys sorted, one per line (195.215958ms)
+✔ list prints nothing for an empty store (48.926459ms)
+✔ list prints nothing once every key has been deleted (152.166541ms)
+✔ set rejects a key with invalid characters (49.827ms)
+✔ get rejects a key with invalid characters (49.487375ms)
+✔ del rejects a key with invalid characters (50.410292ms)
+✔ a key with a space is rejected (50.128917ms)
+✔ an empty key is rejected (50.191458ms)
+✔ an invalid key is rejected before the store is touched (50.058791ms)
+✔ an unknown command prints usage on stderr and exits 2 (52.060542ms)
+✔ no command prints usage on stderr and exits 2 (51.647ms)
+✔ missing or extra arguments are usage errors (298.982041ms)
+✔ invalid --ttl values are usage errors (144.273959ms)
+✔ --ttl on a command other than set is a usage error (99.863ms)
+✔ a missing option value is a usage error (100.848542ms)
+✔ an unknown option is a usage error (51.920791ms)
+✔ --file selects the store to use (102.046958ms)
+✔ the store defaults to .kv.json in the working directory (53.108875ms)
+✔ set --ttl stores an absolute expiry in milliseconds (50.612792ms)
+✔ a key without --ttl has no expiry (53.617375ms)
+✔ a key with a --ttl in the future is still readable (102.948625ms)
+✔ set --ttl 0 expires the key immediately (106.419208ms)
+✔ get removes an already-expired key from the file (49.444334ms)
+✔ list omits expired keys and prunes them from the file (50.19525ms)
+✔ del treats an expired key as missing and removes it (48.228666ms)
+✔ writes are atomic and leave no temporary files behind (146.964333ms)
+✔ the store file is valid JSON with a version and entries object (47.931292ms)
+✔ a corrupt store file is reported instead of being overwritten (48.807625ms)
+✔ an unknown command does not create a store file (47.576917ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3229.879542

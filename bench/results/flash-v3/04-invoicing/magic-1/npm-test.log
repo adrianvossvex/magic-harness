@@ -1,0 +1,58 @@
+
+> invoicing@0.1.0 test
+> node --test
+
+✔ add-customer prints the customer (53.953417ms)
+✔ add-product prints the product with a formatted price (47.0195ms)
+✔ full invoice lifecycle is machine readable (427.889166ms)
+✔ report aging and revenue format money fields (327.716333ms)
+✔ export prints the CSV as a JSON string (235.582875ms)
+✔ list --overdue filters by the supplied today (329.554541ms)
+✔ unknown commands and missing options exit 1 with usage (94.787209ms)
+✔ domain errors exit 2 with an error object on stderr (375.784583ms)
+✔ the default data file is created relative to the working directory (47.540208ms)
+✔ addCustomer assigns sequential ids from 1 (2.359541ms)
+✔ addCustomer persists customers across calls (0.365333ms)
+✔ addCustomer requires an email containing @ (0.268666ms)
+✔ addCustomer requires a name (0.139375ms)
+✔ isDateString accepts real calendar dates (1.266625ms)
+✔ isDateString rejects malformed or impossible dates (0.08025ms)
+✔ addDays crosses month and year boundaries (0.110792ms)
+✔ daysBetween counts whole days (0.06325ms)
+✔ today is a valid date string (0.05375ms)
+✔ createInvoice makes an empty draft (5.289166ms)
+✔ createInvoice honours terms and requires an existing customer (1.336667ms)
+✔ addLine computes net, tax and totals with half-up rounding (2.052667ms)
+✔ addLine sums multiple lines (1.451125ms)
+✔ addLine rejects a non-draft invoice and invalid input (2.300792ms)
+✔ issue numbers invoices per year and sets dates (1.839916ms)
+✔ issue requires a draft with at least one line (0.754042ms)
+✔ pay records partial payments and settles the invoice (0.678959ms)
+✔ pay rejects overpayment, drafts and settled invoices (0.808334ms)
+✔ voidInvoice voids drafts and unpaid issued invoices only (1.19275ms)
+✔ listInvoices filters by status, customer and overdue (0.984292ms)
+✔ getInvoice throws for unknown ids (0.199333ms)
+✔ parseMoney accepts whole and decimal amounts (1.194416ms)
+✔ parseMoney rejects malformed amounts (0.475209ms)
+✔ formatMoney renders exactly two decimals (0.127958ms)
+✔ parseMoney and formatMoney round-trip (0.117417ms)
+✔ roundCents rounds halves up (0.103708ms)
+✔ roundCents rejects non-numbers (0.112583ms)
+✔ addProduct stores the price in cents and defaults taxRate to 0 (1.934417ms)
+✔ addProduct accepts an explicit tax rate (0.336667ms)
+✔ addProduct persists across calls (0.297542ms)
+✔ addProduct rejects invalid prices (1.123875ms)
+✔ addProduct rejects invalid tax rates (0.555ms)
+✔ aging buckets balances by days past due (5.213709ms)
+✔ aging ignores drafts, paid and void invoices (0.921833ms)
+✔ aging uses the outstanding balance of partially paid invoices (0.588625ms)
+✔ revenue groups issued and paid invoices by issue month (1.183459ms)
+✔ revenue is empty when nothing has been issued (0.204083ms)
+ℹ tests 46
+ℹ suites 0
+ℹ pass 46
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2027.027459

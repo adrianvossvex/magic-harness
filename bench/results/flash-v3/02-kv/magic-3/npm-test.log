@@ -1,0 +1,41 @@
+
+> kv-store@0.1.0 test
+> node --test "test/**/*.test.js"
+
+✔ set stores a value and prints nothing (52.859292ms)
+✔ set joins the remaining arguments with single spaces (94.355916ms)
+✔ set accepts an empty value (94.724917ms)
+✔ set overwrites an existing key (98.7475ms)
+✔ get prints a missing key to stderr and exits 1 (44.705458ms)
+✔ get reads the file named by --file=path (96.945ms)
+✔ commands use .kv.json in the current directory by default (96.853125ms)
+✔ del removes a key and prints deleted (145.702292ms)
+✔ del reports a missing key on stderr and exits 1 (45.743209ms)
+✔ list prints keys sorted, one per line (195.062125ms)
+✔ list prints nothing for an empty store and creates no file (92.269417ms)
+✔ set with --ttl records an absolute expiry in milliseconds (95.688ms)
+✔ set with --ttl accepts fractional seconds (49.204291ms)
+✔ a key with an already-expired timestamp counts as missing and is removed (50.647209ms)
+✔ get removes an expired key from the file and keeps live keys (51.483042ms)
+✔ list skips expired keys and drops them from the file (51.266792ms)
+✔ del treats an expired key as missing and prunes it (51.298792ms)
+✔ a short TTL expires once enough time passes (587.660875ms)
+✔ a TTL of zero expires immediately (100.91375ms)
+✔ set without --ttl clears a previous expiry (101.718458ms)
+✔ invalid keys are rejected for every keyed command (223.482666ms)
+✔ allowed key characters are accepted (96.103166ms)
+✔ values that look like options are stored for set (49.463292ms)
+✔ an unknown command prints usage on stderr and exits 2 (46.55875ms)
+✔ missing arguments print usage and exit 2 (271.121542ms)
+✔ an invalid --ttl is an error (231.993167ms)
+✔ a malformed store file is reported as an error (90.886875ms)
+✔ writes are atomic and leave no temporary files behind (150.087291ms)
+✔ the store survives a round trip of every command (287.139458ms)
+ℹ tests 29
+ℹ suites 0
+ℹ pass 29
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3706.251375

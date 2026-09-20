@@ -1,0 +1,32 @@
+
+> kv-store@0.1.0 test
+> node --test
+
+✔ set stores a value and prints nothing (47.723792ms)
+✔ set joins multiple value arguments with single spaces (45.220542ms)
+✔ set overwrites an existing key (90.650167ms)
+✔ get prints the value followed by a newline (89.873458ms)
+✔ get on a missing key fails with exit code 1 (44.619958ms)
+✔ del removes a key and prints deleted (134.919ms)
+✔ del on a missing key fails with exit code 1 (44.577791ms)
+✔ list prints every key sorted, one per line (181.598916ms)
+✔ list prints nothing for an empty store (44.460083ms)
+✔ invalid keys are rejected for set, get and del (179.71825ms)
+✔ valid keys may contain letters, digits, dot, dash and underscore (88.956167ms)
+✔ an unknown command prints usage to stderr and exits 2 (45.530459ms)
+✔ no command prints usage to stderr and exits 2 (44.39ms)
+✔ --file selects the store and defaults to .kv.json (89.41075ms)
+✔ a ttl is stored as an absolute expiry in milliseconds (46.688125ms)
+✔ a key with a future ttl is still readable (88.587125ms)
+✔ an expired key is treated as missing, removed on read and hidden from list (183.425333ms)
+✔ del also treats an expired key as missing (90.400917ms)
+✔ a short ttl really expires after waiting (1683.286791ms)
+✔ writes are atomic and leave no temporary files behind (136.601209ms)
+ℹ tests 20
+ℹ suites 0
+ℹ pass 20
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 3461.54675

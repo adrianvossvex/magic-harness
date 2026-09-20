@@ -1,0 +1,6 @@
+[16888cf2] Read
+[16888cf2] Glob
+[16888cf2] Read
+[16888cf2] Read
+[16888cf2] Glob
+project error: Error: The planner turn ended with status error: Expected ',' or ']' after array element in JSON at position 17464 (line 1 column 17465)

@@ -1,0 +1,26 @@
+The invoicing system is complete. Here's what I built:
+
+## Structure
+```
+src/money.js       parseMoney / formatMoney / roundCents (half up)
+src/store.js       single-file JSON persistence, id counters, create-on-first-use
+src/customers.js   addCustomer (validates "@")
+src/products.js    addProduct (price → cents, taxRate 0-100 default 0)
+src/invoices.js    createInventory/addLine/issue/pay/voidInvoice/listInvoices + date math
+src/report.js      aging + revenue
+bin/invoice.js     CLI (all 12 commands, --data anywhere)
+test/*.test.js     money, customers, products, invoices, report, cli (28 tests)
+README.md          modules, every command with examples, rules
+package.json       "test": "node --test"
+```
+
+## Key behaviors verified
+- **Money**: integer cents internally; decimal strings in/out (`"12.30"`); letters, negatives, three decimals rejected; half-up rounding. CLI formats `price`, `unitPrice`, `net`, `tax`, `subtotal`, `total`, `paid`, `balance`, `amount`, aging buckets, revenue totals.
+- **Storage**: `data/invoicing.json` by default, `--data <path>` on every command (accepted before or after the command), file + directory auto-created, per-entity integer ids from 1.
+- **Invoices**: drafts → lines (discount/tax recompute) → issue (`INV-<year>-<nnnn>` per-year counter, due date) → partial/full payments (overpay rejected, auto-`paid`) → void rules. Overdue = issued and `due < today`.
+- **CLI contract**: success = one JSON value on stdout, exit 0; runtime error = `{"error":"..."}` on stderr, exit 2; unknown command / missing option = usage on stderr, exit 1. `export` emits the CSV as a JSON string with no trailing newline.
+
+## Verification
+`npm test` → **28 tests, 28 pass, 0 fail**. I also smoke-tested the full lifecycle and every error exit code manually, and confirmed the repo stays clean afterward (tests use temp data files).
+
+One implementation choice worth flagging since the spec was ambiguous: `revenue()` groups invoices with status `issued` or `paid` by issue month and sums each invoice's `total` (not payments received), which is the natural reading given it groups by issue date.

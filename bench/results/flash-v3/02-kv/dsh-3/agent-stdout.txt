@@ -1,0 +1,31 @@
+Done. The key-value store CLI is built and `npm test` passes (22/22).
+
+## What was created
+
+- **`bin/kv.js`** — CLI entry point. Parses `<command> [args] [--file <path>]`, plus `--ttl <seconds>` for `set`, and dispatches `set`/`get`/`del`/`list`.
+- **`src/store.js`** — store logic: JSON load/save, atomic writes (unique temp file in the same directory, then `rename`), key validation, and expiry helpers.
+- **`test/cli.test.js`** — 22 `node:test` cases running the CLI as a child process against temp files.
+- **`README.md`** — documents every command, keys, exit codes, and the store format.
+- **`package.json`** — added `"scripts": { "test": "node --test" }` and a `bin` entry.
+- **`.gitignore`** — ignores `.kv.json` and `*.tmp`.
+
+## Behavior implemented
+
+| Command | Behavior |
+|---|---|
+| `set <key> <value...> [--ttl <s>]` | joins remaining args with single spaces; stores `expiresAt` (absolute ms) or `null`; silent, exit 0 |
+| `get <key>` | value + newline, exit 0; missing/expired → `not found: <key>` on stderr, exit 1, expired entry removed from file |
+| `del <key>` | `deleted`, exit 0; missing/expired → `not found: <key>` on stderr, exit 1 |
+| `list` | sorted non-expired keys, one per line; silent when empty |
+
+Invalid keys (`/^[A-Za-z0-9_.-]+$/`) print `invalid key: <key>` on stderr and exit 1; unknown commands print usage on stderr and exit 2. Store defaults to `.kv.json` in the cwd.
+
+## Test coverage
+
+All commands plus error cases (missing key, invalid key, unknown command), empty store, sorted listing, TTL persistence format, non-expired TTL, immediate expiry (`--ttl 0`), already-expired timestamp cleanup on `get`/`list`/`del`, atomic-write temp-file cleanup, and the default `--file` location.
+
+```
+ℹ tests 22   ℹ pass 22   ℹ fail 0
+```
+
+One judgment call worth flagging: the spec didn't define `set <key>` with no value, so I followed the literal "remaining arguments joined" rule and store an empty string (covered by a test). If you'd prefer that case to be a usage error (exit 2), it's a one-line change.

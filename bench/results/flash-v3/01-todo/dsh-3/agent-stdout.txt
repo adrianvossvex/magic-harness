@@ -1,0 +1,15 @@
+All 9 tests pass. Here's a summary of the work:
+
+## Changes
+
+**`src/todo.js`** — Added the three methods and a monotonic id counter:
+- `toggle(id)` — finds the item, flips `done`, returns it; throws `Error("Unknown id: <id>")` (message contains `"Unknown id"`) for unknown ids.
+- `remove(id)` — splices out the item and returns `true`, or returns `false` for unknown ids without changing the store.
+- `count()` — returns `items.length`.
+- `add`/`list` behavior is unchanged (list still returns a copy). I changed id generation from `items.length + 1` to a `nextId` counter: sequential adds still produce ids `1, 2, 3…`, but ids stay unique after a `remove` instead of colliding with an existing item — important now that `toggle`/`remove` look items up by id.
+
+**`test/todo.test.js`** — Kept the original test and added coverage for: `add` return shape, `list` returning a copy, `toggle` flipping/returning, `toggle` throwing on unknown id, `remove` returning `true`/deleting, `remove` returning `false` on unknown id, `count`, and id uniqueness after removal.
+
+**`README.md`** — Documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count` with a short end-to-end example plus `npm test` instructions.
+
+`npm test` exits 0 with 9/9 passing.

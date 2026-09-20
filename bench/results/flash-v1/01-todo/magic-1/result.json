@@ -1,0 +1,82 @@
+{
+  "task": "01-todo",
+  "harness": "magic",
+  "run": 1,
+  "model": "deepseek-flash",
+  "effort": "high",
+  "startedAt": "2026-09-20T02:24:19.789Z",
+  "durationMs": 17216,
+  "timedOut": false,
+  "exitCode": 0,
+  "checks": {
+    "pass": 8,
+    "fail": 0,
+    "total": 8
+  },
+  "repoTests": {
+    "code": 0,
+    "pass": 9,
+    "fail": 0
+  },
+  "files": [
+    "src/todo.js",
+    "test/todo.test.js",
+    "README.md"
+  ],
+  "usage": {
+    "input": 9024,
+    "cached": 53248,
+    "output": 2485
+  },
+  "cost": 0.006008688,
+  "code": 0,
+  "turn": {
+    "status": "completed",
+    "modelRequests": 7,
+    "context": {
+      "tokens": 10830,
+      "measured": 10829,
+      "estimated": 1,
+      "window": 1000000,
+      "usable": 968000,
+      "autoCompactAt": 955000,
+      "bytes": 45515
+    }
+  },
+  "stdout": "",
+  "stderr": "",
+  "metrics": {
+    "requests": 7,
+    "input": 9024,
+    "cached": 53248,
+    "output": 2485,
+    "toolCalls": 8,
+    "toolErrors": 0,
+    "tools": {
+      "Read": 3,
+      "Bash": 2,
+      "Edit": 2,
+      "Write": 1
+    },
+    "compactions": 0,
+    "sessions": [
+      {
+        "id": "ab494cbb-99eb-4f53-b25a-1890f216f323",
+        "requests": 7,
+        "input": 9024,
+        "cached": 53248,
+        "output": 2485,
+        "toolCalls": 8,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 10829,
+        "turns": [
+          "completed"
+        ]
+      }
+    ],
+    "apiErrors": 0,
+    "questions": 0
+  }
+}

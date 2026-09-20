@@ -1,0 +1,46 @@
+
+> kv-store@0.1.0 test
+> node --test
+
+✔ set then get round trips a multi-argument value (99.503334ms)
+✔ set replaces an existing value and clears a previous ttl (143.196333ms)
+✔ get on a missing key reports not found on stderr and does not create the file (47.875333ms)
+✔ del removes a key and prints deleted, then reports it as missing (144.811792ms)
+✔ list prints every key once, sorted (240.587542ms)
+✔ list on an empty store prints nothing and does not create the file (49.149417ms)
+✔ list does not rewrite the store file (48.450334ms)
+✔ invalid keys are rejected on set, get and del (190.508083ms)
+✔ usage errors exit 2 and print usage on stderr (761.090375ms)
+✔ the default store file is .kv.json in the working directory (95.740084ms)
+✔ --ttl stores an absolute millisecond expiry and keeps the key readable (141.8735ms)
+✔ get reports an already-expired key as not found and removes it from the file (98.566291ms)
+✔ del reports an expired key as not found and prunes it (47.680208ms)
+✔ set prunes expired entries before writing (48.318291ms)
+✔ a corrupt store file is reported as an error and exits 1 (143.25875ms)
+✔ --file may appear before the command or between arguments (192.109625ms)
+✔ KEY_PATTERN accepts letters, digits, underscore, dot and dash (0.664208ms)
+✔ KEY_PATTERN rejects other keys (0.055166ms)
+✔ makeEntry without a ttl has no expiry (0.533541ms)
+✔ makeEntry with a ttl stores an absolute millisecond timestamp (0.083792ms)
+✔ isExpired is false without an expiry and only at or after expiresAt (0.045125ms)
+✔ pruneExpired keeps live entries and does not mutate its input (0.077792ms)
+✔ readStore on a missing file yields an empty, prototype-less map (0.553833ms)
+✔ writeStore/readStore round trip preserves keys, values and expiries (0.888084ms)
+✔ a __proto__ key is an own property and does not pollute prototypes (0.452542ms)
+✔ readStore writes nothing for a missing file (0.498709ms)
+✔ readStore throws StoreError with the file name for corrupt JSON (0.424333ms)
+✔ readStore throws StoreError for a root that is not a plain object (0.756ms)
+✔ readStore throws StoreError for invalid entries (0.88875ms)
+✔ readStore throws StoreError when the path cannot be read (0.302875ms)
+✔ writeStore leaves no temporary files behind (0.556042ms)
+✔ a failed write throws StoreError and leaves no temporary file behind (0.243166ms)
+✔ writeStore goes through a temp file in the target directory (0.439958ms)
+✔ writeStore replaces an existing file (0.550041ms)
+ℹ tests 34
+ℹ suites 0
+ℹ pass 34
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 2557.038166

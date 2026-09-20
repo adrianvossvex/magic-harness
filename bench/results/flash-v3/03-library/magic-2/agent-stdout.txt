@@ -1,0 +1,27 @@
+I'll start by exploring the repository to see what's already there.The repo is essentially empty. Let me check the .gitignore and Node version.The repo is empty apart from `package.json` and `.gitignore`. This is a fully-specified build, so I'll implement it directly. Starting with the core modules (storage, dates, errors, and the three feature modules).Now the CLI. I'll also trim an unused helper I added to `members.js` since the spec only calls for `addMember`.Now the test suites, package.json script, README, and gitignore.The last assertion in the members test is wrong — validation fails before the file is created, so reading it would throw. Fixing that.Now let me run the tests.One test had wrong expectations (I mislabeled which loan would be overdue). Fixing the fixture to have a returned loan, an active overdue loan, and an active not-yet-due loan.All 34 tests pass. Let me do a quick manual smoke test of the CLI end-to-end.Everything behaves as specified. Now the README.Let me verify the final file layout, that tests didn't pollute the repo with a `data/` directory, and make the CLI executable.Done. The library system is built, documented, and `npm test` passes with 34 tests (0 failures).
+
+## What's there
+
+**Modules** (`src/`, ES modules, zero dependencies):
+- `src/store.js` — JSON persistence. Resolves the path (`data` option → `LIBRARY_DATA` env var → `data/library.json` relative to cwd), creates the file and any missing directories on first use, and repairs counters from existing ids.
+- `src/dates.js` — `YYYY-MM-DD` validation and UTC-based day arithmetic (so DST never shifts a due date).
+- `src/errors.js` — `LibraryError`, thrown for invalid input or broken rules.
+- `src/books.js` — `addBook`, `listBooks`.
+- `src/members.js` — `addMember`.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`.
+
+Each module function takes an optional `data` key naming the file, matching the documented option shapes (e.g. `addBook({ title, author, copies = 1, data })`). Ids are per-type counters starting at 1.
+
+**CLI** (`bin/library.js`): commands print one JSON line and exit 0; failures print `{"error":"..."}` on stderr with exit 2; unknown command/missing option exit 1. A checkout decrements `available`, a return increments it; a late return stores a fine of 0.50/day capped at 20.00; a member is blocked at 3 active loans; double-return fails.
+
+**Tests** (`test/`, `node:test`): `books.test.js`, `members.test.js`, `loans.test.js` (checkout limits, fines, cap, overdue filtering, report arithmetic), and `cli.test.js` (stdout JSON, exit codes, default path creation). `package.json` now has `"test": "node --test"`.
+
+**README.md** documents the storage format, the rules, every module function, and every command with a worked example and its output.
+
+## Verification
+
+- `npm test` → 34 pass / 0 fail.
+- Manual end-to-end CLI run in a temp dir: add-book, add-member, checkout, `list-books --available`, `list-loans --overdue`, late `return`, `report` all correct; failure exits 2, missing option exits 1, unknown command exits 1; `data/library.json` created as expected.
+- Tests write only to OS temp dirs, so no `data/` directory is left in the repo (and it's now gitignored).
+
+I did not commit anything — let me know if you'd like a commit.

@@ -1,0 +1,29 @@
+Done. The library management system is implemented and all 36 tests pass.
+
+## What was built
+
+**Core modules** (`src/`, ES modules, zero dependencies):
+- `books.js` — `addBook({ title, author, copies = 1 })`, `listBooks({ available } = {})`
+- `members.js` — `addMember({ name })` (plus `listMembers`)
+- `loans.js` — `checkout`, `returnLoan`, `listLoans`, `report` with the 3-active-loan limit, 0.50/day fine capped at 20.00, and double-return protection
+- `storage.js` — single JSON file (`data/library.json` by default), created on first use, `nextId` per entity type
+- `dates.js` / `validate.js` / `errors.js` — UTC date math, validation, and distinct usage vs. application errors
+- `index.js` — convenient re-exports
+
+**CLI** (`bin/library.js`):
+- All commands: `add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`
+- Success → one JSON value on stdout, exit `0`
+- Usage errors (unknown command / unknown or missing option) → `{"error":...}` on stderr, exit `1`
+- Validation/business failures (missing entity, no copy, loan limit, double return, invalid field, corrupt data) → `{"error":...}` on stderr, exit `2`
+- `--data <path>` accepted anywhere, plus `LIBRARY_DATA` and optional module-level path overrides
+
+**Tests** (`test/`, `node:test`): 36 tests across `books.test.js`, `members.test.js`, `loans.test.js`, and `cli.test.js` (exit codes, JSON output, end-to-end flow, default-path creation).
+
+**Docs**: `README.md` documents persistence, every module, every command with runnable examples, and all rules. `package.json` now has `"test": "node --test"`.
+
+Verification:
+```
+npm test  →  tests 36, pass 36, fail 0
+```
+
+The CLI was also smoke-tested end-to-end for the loan limit, fine cap, double return, and unknown-option exit codes.

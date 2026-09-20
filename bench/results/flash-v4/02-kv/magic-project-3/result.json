@@ -1,0 +1,595 @@
+{
+  "task": "02-kv",
+  "harness": "magic-project",
+  "run": 3,
+  "model": "deepseek-flash",
+  "effort": "high",
+  "startedAt": "2026-09-20T03:31:21.177Z",
+  "durationMs": 288461,
+  "timedOut": false,
+  "exitCode": 0,
+  "checks": {
+    "pass": 10,
+    "fail": 0,
+    "total": 10
+  },
+  "repoTests": {
+    "code": 0,
+    "pass": 34,
+    "fail": 0
+  },
+  "files": [
+    ".gitignore",
+    "package.json",
+    "README.md",
+    "bin/kv.js",
+    "src/cli.js",
+    "src/store.js",
+    "test/cli.test.js",
+    "test/store.test.js"
+  ],
+  "usage": {
+    "input": 46253,
+    "cached": 804992,
+    "output": 51249
+  },
+  "cost": 0.080204652,
+  "code": 0,
+  "summary": {
+    "status": "done",
+    "goal": "Build a small key-value store CLI in this repository (Node.js, ES modules, no dependencies).\n\nEntry point: bin/kv.js, run as `node bin/kv.js <command> [args] [--file <path>]`. The store is a JSON file; `--file` selects it and defaults to `.kv.json` in the current directory. Writes must be atomic (write a temporary file, then rename).\n\nCommands:\n- `set <key> <value...>`: stores the value (all remaining arguments joined with single spaces). Prints nothing, exit code 0. Optional `--ttl <seconds>` makes the key expire that many seconds after it was set.\n- `get <key>`: prints the value followed by a newline, exit code 0. For a missing or expired key prints `not found: <key>` on stderr and exits with code 1. An expired key is removed from the file when it is read.\n- `del <key>`: removes the key and prints `deleted`, exit 0; for a missing key prints `not found: <key>` on stderr and exits 1.\n- `list`: prints every non-expired key, sorted, one per line; prints nothing for an empty store.\n\nKeys must match /^[A-Za-z0-9_.-]+$/; otherwise print `invalid key: <key>` on stderr and exit 1. An unknown command prints usage on stderr and exits 2.\n\nAdd tests in test/ using node:test that run the CLI as a child process against a temporary file and cover every command, the error cases and TTL expiry (use a short TTL and a fake clock or an already-expired timestamp; the file stores absolute expiry times in milliseconds). Add a \"test\" script to package.json so that `npm test` runs them, and write a README.md that documents every command. npm test must pass.",
+    "parallel": 2,
+    "replans": 0,
+    "maxReplans": 2,
+    "planning": false,
+    "counts": {
+      "todo": 0,
+      "running": 0,
+      "verifying": 0,
+      "done": 3,
+      "failed": 0,
+      "blocked": 0,
+      "cancelled": 0
+    },
+    "running": [],
+    "milestones": [
+      {
+        "id": "m1",
+        "title": "Working store, CLI and end-to-end tests",
+        "approval": "user",
+        "status": "approved",
+        "done": 2,
+        "total": 2
+      },
+      {
+        "id": "m2",
+        "title": "npm test wiring, ignore rules and README",
+        "approval": "auto",
+        "status": "approved",
+        "done": 1,
+        "total": 1
+      }
+    ],
+    "tasks": [
+      {
+        "id": "store-module",
+        "title": "Persistence layer src/store.js with unit tests",
+        "status": "done",
+        "milestone": "m1",
+        "deps": [],
+        "attempts": 1,
+        "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d"
+      },
+      {
+        "id": "cli-and-e2e-tests",
+        "title": "CLI entry point bin/kv.js, src/cli.js and end-to-end tests",
+        "status": "done",
+        "milestone": "m1",
+        "deps": [
+          "store-module"
+        ],
+        "attempts": 1,
+        "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140"
+      },
+      {
+        "id": "npm-test-and-docs",
+        "title": "npm test script, ignore rules and README",
+        "status": "done",
+        "milestone": "m2",
+        "deps": [
+          "cli-and-e2e-tests"
+        ],
+        "attempts": 1,
+        "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c"
+      }
+    ]
+  },
+  "approvals": 2,
+  "stdout": "I'll start by exploring the repository structure to understand what exists.The repo is nearly empty: `package.json` (`type: module`, no scripts) and a two-line `.gitignore`. No source, tests, or tooling exist, so the plan builds everything from scratch. Let me lay out the design and task tree.The plan was accepted.\n\n**What the plan covers.** The repo is a blank slate (only `package.json` with `\"type\": \"module\"` and a two-line `.gitignore`), so the design defines everything from the file format up. Three tasks in two milestones:\n\n- **store-module** (M1) — `src/store.js`: the JSON store format (`{key: {value, expiresAt}}` with absolute millisecond expiry), an atomic write (temp file in the target's directory, then rename, temp cleaned up on failure), key validation, expiry helpers, and a `StoreError` type, plus unit tests in `test/store.test.js`.\n- **cli-and-e2e-tests** (M1) — `src/cli.js` exporting `main(argv, io) -> exit code` and the `bin/kv.js` wrapper, implementing the exact contract (flag extraction, usage → exit 2, invalid key → exit 1, `not found: <key>` → exit 1, `deleted`, sorted `list`), plus `test/cli.test.js` spawning the CLI against a temp file for every command, error path and TTL case.\n- **npm-test-and-docs** (M2) — `\"test\": \"node --test test/\"` in `package.json`, ignore rules for store and temp artifacts, and a README documenting each command, flag, message and exit code.\n\n**Decisions recorded in the design** for cases the goal left open: corrupt or unreadable store → `error: <message>` on stderr, exit 1; missing or non-positive `--ttl`, extra arguments and flags on the wrong command → usage, exit 2; `set` requires at least one value; `del` and a pruning `get` rewrite the file, while `list` never writes; `expiresAt == now` counts as expired; `--file` and `--ttl` can never be positional values; in-memory maps use `Object.create(null)` so a literal `__proto__` key can't pollute prototypes.\n\nVerification is `node --test test/store.test.js`, `node --test test/cli.test.js`, then `npm test` at the end; the first milestone pauses for you to try the CLI by hand before the packaging work runs.I'll start by looking at the existing repository state.Now I'll write the persistence module.Let me add a test that proves the temp file is created beside the target, and tighten the replace test.Two of my test expectations were wrong (`-` and `..` are valid per the pattern; `NaN` serializes to `null` in JSON). Fixing them.Done — `src/store.js` and `test/store.test.js` are in place and the acceptance command passes (18/18 tests, exit 0).\n\n**What I built**\n\n`src/store.js` is a pure ES module with the exported contract from the design: `KEY_PATTERN`, `isValidKey`, `makeEntry`, `isExpired`, `pruneExpired`, `readStore`, `writeStore`, and `StoreError`. It imports only `node:fs` and `node:crypto` and knows nothing about argv or commands.\n\n- `readStore` returns an `Object.create(null)` map; a missing file (ENOENT) yields an empty map, while any other read failure, corrupt JSON, a non-object/array root, or a malformed entry throws `StoreError` whose message names the file.\n- `writeStore` serialises `JSON.stringify(entries, null, 2) + '\\n'`, writes to `\"${filePath}.${process.pid}.${randomBytes(6).toString('hex')}.tmp\"` with flag `'wx'`, renames over the target, and on any failure unlinks the temp file best-effort and throws `StoreError`.\n- `pruneExpired` builds a new null-prototype map and never mutates its input; expiry is `expiresAt != null && now >= expiresAt`.\n\n`test/store.test.js` reads and writes only inside directories from `fs.mkdtempSync(os.tmpdir())`, cleaned up via `t.after`. It covers the key pattern accept/reject sets, `makeEntry` with and without TTL, the `isExpired` boundary just below/at/above, non-mutation and prototype of the `pruneExpired` result, a missing file, a write/read round trip including the `__proto__` key and a multi-word value, corrupt JSON and non-object roots and malformed entries throwing `StoreError`, no `*.tmp` leftovers, and a failed write to a nonexistent directory leaving no temp file.\n\n**Verification** — `node --test test/store.test.js` from the project root: 18 tests, 18 pass, 0 fail, exit 0. `git status` shows only `src/` and `test/` as new; no `.kv.json` or temp artifacts were created in the working tree.\n\nTwo notes for the reviewer's checklist. The temp-file-directory guarantee is proven by a test that temporarily wraps `fs.renameSync` (the module and the test share the same `node:fs` module object) to capture the rename source: it asserts the source is `store.json.<pid>.<12 hex>.tmp` in the target's own directory and that the destination is the target path — this is what makes the rename atomic rather than a cross-device copy. And the `__proto__` key is asserted to be an own property on a null-prototype map, with `({}).value` and `Object.prototype.value` still undefined afterwards.\n\nOne decision worth recording: I rejected any entry whose `expiresAt` is neither `null` nor a finite number, so a JSON file containing `true`, an array, a string, or a missing field is treated as a corrupt store. That is stricter than the design's letter but consistent with its \"invalid file shape throws `StoreError`\" rule, and `NaN` can't appear in JSON anyway since it serialises to `null`.The task is complete and reported: `src/store.js` implements the full persistence-layer contract from the design, `test/store.test.js` covers it with 18 passing `node:test` cases, and `node --test test/store.test.js` exits 0 with no artifacts left in the working tree.I'll start by reading the existing code to understand the interfaces I need to use.Now I'll write the CLI module.The CLI works manually. Now the end-to-end test suite.Done — the CLI front end and its end-to-end tests are implemented and passing.\n\n**What was built**\n\n- `bin/kv.js` — the three-line shebang wrapper: imports `main` and sets `process.exitCode` from the returned value.\n- `src/cli.js` — exports `async function main(argv, io = {})` returning a numeric exit code, writing all output through `io.stdout`/`io.stderr` and never calling `process.exit`. Parsing follows the design's order: first `--file <path>` anywhere in argv (default `.kv.json`, missing value → usage/2), then `--ttl <seconds>` for `set` only (must be a positive finite number), then command dispatch. Argument-count and unknown-command problems write the multi-line usage text to stderr and return 2; invalid keys write `invalid key: <key>` and return 1; store failures write `error: <message>` and return 1. `set` joins the value args with single spaces, prunes expired entries and prints nothing; `get` prunes an expired entry out of the file before reporting `not found`; `del` prints `deleted`; `list` prints sorted live keys and never writes.\n- `test/cli.test.js` — 16 node:test cases that spawn the CLI with `spawnSync(process.execPath, [binPath, ...args])` in `mkdtempSync(os.tmpdir())` directories, asserting stdout, stderr and status separately: every command, multi-argument values, overwrite clearing a TTL, missing keys on get/del, sorted list, empty store, invalid keys on all three key commands, 15 usage cases, the default `.kv.json` under a temp cwd, `--ttl 60` writing an absolute millisecond expiry, a still-live TTL key, an already-expired fixture that get removes and list hides, expiry pruning on set/del, a corrupt store file, and `--file` in every position.\n\n**Evidence:** `node --test test/cli.test.js` → 16/16 pass, exit 0; `node --test test/store.test.js` → exit 0; full suite `node --test` → 34 pass. The `list`-does-not-write guarantee is asserted by pinning the store file's mtime to epoch 0 and checking it is unchanged afterwards. Manual runs confirmed the documented streams and codes (`get nope` → stderr `not found: nope`, exit 1, no file created; unknown command → `usage:` on stderr, exit 2).\n\n**One thing the packaging task needs to know:** this machine runs Node v26.0.0, where the test runner rejects a directory argument — the design's `\"test\": \"node --test test/\"` fails with `Cannot find module .../test`. `\"test\": \"node --test\"` or `node --test \"test/*.test.js\"` both work and run all 34 tests. I recorded this as a task note; `package.json` and `README.md` are outside my file scope, so they remain for the packaging task.I'll start by reading the current state of the files I own and checking the Node version, since a dependency recorded a conflict about the test script.Node v26 is confirmed. Let me verify both candidate test-script forms before choosing, and read the source files to document behavior accurately.Confirmed: `node --test test/` fails on Node v26 (directory positional rejected), while `node --test` runs all 34 tests. I'll use auto-discovery and record the deviation. Let me confirm it runs both test files and read the remaining sources.Both test files exist and auto-discovery works. Let me confirm the test count matches running the two files individually, and check `.magic` won't inject stray tests.Everything checks out: 18 + 16 = 34, so `node --test` runs exactly the two test files. Now I'll write the three files.Now let me smoke-test the CLI so the README documents exact output, then write it.Behavior confirmed exactly. Now the README.README written. Now running the acceptance command from the project root.`npm test` passes with 34 tests, exit 0. Let me verify the final files and confirm no stray store file landed in the repo.Done. `npm test` passes from the project root (34 tests, exit 0).\n\nWhat I changed:\n- **package.json** — kept `name`, `version`, `\"type\": \"module\"`; added a short description, `\"engines\": { \"node\": \">=18\" }`, and the test script. No dependencies added.\n- **.gitignore** — kept `node_modules/` and `.magic/`; added `.kv.json`, `.kv.json.*` (covers the atomic-write temp files) and `.kv-smoke.json`.\n- **README.md** (new) — for a first-time user: what the tool is, Node >= 18 with no dependencies, the invocation form, the default store path, one section per command (set/get/del/list) with a shell example and exact stdout/stderr plus exit code, the `--ttl` flag and expiry rule, the key pattern, the exit-code table, the JSON file format with an example, atomic writes without locking, and how to run the suite.\n\nOne deliberate deviation: the test script is `\"test\": \"node --test\"`, not the design document's `\"node --test test/\"`. On this machine (Node v26.0.0) the runner rejects a directory positional — `node --test test/` fails with MODULE_NOT_FOUND and a non-zero exit, which would fail the acceptance check. Bare `node --test` auto-discovers both files and runs the identical 34 tests (verified: store.test.js alone is 18, cli.test.js alone is 16, together 34). This was recorded with `task_note` and in the report's decisions.",
+  "stderr": "",
+  "project": {
+    "version": 1,
+    "goal": "Build a small key-value store CLI in this repository (Node.js, ES modules, no dependencies).\n\nEntry point: bin/kv.js, run as `node bin/kv.js <command> [args] [--file <path>]`. The store is a JSON file; `--file` selects it and defaults to `.kv.json` in the current directory. Writes must be atomic (write a temporary file, then rename).\n\nCommands:\n- `set <key> <value...>`: stores the value (all remaining arguments joined with single spaces). Prints nothing, exit code 0. Optional `--ttl <seconds>` makes the key expire that many seconds after it was set.\n- `get <key>`: prints the value followed by a newline, exit code 0. For a missing or expired key prints `not found: <key>` on stderr and exits with code 1. An expired key is removed from the file when it is read.\n- `del <key>`: removes the key and prints `deleted`, exit 0; for a missing key prints `not found: <key>` on stderr and exits 1.\n- `list`: prints every non-expired key, sorted, one per line; prints nothing for an empty store.\n\nKeys must match /^[A-Za-z0-9_.-]+$/; otherwise print `invalid key: <key>` on stderr and exit 1. An unknown command prints usage on stderr and exits 2.\n\nAdd tests in test/ using node:test that run the CLI as a child process against a temporary file and cover every command, the error cases and TTL expiry (use a short TTL and a fake clock or an already-expired timestamp; the file stores absolute expiry times in milliseconds). Add a \"test\" script to package.json so that `npm test` runs them, and write a README.md that documents every command. npm test must pass.",
+    "status": "done",
+    "createdAt": "2026-09-20T03:32:30.261Z",
+    "updatedAt": "2026-09-20T03:36:00.105Z",
+    "parallel": 2,
+    "replans": 0,
+    "maxReplans": 2,
+    "milestones": [
+      {
+        "id": "m1",
+        "title": "Working store, CLI and end-to-end tests",
+        "approval": "user",
+        "status": "approved"
+      },
+      {
+        "id": "m2",
+        "title": "npm test wiring, ignore rules and README",
+        "approval": "auto",
+        "status": "approved"
+      }
+    ],
+    "tasks": [
+      {
+        "id": "store-module",
+        "title": "Persistence layer src/store.js with unit tests",
+        "spec": "Implement the persistence layer exactly as specified in the design document (sections 'Store file format', 'Atomic writes', 'Interfaces'). src/store.js is a CommonJS-free ES module exporting, as named exports: KEY_PATTERN (/^[A-Za-z0-9_.-]+$/), isValidKey(key), makeEntry(value, ttlSeconds, now = Date.now()), isExpired(entry, now = Date.now()), pruneExpired(entries, now = Date.now()), readStore(filePath), writeStore(filePath, entries), and class StoreError extends Error. Entry shape is { value: string, expiresAt: number | null } with expiresAt in absolute milliseconds; an entry is expired when expiresAt != null && now >= expiresAt. readStore returns an Object.create(null) map: a missing file (ENOENT) yields an empty map, corrupt JSON or an invalid shape throws StoreError with a message naming the file. Never mutate the input map: pruneExpired returns a new null-prototype map. writeStore serialises with JSON.stringify(entries, null, 2) + '\\n', writes to `${filePath}.${process.pid}.${randomBytes(6).toString('hex')}.tmp` in the same directory with flag 'wx', renames over the target, and on failure removes the temp file best-effort and throws StoreError. Do not import from bin/ or src/cli.js; this module must have no knowledge of commands or argv. Also write test/store.test.js using node:test and node:assert/strict covering: key pattern accept/reject cases, makeEntry with and without ttl (expiresAt approx now + ttl*1000), isExpired below/at/above the boundary, pruneExpired keeping live entries and not mutating its input, readStore on a missing file, write/read round trip including the key '__proto__' and a value with spaces, corrupt JSON throws StoreError, a non-object root throws StoreError, and no leftover *.tmp files after writeStore (use node:fs to list the directory). Use mkdtempSync(os.tmpdir()) for every file. Verify with `node --test test/store.test.js` from the project root.",
+        "acceptance": {
+          "commands": [
+            "node --test test/store.test.js"
+          ],
+          "review": "Confirm the temp file lives in the target's directory (so rename is atomic), that a failed write leaves no temp file behind, that __proto__ is stored as an own property without prototype pollution, and that no test writes into the repository working tree."
+        },
+        "deps": [],
+        "files": [
+          "src/store.js",
+          "test/store.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 30
+        },
+        "milestone": "m1",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+            "turnIds": [
+              "c6dd5aef-74bc-4a6b-a231-176294cebc58",
+              "6ec53649-2a23-49ad-b779-fa5bd359ad44"
+            ],
+            "startedAt": "2026-09-20T03:32:33.792Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented the persistence layer src/store.js and its unit tests test/store.test.js exactly as specified in the design document.\n\nsrc/store.js is a dependency-free ES module (imports only node:fs and node:crypto) exporting KEY_PATTERN, isValidKey, makeEntry, isExpired, pruneExpired, readStore, writeStore and StoreError. readStore returns an Object.create(null) map; a missing file (ENOENT) yields an empty map, while other read failures, corrupt JSON, a non-object/array root, or a malformed entry throw StoreError whose message names the file. writeStore serialises to `JSON.stringify(entries, null, 2) + '\\n'`, writes to \"${filePath}.${process.pid}.${randomBytes(6).toString('hex')}.tmp\" in the same directory with flag 'wx', renames over the target, and on any failure unlinks the temp file best-effort and throws StoreError. pruneExpired returns a new null-prototype map without mutating its input; isExpired is expiresAt != null && now >= expiresAt.\n\ntest/store.test.js uses node:test with node:assert/strict and reads/writes only inside fs.mkdtempSync(os.tmpdir()) directories cleaned up via t.after. It covers key pattern accept/reject cases, makeEntry with and without TTL, the isExpired boundary below/at/above, pruneExpired keeping live entries without mutating input and returning a null-prototype map, readStore on a missing file, a write/read round trip including the '__proto__' key and a multi-word value, corrupt JSON, non-object roots and malformed entries throwing StoreError, no leftover *.tmp files after writeStore, and a failed write leaving no temp file.",
+              "evidence": "Ran `node --test test/store.test.js` from the project root: 18 tests, 18 pass, 0 fail, exit code 0. Full test names in order: KEY_PATTERN accepts letters/digits/underscore/dot/dash; KEY_PATTERN rejects other keys; makeEntry without a ttl has no expiry; makeEntry with a ttl stores an absolute millisecond timestamp; isExpired is false without an expiry and only at or after expiresAt; pruneExpired keeps live entries and does not mutate its input; readStore on a missing file yields an empty, prototype-less map; writeStore/readStore round trip preserves keys, values and expiries; a __proto__ key is an own property and does not pollute prototypes; readStore writes nothing for a missing file; readStore throws StoreError with the file name for corrupt JSON; readStore throws StoreError for a root that is not a plain object; readStore throws StoreError for invalid entries; readStore throws StoreError when the path cannot be read; writeStore leaves no temporary files behind; a failed write throws StoreError and leaves no temporary file behind; writeStore goes through a temp file in the target directory; writeStore replaces an existing file.\n\n`git status --short` shows only `?? src/` and `?? test/`; the working tree contains no .kv.json or *.tmp artifacts, confirming no test writes into the repository.",
+              "files": [
+                "src/store.js",
+                "test/store.test.js"
+              ],
+              "decisions": [
+                "Entry validation is strict: expiresAt must be null or a finite number and value must be a string, otherwise readStore throws StoreError. NaN cannot occur in JSON (it serialises to null), so this only affects hand-edited files with true/array/string/missing expiresAt.",
+                "readStore throws StoreError only for non-ENOENT read errors; a path that exists but cannot be read (e.g. a directory) is reported as a StoreError naming the file.",
+                "The temp-file-directory guarantee is verified by temporarily wrapping fs.renameSync in the test (the module and test share the same node:fs module object) to capture the rename source, proving the temp file is created beside the target so rename is atomic.",
+                "Test keys named '__proto__' are asserted to be own properties on a null-prototype map, with Object.prototype unpolluted afterwards.",
+                "No package.json or .gitignore changes were made; wiring the \"test\" script belongs to the packaging task outside this task's file scope."
+              ],
+              "openIssues": [
+                "package.json still has no \"test\" script and there are no .gitignore entries for .kv.json/temp artifacts; both are the packaging task's scope, not this one's.",
+                "Two of my initial test expectations were wrong and were corrected during the work: '-' and '..' are valid per KEY_PATTERN (so they were moved out of the reject list), and a NaN expiresAt fixture was replaced because JSON.stringify converts NaN to null."
+              ]
+            },
+            "verification": [
+              {
+                "command": "node --test test/store.test.js",
+                "exitCode": 0,
+                "passed": true,
+                "output": "✔ KEY_PATTERN accepts letters, digits, underscore, dot and dash (0.635083ms)\n✔ KEY_PATTERN rejects other keys (0.056709ms)\n✔ makeEntry without a ttl has no expiry (0.522917ms)\n✔ makeEntry with a ttl stores an absolute millisecond timestamp (0.070584ms)\n✔ isExpired is false without an expiry and only at or after expiresAt (0.0465ms)\n✔ pruneExpired keeps live entries and does not mutate its input (0.076791ms)\n✔ readStore on a missing file yields an empty, prototype-less map (0.592667ms)\n✔ writeStore/readStore round trip preserves keys, values and expiries (0.857875ms)\n✔ a __proto__ key is an own property and does not pollute prototypes (0.535334ms)\n✔ readStore writes nothing for a missing file (0.477167ms)\n✔ readStore throws StoreError with the file name for corrupt JSON (0.434042ms)\n✔ readStore throws StoreError for a root that is not a plain object (0.793042ms)\n✔ readStore throws StoreError for invalid entries (0.997417ms)\n✔ readStore throws StoreError when the path cannot be read (0.292917ms)\n✔ writeStore leaves no temporary files behind (0.496625ms)\n✔ a failed write throws StoreError and leaves no temporary file behind (0.213875ms)\n✔ writeStore goes through a temp file in the target directory (0.420292ms)\n✔ writeStore replaces an existing file (0.511875ms)\nℹ tests 18\nℹ suites 0\nℹ pass 18\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 73.33125",
+                "durationMs": 154
+              }
+            ],
+            "endedAt": "2026-09-20T03:33:19.000Z"
+          }
+        ]
+      },
+      {
+        "id": "cli-and-e2e-tests",
+        "title": "CLI entry point bin/kv.js, src/cli.js and end-to-end tests",
+        "spec": "Implement the command-line front end exactly as specified in the design document (sections 'Interfaces' and 'CLI contract'). bin/kv.js is a thin executable wrapper with a `#!/usr/bin/env node` shebang: `import { main } from '../src/cli.js'; process.exitCode = await main(process.argv.slice(2));`. src/cli.js exports `async function main(argv, io = { stdout: process.stdout, stderr: process.stderr })` returning a numeric exit code and writing nothing outside io; it must not call process.exit. Implement the documented parsing order and precedence (--file extraction and default '.kv.json'; --ttl only for set, positive finite seconds; unknown/missing command, wrong arg count, extra args and bad flag values -> usage on stderr, exit 2; invalid key -> `invalid key: <key>` on stderr, exit 1). set writes nothing and exits 0; get prints value + newline or `not found: <key>` on stderr with exit 1 and prunes an expired entry from the file; del prints `deleted` or `not found: <key>` on stderr with exit 1; list prints sorted non-expired keys and never writes. Any command that writes the store first drops expired entries via store.js's pruneExpired. Store I/O failures print `error: <message>` on stderr and exit 1. Use src/store.js for all persistence; do not reimplement the file format. Then write test/cli.test.js with node:test: spawn the CLI with spawnSync(process.execPath, [binPath, ...args], { cwd, encoding: 'utf8' }) against a mkdtempSync(os.tmpdir()) directory and a --file inside it, and cover every command and error case listed in the design's 'Testing strategy' (multi-argument values, overwrite, missing key on get and del, del output, sorted list, empty store, invalid key on all three commands, unknown command and missing arguments -> exit 2 with `usage:` on stderr, default .kv.json when --file is omitted, --ttl writing an absolute millisecond expiry, a not-yet-expired key, and an already-expired fixture entry that get reports as not found and removes from the file while list hides it). Assert stdout, stderr and exit status separately; keep tests independent of the repository's own files. Verify with `node --test test/cli.test.js` from the project root.",
+        "acceptance": {
+          "commands": [
+            "node --test test/cli.test.js"
+          ],
+          "review": "Confirm exact exit codes (2 for usage errors, 1 for not found/invalid key, 0 for success), that messages go to the documented stream, that `set` prints nothing on stdout, that an expired key is removed from the JSON file by `get`, and that `list` does not rewrite the file."
+        },
+        "deps": [
+          "store-module"
+        ],
+        "files": [
+          "src/cli.js",
+          "bin/kv.js",
+          "test/cli.test.js"
+        ],
+        "budget": {
+          "attempts": 3,
+          "minutes": 45
+        },
+        "milestone": "m1",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+            "turnIds": [
+              "dce6230c-0f2f-4c8f-862f-a6f60a092c36"
+            ],
+            "startedAt": "2026-09-20T03:33:19.017Z",
+            "status": "passed",
+            "report": {
+              "summary": "Implemented the CLI front end and the end-to-end test suite.\n\nsrc/cli.js exports `async function main(argv, io = {})` returning a numeric exit code; every byte of output goes through `io.stdout`/`io.stderr` (defaulting to process.stdout/stderr) and the module never calls process.exit. It extracts the first `--file <path>` anywhere in argv (default `.kv.json`, flag with no value -> usage/2), then for `set` only extracts `--ttl <seconds>` (must satisfy Number.isFinite(n) && n > 0, else usage/2), then dispatches on the first remaining token. Wrong argument counts, extra args, unknown/missing command, and `--ttl` on a non-set command (it stays positional, so the arg count check rejects it) all write the multi-line usage text to stderr and return 2. Invalid keys write `invalid key: <key>` to stderr and return 1. `set` joins the remaining args with single spaces, prunes expired entries, writes atomically via store.js and prints nothing (exit 0). `get` prints `value\\n` (exit 0) or `not found: <key>` on stderr (exit 1); when the entry was expired it rewrites the file with pruneExpired first and leaves the file untouched when the key is simply absent. `del` prints `deleted` after removing the key, and prunes expired entries before reporting `not found` for an expired/missing key. `list` prints sorted live keys and never writes the file. StoreError from store.js is reported as `error: <message>` on stderr with exit 1. bin/kv.js is the three-line shebang wrapper.\n\ntest/cli.test.js uses node:test and spawns `process.execPath` on bin/kv.js with spawnSync in a mkdtempSync(os.tmpdir()) directory, asserting stdout, stderr and status separately: multi-argument set/get round trip, overwrite that clears a previous TTL, missing key on get (and that no file is created), del output then not-found, sorted list, empty-store list, invalid key on set/get/del, 15 usage cases all exiting 2 with a `usage:` prefix, the default `.kv.json` under a temp cwd, `--ttl 60` writing a numeric absolute millisecond expiry within the measured window, a not-yet-expired key staying readable, an already-expired fixture entry that get reports as `not found` and removes from the file while list hides it, del on an expired key, set pruning expired entries, a corrupt store file reported as `error:` (exit 1) with the file left byte-identical and no temp files, and `--file` placed before the command or between arguments.\n\nOne environment finding that affects another task: on Node v26.0.0 (this machine) the test runner rejects a directory argument, so the design's `\"test\": \"node --test test/\"` would fail `npm test`; `node --test` or `node --test \"test/*.test.js\"` works. Recorded as a task note for the packaging task.",
+              "evidence": "`node --test test/cli.test.js` from the project root: 16/16 pass, exit 0. `node --test test/store.test.js`: exit 0. `node --test` (whole suite): 34 pass, 0 fail. Manual run: `node bin/kv.js set greet hello world --file /tmp/kv-demo.json` (exit 0, no output), `get greet` printed `hello world` (exit 0), `list` printed `greet`, `get nope` printed `not found: nope` on stderr with exit 1 (no file created), unknown command printed a `usage:` line on stderr. A direct in-process call confirmed output redirection and return codes: `main(['bogus'], fakeIo)` returned 2 with empty stdout and `usage: kv <command> [args] [--file <path>]` on the fake stderr, and `main(['get','x','--file','/tmp/kv-io-check.json'], fakeIo)` returned 1 with `not found: x\\n` on stderr and no file on disk. The `list` non-write guarantee is asserted in the suite by setting the store file's mtime to epoch 0 and checking it is unchanged after `list`, plus an identical directory listing.",
+              "files": [
+                "src/cli.js",
+                "bin/kv.js",
+                "test/cli.test.js"
+              ],
+              "decisions": [
+                "`del` writes the store only when the key was removed or when pruning dropped expired entries; a plain not-found delete on a store with nothing to prune leaves the file alone so a failed delete never creates a store file. `get` follows the same rule for its expired-entry pruning.",
+                "`--ttl` is only extracted for `set`; on other commands it remains a positional token, so `list --ttl 5` and `get a --ttl 5` fail the argument-count check and return usage/2, which is how the design's '`--ttl` on a non-set command -> exit 2' requirement is met.",
+                "Argument counts are validated before key syntax, so `set bad!key` (one arg) is usage/2 while `set bad!key v` is invalid key/1.",
+                "io defaults use `io.stdout ?? process.stdout` per property so a caller may pass only one stream; behaviour is identical to the documented default when io is omitted.",
+                "Store I/O and corrupt-file failures are wrapped by a single helper that prints `error: <message>` to stderr and returns 1, including writes issued from `set`, the expired-prune path in `get`, and `del`.",
+                "The e2e suite pins the `--file` option in every command invocation except the two tests that deliberately exercise the default `.kv.json` and an empty argv; all paths come from os.tmpdir()."
+              ],
+              "openIssues": [
+                "package.json still has no \"test\" script and README.md does not exist yet; both are outside this task's file scope and belong to the packaging task (which also needs the Node 26 `node --test <dir>` caveat noted above).",
+                "`.gitignore` does not yet list `.kv.json`, so a manual CLI run in the repo root would show up as untracked; the design assigns that to packaging. I ran all manual checks with `--file` in /tmp or with a temp cwd, so the repository is untouched."
+              ]
+            },
+            "verification": [
+              {
+                "command": "node --test test/cli.test.js",
+                "exitCode": 0,
+                "passed": true,
+                "output": "✔ set then get round trips a multi-argument value (98.397125ms)\n✔ set replaces an existing value and clears a previous ttl (142.853084ms)\n✔ get on a missing key reports not found on stderr and does not create the file (48.641166ms)\n✔ del removes a key and prints deleted, then reports it as missing (144.492916ms)\n✔ list prints every key once, sorted (241.710042ms)\n✔ list on an empty store prints nothing and does not create the file (54.089542ms)\n✔ list does not rewrite the store file (51.515416ms)\n✔ invalid keys are rejected on set, get and del (190.391542ms)\n✔ usage errors exit 2 and print usage on stderr (761.327959ms)\n✔ the default store file is .kv.json in the working directory (96.767333ms)\n✔ --ttl stores an absolute millisecond expiry and keeps the key readable (143.66725ms)\n✔ get reports an already-expired key as not found and removes it from the file (96.583333ms)\n✔ del reports an expired key as not found and prunes it (48.239583ms)\n✔ set prunes expired entries before writing (49.519541ms)\n✔ a corrupt store file is reported as an error and exits 1 (143.682292ms)\n✔ --file may appear before the command or between arguments (189.65675ms)\nℹ tests 16\nℹ suites 0\nℹ pass 16\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2564.489709",
+                "durationMs": 2654
+              }
+            ],
+            "endedAt": "2026-09-20T03:34:59.826Z"
+          }
+        ]
+      },
+      {
+        "id": "npm-test-and-docs",
+        "title": "npm test script, ignore rules and README",
+        "spec": "Wire the project up and document it, matching the design document. package.json: keep name, version and \"type\": \"module\", and add \"test\": \"node --test test/\" (plus a short description and, optionally, \"engines\": { \"node\": \">=18\" }); add nothing else and no dependencies. .gitignore: keep node_modules/ and .magic/, and add `.kv.json`, `.kv.json.*` and `.kv-smoke.json` so ad-hoc stores and their temp files are not committed. README.md: document the tool for a user who has never seen this repository — what it is, requirements (Node >= 18, no dependencies), install/usage as `node bin/kv.js <command> [args] [--file <path>]`, the default store path `.kv.json`, one section per command (set, get, del, list) with a shell example and the exact stdout/stderr and exit code, the `--ttl <seconds>` flag and the expiry rule (absolute millisecond timestamps stored in the JSON file, an expired key is treated as missing and removed when read or next written), the key pattern /^[A-Za-z0-9_.-]+$/, the exit-code table (0 success, 1 not found/invalid key/store error, 2 usage), the JSON file format with a short example, the atomic write (temp file + rename, no locking so concurrent writers are unsupported), and how to run the test suite with `npm test`. Never use inline scripts. Verify with `npm test` from the project root.",
+        "acceptance": {
+          "commands": [
+            "npm test"
+          ],
+          "review": "Confirm README documents every command, the --file and --ttl flags, the key pattern, all exit codes and both error message forms; confirm package.json gained only the test script (and optional description/engines) and no dependencies, and that `npm test` runs both test files."
+        },
+        "deps": [
+          "cli-and-e2e-tests"
+        ],
+        "files": [
+          "package.json",
+          ".gitignore",
+          "README.md"
+        ],
+        "budget": {
+          "attempts": 2,
+          "minutes": 25
+        },
+        "milestone": "m2",
+        "status": "done",
+        "attempts": [
+          {
+            "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+            "turnIds": [
+              "6676e85e-be33-4ec8-bcd2-6e1ede5ef0f5"
+            ],
+            "startedAt": "2026-09-20T03:34:59.889Z",
+            "status": "passed",
+            "report": {
+              "summary": "Wired up and documented the project. package.json gained a description, `\"engines\": { \"node\": \">=18\" }` and a `\"test\"` script, keeping name/version/`\"type\": \"module\"` and adding no dependencies. .gitignore keeps node_modules/ and .magic/ and now also ignores .kv.json, .kv.json.* (the atomic-write temp files) and .kv-smoke.json. README.md is new and documents the tool for a first-time user: what it is, Node >= 18 with no dependencies, usage `node bin/kv.js <command> [args] [--file <path>]`, the default store path .kv.json, a section per command (set, get, del, list) each with a shell example and the exact stdout/stderr and exit code, the --ttl flag and expiry rule, the key pattern /^[A-Za-z0-9_.-]+$/, the exit-code table, the JSON file format with an example, atomic writes with no locking, and `npm test`.\n\nOne deliberate deviation from the design document: the test script is `\"test\": \"node --test\"` rather than `\"node --test test/\"`. Node v26.0.0 (this machine) rejects a directory positional argument, so `node --test test/` fails with MODULE_NOT_FOUND; bare `node --test` auto-discovers both test files and runs the identical 34 tests. This was recorded in the project decision log (task_note) and as a decision here.",
+              "evidence": "Ran `npm test` from the project root: exit 0, `tests 34 / pass 34 / fail 0`. Confirmed auto-discovery covers exactly both files by comparing counts: `node --test test/store.test.js` -> 18 tests, `node --test test/cli.test.js` -> 16 tests, `node --test` -> 34, and `find .magic` found no extra test-like files. Verified the failing alternative: `node --test test/` -> MODULE_NOT_FOUND, exit 1. Smoke-tested the CLI against /tmp/kvreadme to capture exact outputs documented in the README: `set` prints nothing and exits 0; `get` prints `hello world\\n` exit 0 and `not found: nope` on stderr exit 1; `del` prints `deleted` exit 0 and `not found: nope` on stderr exit 1; `list` prints sorted keys; `get 'bad key!'` prints `invalid key: bad key!` on stderr exit 1; an unknown command prints the `usage:` text on stderr exit 2; `set sess abc --ttl 60` writes `{\"sess\":{\"value\":\"abc\",\"expiresAt\":1789875392061}}` (absolute ms). Confirmed repo root has no stray .kv.json and `git status --short` shows only .gitignore, package.json modified plus the new README.md/bin/src/test files.",
+              "files": [
+                "package.json",
+                ".gitignore",
+                "README.md"
+              ],
+              "decisions": [
+                "Used `\"test\": \"node --test\"` instead of the design's `\"node --test test/\"` because the literal form fails on Node v26.0.0 (directory positional rejected: MODULE_NOT_FOUND, exit 1), which would break the `npm test` acceptance check. Bare `node --test` auto-discovers test/store.test.js and test/cli.test.js and runs the same 34 tests; recorded via task_note.",
+                "Added `\"engines\": { \"node\": \">=18\" }` and a one-line description as the task explicitly permitted; added no dependencies, no `bin` entry, and nothing else to package.json.",
+                "README intentionally contains only `node bin/kv.js ...` shell examples (no inline scripts), and documents both error-message forms (`not found: <key>`, `invalid key: <key>`, plus the `error: <message>` store failure) and all three exit codes."
+              ],
+              "openIssues": []
+            },
+            "verification": [
+              {
+                "command": "npm test",
+                "exitCode": 0,
+                "passed": true,
+                "output": "\n> kv-store@0.1.0 test\n> node --test\n\n✔ set then get round trips a multi-argument value (98.929583ms)\n✔ set replaces an existing value and clears a previous ttl (143.584958ms)\n✔ get on a missing key reports not found on stderr and does not create the file (50.025125ms)\n✔ del removes a key and prints deleted, then reports it as missing (143.224542ms)\n✔ list prints every key once, sorted (238.841625ms)\n✔ list on an empty store prints nothing and does not create the file (49.026417ms)\n✔ list does not rewrite the store file (48.818166ms)\n✔ invalid keys are rejected on set, get and del (192.646333ms)\n✔ usage errors exit 2 and print usage on stderr (764.288ms)\n✔ the default store file is .kv.json in the working directory (97.149625ms)\n✔ --ttl stores an absolute millisecond expiry and keeps the key readable (142.970959ms)\n✔ get reports an already-expired key as not found and removes it from the file (98.375041ms)\n✔ del reports an expired key as not found and prunes it (49.383ms)\n✔ set prunes expired entries before writing (49.003083ms)\n✔ a corrupt store file is reported as an error and exits 1 (144.273166ms)\n✔ --file may appear before the command or between arguments (195.086875ms)\n✔ KEY_PATTERN accepts letters, digits, underscore, dot and dash (0.653167ms)\n✔ KEY_PATTERN rejects other keys (0.055083ms)\n✔ makeEntry without a ttl has no expiry (0.515792ms)\n✔ makeEntry with a ttl stores an absolute millisecond timestamp (0.0865ms)\n✔ isExpired is false without an expiry and only at or after expiresAt (0.045417ms)\n✔ pruneExpired keeps live entries and does not mutate its input (0.076333ms)\n✔ readStore on a missing file yields an empty, prototype-less map (0.541209ms)\n✔ writeStore/readStore round trip preserves keys, values and expiries (0.919167ms)\n✔ a __proto__ key is an own property and does not pollute prototypes (0.444167ms)\n✔ readStore writes nothing for a missing file (0.48025ms)\n✔ readStore throws StoreError with the file name for corrupt JSON (0.446333ms)\n✔ readStore throws StoreError for a root that is not a plain object (0.740125ms)\n✔ readStore throws StoreError for invalid entries (0.922208ms)\n✔ readStore throws StoreError when the path cannot be read (0.307833ms)\n✔ writeStore leaves no temporary files behind (0.545708ms)\n✔ a failed write throws StoreError and leaves no temporary file behind (0.23975ms)\n✔ writeStore goes through a temp file in the target directory (0.434ms)\n✔ writeStore replaces an existing file (0.52025ms)\nℹ tests 34\nℹ suites 0\nℹ pass 34\nℹ fail 0\nℹ cancelled 0\nℹ skipped 0\nℹ todo 0\nℹ duration_ms 2569.351292",
+                "durationMs": 2749
+              }
+            ],
+            "endedAt": "2026-09-20T03:36:00.104Z"
+          }
+        ]
+      }
+    ]
+  },
+  "projectEvents": [
+    {
+      "ts": "2026-09-20T03:31:13.534Z",
+      "type": "planner.start",
+      "sessionId": "a4ce696b-2906-41b0-9a19-eb9b626e6c20",
+      "mode": "write"
+    },
+    {
+      "ts": "2026-09-20T03:32:30.263Z",
+      "type": "project.planned",
+      "sessionId": "a4ce696b-2906-41b0-9a19-eb9b626e6c20",
+      "tasks": 3,
+      "milestones": 2
+    },
+    {
+      "ts": "2026-09-20T03:32:33.744Z",
+      "type": "planner.end",
+      "sessionId": "a4ce696b-2906-41b0-9a19-eb9b626e6c20",
+      "status": "completed",
+      "planned": true
+    },
+    {
+      "ts": "2026-09-20T03:32:33.748Z",
+      "type": "plan.approved"
+    },
+    {
+      "ts": "2026-09-20T03:32:33.748Z",
+      "type": "project.status",
+      "status": "running"
+    },
+    {
+      "ts": "2026-09-20T03:32:33.793Z",
+      "type": "task.dispatched",
+      "taskId": "store-module",
+      "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T03:33:17.273Z",
+      "type": "task.report",
+      "taskId": "store-module",
+      "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+      "summary": "Implemented the persistence layer src/store.js and its unit tests test/store.test.js exactly as specified in the design document.\n\nsrc/store.js is a dependency-free ES module (imports only node:fs and node:crypto) exporting KEY_PATTERN, isValidKey, makeEntry, isExpired, pruneExpired, readStore, writeStore and StoreError. readStore returns an Object.create(null) map; a missing file (ENOENT) yields an empty map, while other read failures, corrupt JSON, a non-object/array root, or a malformed entry throw StoreError whose message names the file. writeStore serialises to `JSON.stringify(entries, null, 2) + '\\n'`, writes to \"${filePath}.${process.pid}.${randomBytes(6).toString('hex')}.tmp\" in the same directory with flag 'wx', renames over the target, and on any failure unlinks the temp file best-effort and throws StoreError. pruneExpired returns a new null-prototype map without mutating its input; isExpired is expiresAt != null && now >= expiresAt.\n\ntest/store.test.js uses node:test with node:assert/strict and reads/writes only inside fs.mkdtempSync(os.tmpdir()) directories cleaned up via t.after. It covers key pattern accept/reject cases, makeEntry with and without TTL, the isExpired boundary below/at/above, pruneExpired keeping live entries without mutating input and returning a null-prototype map, readStore on a missing file, a write/read round trip including the '__proto__' key and a multi-word value, corrupt JSON, non-object roots and malformed entries throwing StoreError, no leftover *.tmp files after writeStore, and a failed write leaving no temp file.",
+      "files": [
+        "src/store.js",
+        "test/store.test.js"
+      ],
+      "openIssues": [
+        "package.json still has no \"test\" script and there are no .gitignore entries for .kv.json/temp artifacts; both are the packaging task's scope, not this one's.",
+        "Two of my initial test expectations were wrong and were corrected during the work: '-' and '..' are valid per KEY_PATTERN (so they were moved out of the reject list), and a NaN expiresAt fixture was replaced because JSON.stringify converts NaN to null."
+      ]
+    },
+    {
+      "ts": "2026-09-20T03:33:18.845Z",
+      "type": "task.verifying",
+      "taskId": "store-module",
+      "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+      "commands": [
+        "node --test test/store.test.js"
+      ]
+    },
+    {
+      "ts": "2026-09-20T03:33:19.001Z",
+      "type": "task.status",
+      "taskId": "store-module",
+      "sessionId": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+      "status": "done",
+      "outcome": "done (open issues: package.json still has no \"test\" script and there are no .gitignore entries for .kv.json/temp artifacts; both are the packaging task's scope, not this one's.; Two of my initial test expectations were wrong and were corrected during the work: '-' and '..' are valid per KEY_PATTERN (so they were moved out of the reject list), and a NaN expiresAt fixture was replaced because JSON.stringify converts NaN to null.)"
+    },
+    {
+      "ts": "2026-09-20T03:33:19.017Z",
+      "type": "task.dispatched",
+      "taskId": "cli-and-e2e-tests",
+      "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T03:34:45.369Z",
+      "type": "task.note",
+      "taskId": "cli-and-e2e-tests",
+      "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+      "note": "CLI + e2e tests done (src/cli.js, bin/kv.js, test/cli.test.js). WARNING for the packaging task: this environment runs Node v26.0.0, where a directory positional arg is not accepted by the test runner — `node --test test/` and `node --test test` both fail with \"Cannot find module .../test\" (exit 1). The design document's proposed script `\"test\": \"node --test test/\"` will therefore break `npm test`. Use `\"test\": \"node --test\"` (auto-discovery, verified: 34 tests pass) or `node --test \\\"test/*.test.js\\\"` instead. `node --test test/cli.test.js` and `node --test test/store.test.js` work fine."
+    },
+    {
+      "ts": "2026-09-20T03:34:53.229Z",
+      "type": "task.report",
+      "taskId": "cli-and-e2e-tests",
+      "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+      "summary": "Implemented the CLI front end and the end-to-end test suite.\n\nsrc/cli.js exports `async function main(argv, io = {})` returning a numeric exit code; every byte of output goes through `io.stdout`/`io.stderr` (defaulting to process.stdout/stderr) and the module never calls process.exit. It extracts the first `--file <path>` anywhere in argv (default `.kv.json`, flag with no value -> usage/2), then for `set` only extracts `--ttl <seconds>` (must satisfy Number.isFinite(n) && n > 0, else usage/2), then dispatches on the first remaining token. Wrong argument counts, extra args, unknown/missing command, and `--ttl` on a non-set command (it stays positional, so the arg count check rejects it) all write the multi-line usage text to stderr and return 2. Invalid keys write `invalid key: <key>` to stderr and return 1. `set` joins the remaining args with single spaces, prunes expired entries, writes atomically via store.js and prints nothing (exit 0). `get` prints `value\\n` (exit 0) or `not found: <key>` on stderr (exit 1); when the entry was expired it rewrites the file with pruneExpired first and leaves the file untouched when the key is simply absent. `del` prints `deleted` after removing the key, and prunes expired entries before reporting `not found` for an expired/missing key. `list` prints sorted live keys and never writes the file. StoreError from store.js is reported as `error: <message>` on stderr with exit 1. bin/kv.js is the three-line shebang wrapper.\n\ntest/cli.test.js uses node:test and spawns `process.execPath` on bin/kv.js with spawnSync in a mkdtempSync(os.tmpdir()) directory, asserting stdout, stderr and status separately: multi-argument set/get round trip, overwrite that clears a previous TTL, missing key on get (and that no file is created), del output then not-found, sorted list, empty-store list, invalid key on set/get/del, 15 usage cases all exiting 2 with a `usage:` prefix, the default `.kv.json` under a temp cwd, `--ttl 60` writing a numeric absolute millisecond expiry within the measured window, a not-yet-expired key staying readable, an already-expired fixture entry that get reports as `not found` and removes from the file while list hides it, del on an expired key, set pruning expired entries, a corrupt store file reported as `error:` (exit 1) with the file left byte-identical and no temp files, and `--file` placed before the command or between arguments.\n\nOne environment finding that affects another task: on Node v26.0.0 (this machine) the test runner rejects a directory argument, so the design's `\"test\": \"node --test test/\"` would fail `npm test`; `node --test` or `node --test \"test/*.test.js\"` works. Recorded as a task note for the packaging task.",
+      "files": [
+        "src/cli.js",
+        "bin/kv.js",
+        "test/cli.test.js"
+      ],
+      "openIssues": [
+        "package.json still has no \"test\" script and README.md does not exist yet; both are outside this task's file scope and belong to the packaging task (which also needs the Node 26 `node --test <dir>` caveat noted above).",
+        "`.gitignore` does not yet list `.kv.json`, so a manual CLI run in the repo root would show up as untracked; the design assigns that to packaging. I ran all manual checks with `--file` in /tmp or with a temp cwd, so the repository is untouched."
+      ]
+    },
+    {
+      "ts": "2026-09-20T03:34:57.171Z",
+      "type": "task.verifying",
+      "taskId": "cli-and-e2e-tests",
+      "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+      "commands": [
+        "node --test test/cli.test.js"
+      ]
+    },
+    {
+      "ts": "2026-09-20T03:34:59.827Z",
+      "type": "task.status",
+      "taskId": "cli-and-e2e-tests",
+      "sessionId": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+      "status": "done",
+      "outcome": "done (open issues: package.json still has no \"test\" script and README.md does not exist yet; both are outside this task's file scope and belong to the packaging task (which also needs the Node 26 `node --test <dir>` caveat noted above).; `.gitignore` does not yet list `.kv.json`, so a manual CLI run in the repo root would show up as untracked; the design assigns that to packaging. I ran all manual checks with `--file` in /tmp or with a temp cwd, so the repository is untouched.)"
+    },
+    {
+      "ts": "2026-09-20T03:34:59.828Z",
+      "type": "milestone.awaiting",
+      "milestone": "m1"
+    },
+    {
+      "ts": "2026-09-20T03:34:59.871Z",
+      "type": "milestone.approved",
+      "milestone": "m1"
+    },
+    {
+      "ts": "2026-09-20T03:34:59.871Z",
+      "type": "project.status",
+      "status": "running"
+    },
+    {
+      "ts": "2026-09-20T03:34:59.890Z",
+      "type": "task.dispatched",
+      "taskId": "npm-test-and-docs",
+      "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+      "attempt": 1
+    },
+    {
+      "ts": "2026-09-20T03:35:50.129Z",
+      "type": "task.note",
+      "taskId": "npm-test-and-docs",
+      "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+      "note": "[packaging · 2026-09-19] package.json \"test\" script is `node --test`, not the design document's `node --test test/`. On this machine (Node v26.0.0) the runner rejects a directory positional: `node --test test/` exits non-zero with MODULE_NOT_FOUND (\"Cannot find module .../test\"), which would fail the `npm test` acceptance check. Bare `node --test` auto-discovers test/store.test.js and test/cli.test.js and runs exactly 34 tests (18 store + 16 cli, matching the sum of the two files run individually), so it is equivalent with no loss of coverage. Verified `npm test` exits 0."
+    },
+    {
+      "ts": "2026-09-20T03:35:54.853Z",
+      "type": "task.report",
+      "taskId": "npm-test-and-docs",
+      "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+      "summary": "Wired up and documented the project. package.json gained a description, `\"engines\": { \"node\": \">=18\" }` and a `\"test\"` script, keeping name/version/`\"type\": \"module\"` and adding no dependencies. .gitignore keeps node_modules/ and .magic/ and now also ignores .kv.json, .kv.json.* (the atomic-write temp files) and .kv-smoke.json. README.md is new and documents the tool for a first-time user: what it is, Node >= 18 with no dependencies, usage `node bin/kv.js <command> [args] [--file <path>]`, the default store path .kv.json, a section per command (set, get, del, list) each with a shell example and the exact stdout/stderr and exit code, the --ttl flag and expiry rule, the key pattern /^[A-Za-z0-9_.-]+$/, the exit-code table, the JSON file format with an example, atomic writes with no locking, and `npm test`.\n\nOne deliberate deviation from the design document: the test script is `\"test\": \"node --test\"` rather than `\"node --test test/\"`. Node v26.0.0 (this machine) rejects a directory positional argument, so `node --test test/` fails with MODULE_NOT_FOUND; bare `node --test` auto-discovers both test files and runs the identical 34 tests. This was recorded in the project decision log (task_note) and as a decision here.",
+      "files": [
+        "package.json",
+        ".gitignore",
+        "README.md"
+      ],
+      "openIssues": []
+    },
+    {
+      "ts": "2026-09-20T03:35:57.355Z",
+      "type": "task.verifying",
+      "taskId": "npm-test-and-docs",
+      "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+      "commands": [
+        "npm test"
+      ]
+    },
+    {
+      "ts": "2026-09-20T03:36:00.104Z",
+      "type": "task.status",
+      "taskId": "npm-test-and-docs",
+      "sessionId": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+      "status": "done",
+      "outcome": "done"
+    },
+    {
+      "ts": "2026-09-20T03:36:00.105Z",
+      "type": "milestone.approved",
+      "milestone": "m2",
+      "automatic": true
+    },
+    {
+      "ts": "2026-09-20T03:36:00.105Z",
+      "type": "project.status",
+      "status": "done"
+    }
+  ],
+  "metrics": {
+    "requests": 44,
+    "input": 46253,
+    "cached": 804992,
+    "output": 51249,
+    "toolCalls": 51,
+    "toolErrors": 2,
+    "tools": {
+      "Bash": 20,
+      "Glob": 2,
+      "Write": 8,
+      "Edit": 4,
+      "task_report": 3,
+      "Read": 11,
+      "task_note": 2,
+      "plan_write": 1
+    },
+    "compactions": 0,
+    "sessions": [
+      {
+        "id": "08452e27-0bb4-4f08-b322-ec82c5cd484d",
+        "requests": 11,
+        "input": 10762,
+        "cached": 167168,
+        "output": 9029,
+        "toolCalls": 11,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 21218,
+        "turns": [
+          "completed",
+          "completed"
+        ]
+      },
+      {
+        "id": "3e926c37-c23f-48ae-a13d-72235c2c261c",
+        "requests": 12,
+        "input": 15845,
+        "cached": 208512,
+        "output": 7188,
+        "toolCalls": 18,
+        "toolErrors": 0,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 24047,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "a4ce696b-2906-41b0-9a19-eb9b626e6c20",
+        "requests": 5,
+        "input": 5301,
+        "cached": 44544,
+        "output": 16791,
+        "toolCalls": 6,
+        "toolErrors": 1,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 23525,
+        "turns": [
+          "completed"
+        ]
+      },
+      {
+        "id": "c27da5a0-fb57-4e32-980f-a0d52b6c4140",
+        "requests": 16,
+        "input": 14345,
+        "cached": 384768,
+        "output": 18241,
+        "toolCalls": 16,
+        "toolErrors": 1,
+        "compactions": 0,
+        "apiErrors": 0,
+        "maxContext": 33083,
+        "turns": [
+          "completed"
+        ]
+      }
+    ],
+    "apiErrors": 0,
+    "questions": 0
+  }
+}

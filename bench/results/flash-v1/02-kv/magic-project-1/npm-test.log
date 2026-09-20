@@ -1,0 +1,52 @@
+
+> kv-store@0.1.0 test
+> node --test "test/**/*.test.js"
+
+✔ without --file the store defaults to .kv.json in the cwd (114.378625ms)
+✔ del removes an existing key and prints deleted (132.0705ms)
+✔ del of a missing key fails with not found (56.256833ms)
+✔ set rejects invalid key "bad key" (71.148125ms)
+✔ get rejects invalid key "bad key" (57.600959ms)
+✔ del rejects invalid key "bad key" (61.25825ms)
+✔ set rejects invalid key "a/b" (49.172709ms)
+✔ get rejects invalid key "a/b" (48.843917ms)
+✔ del rejects invalid key "a/b" (48.619959ms)
+✔ set rejects invalid key "a$b" (44.63ms)
+✔ get rejects invalid key "a$b" (44.537583ms)
+✔ del rejects invalid key "a$b" (43.904791ms)
+✔ set rejects invalid key "a:b" (43.601708ms)
+✔ get rejects invalid key "a:b" (44.337375ms)
+✔ del rejects invalid key "a:b" (45.801375ms)
+✔ set rejects invalid key "" (47.189667ms)
+✔ get rejects invalid key "" (45.938041ms)
+✔ del rejects invalid key "" (44.977375ms)
+✔ unknown command prints usage on stderr and exits 2 (44.633875ms)
+✔ no command prints usage on stderr and exits 2 (45.817333ms)
+✔ set without a key is a usage error (44.62325ms)
+✔ get without a key is a usage error (45.995833ms)
+✔ get with an extra positional is a usage error (47.326083ms)
+✔ del without a key is a usage error (47.472916ms)
+✔ del with an extra positional is a usage error (50.320791ms)
+✔ list with an extra positional is a usage error (51.0745ms)
+✔ a flag without its value is a usage error (48.9255ms)
+✔ list prints every key sorted, one per line (216.102958ms)
+✔ list on an empty store prints nothing (48.78525ms)
+✔ list on an explicitly empty store prints nothing (48.078791ms)
+✔ list excludes expired keys and leaves the file untouched (47.851791ms)
+✔ set stores a multi-token value joined by single spaces, silently (66.619375ms)
+✔ set with no value tokens stores the empty string (117.243708ms)
+✔ get round trips a stored value with a trailing newline (98.209125ms)
+✔ get of a missing key fails with not found (48.59425ms)
+✔ set --ttl then an immediate get returns the value (118.899875ms)
+✔ get of an already-expired record fails and removes the key (58.162791ms)
+✔ del of an already-expired record fails and removes the key (51.398666ms)
+✔ a very short --ttl expires the key before the next read (400.7245ms)
+✔ list excludes an already-expired record (48.715541ms)
+ℹ tests 40
+ℹ suites 0
+ℹ pass 40
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1247.262625

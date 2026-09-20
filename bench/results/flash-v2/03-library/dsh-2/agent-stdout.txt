@@ -1,0 +1,20 @@
+Done. The library management system is complete and `npm test` passes (36/36).
+
+## What was built
+
+**Modules** (`src/`)
+- `books.js` — `addBook`, `listBooks`
+- `members.js` — `addMember` (+ `listMembers`)
+- `loans.js` — `checkout`, `returnLoan`, `listLoans`, `report`
+- `storage.js` — single-file JSON persistence, auto-created on first use, `setDataFile`/`getDataFile`
+- `dates.js`, `validate.js`, `errors.js` — shared date handling, validation, and `LibraryError`/`UsageError`
+
+**CLI** (`bin/library.js`) — all eight commands (`add-book`, `add-member`, `checkout`, `return`, `list-books`, `list-loans`, `report`) with `--data <path>` on every command. Success prints one JSON value and exits `0`; usage problems (unknown command / missing option) exit `1`; domain failures print `{"error":"..."}` on stderr and exit `2`. I used `process.exitCode` rather than `process.exit()` so piped output can't be truncated.
+
+**Tests** (`test/`) — `node:test` suites per module plus CLI end-to-end tests using temp data files. `package.json` has `"test": "node --test"`.
+
+**Docs** — `README.md` documents storage, every command with a runnable example, the rules (3-active-loan limit, 14-day default, 0.50/day fine capped at 20.00), the module API, and the project layout.
+
+Key design points: ids come from `nextIds` counters persisted in the JSON; dates are `YYYY-MM-DD` handled in UTC to avoid timezone drift; fines are rounded to cents and are zero on/before the due date; the store normalizes partial files. The CLI also accepts `--option=value`.
+
+Note: the spec puts `--data` after the command (`node bin/library.js <command> ... --data <path>`), which is what's implemented.

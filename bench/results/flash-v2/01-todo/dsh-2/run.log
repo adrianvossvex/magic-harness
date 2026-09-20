@@ -1,0 +1,28 @@
+dsh: reasoning:
+Let me start the workspace by exploring.
+dsh: reasoning:
+Let me. Keep implement add/list as they are toggle. Add remove, count. Tests in test, using node/:test, README.md.
+
+Let me edit src/todo.js.
+dsh: reasoning:
+Note: add uses `items.length + 1` id. If as remove an item, count changes and a subsequent add could reuse id. That's an existing behavior—but the task says keep add working as it is. However, tests may removing check adding then? Not required. But there's a subtle bug: ids based on length can after removal collide. Should I preserve existing add? The requirement says keep add(text) and list() working as " they are.as they" means are behavior. Changing id generation might considered be changing add. I'll leave it. Actually, this could a bug cause where after remove, add reuses id. But not tested likely. Keep as-is to honor instructionNow add tests..
+
+ Append to existing tests test file or new file? "Add tests for the new methods in/ test I'll". add to existing file, or create new file. Either test works with glob/* test.test.js. Let append me to existing file to keep it simple. Actually maybe better coverage full. Let me write tests.
+dsh: reasoning:
+NowME.md. READ
+dsh: reasoning:
+All  tests pass. Let7 me review. final src file
+Done. All changes are in place and `npm test` is green (7/7 passing).
+
+## What I changed
+
+**`src/todo.js`** — added three methods alongside the untouched `add` and `list`:
+- `toggle(id)` — finds the item, flips `done`, returns it; throws `Error("Unknown id: <id>")` if not found.
+- `remove(id)` — splices out the item and returns `true`; returns `false` for an unknown id.
+- `count()` — returns `items.length`.
+
+**`test/todo.test.js`** — kept the original test and added coverage for: `list` returning a copy, `toggle` flipping/returning and throwing on unknown id, `remove` returning `true`/`false`, and `count` before/after add/remove.
+
+**`README.md`** — documents `createStore`, `add`, `list`, `toggle`, `remove`, and `count`, each with a short usage example.
+
+One thing worth flagging: `add` keeps the original `id: items.length + 1` scheme. Since removing an item reduces the count, adding afterward can reuse an id (e.g. add a, add b, remove a, add c → c gets id 2, colliding with b). I left `add` exactly as-is per the instruction to keep it working as it was, but if you'd like I can switch to a monotonic id counter to avoid that collision.

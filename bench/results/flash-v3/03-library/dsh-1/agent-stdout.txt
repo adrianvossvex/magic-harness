@@ -1,0 +1,19 @@
+The library management system is complete. `npm test` passes all 57 tests (also verified with plain `node --test`).
+
+## What was built
+
+**Source modules** (no dependencies, ES modules):
+- `src/store.js` — single-JSON-file persistence; creates `data/library.json` relative to cwd on first use; supports global (`setDataPath`), env (`LIBRARY_DATA`), and per-call `data` path; writes only after a successful mutation so rejected requests leave the DB untouched; ids via per-entity `sequences`.
+- `src/books.js` — `addBook`, `listBooks({ available })`.
+- `src/members.js` — `addMember`, `listMembers`.
+- `src/loans.js` — `checkout`, `returnLoan`, `listLoans`, `report` with the 3-active-loan limit, 0.50/day fine capped at 20.00, double-return rejection, and overdue logic.
+- `src/dates.js` — UTC-safe `YYYY-MM-DD` validation/arithmetic.
+- `src/errors.js` — `LibraryError` (exit 2) vs `UsageError` (exit 1).
+
+**CLI** `bin/library.js` — prints one JSON value on stdout / exit 0; `{ "error": ... }` on stderr with exit 2 for domain failures and exit 1 for unknown command, unknown option, missing option or missing option value. Implements all required commands plus `list-members`; `--data` accepted everywhere.
+
+**Tests** (`test/`, `node:test`) — per-module suites for books, members, loans, dates, store, plus end-to-end CLI tests covering output, isolation via `--data`, cwd-relative default file, and every exit-code path. Tests use temp files and never touch `data/library.json`.
+
+**Docs** — `README.md` documents the storage format, every module function, every command with example and sample output, the rules, and the test layout. `package.json` gained `"test": "node --test test/*.test.js"`.
+
+One note: a rejected domain command still creates the empty data file on first use (e.g. `checkout --book 9 ...`), which follows the "create the file on first use" behavior; I removed the stray `data/` from manual smoke-testing and it's now gitignored. Nothing was committed — changes are left in the working tree.

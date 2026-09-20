@@ -1,0 +1,45 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook assigns sequential ids and defaults copies to 1 (3.73825ms)
+✔ listBooks with available filters out books with no free copy (1.476ms)
+✔ addBook validates its input (1.142333ms)
+✔ add-book and add-member print one JSON value and exit 0 (116.546084ms)
+✔ checkout and return work end to end through the CLI (204.599625ms)
+✔ list-books, list-loans and report print arrays and objects (353.12775ms)
+✔ an empty list-books returns [] and creates the data file (48.854333ms)
+✔ default data path is data/library.json under the current directory (49.059958ms)
+✔ unknown command and missing option exit 1 with an error object (193.824542ms)
+✔ operation failures exit 2 with an error object on stderr (411.545958ms)
+✔ todayISO formats the local date (1.175209ms)
+✔ isValidDate accepts real dates and rejects impossible ones (0.132625ms)
+✔ assertDate throws a descriptive message (0.174208ms)
+✔ addDays crosses months, years and leap days (0.179083ms)
+✔ diffDays counts whole days between dates (0.063ms)
+✔ checkout defaults to 14 days and accepts an explicit number of days (3.817167ms)
+✔ checkout fails without an available copy (1.830583ms)
+✔ checkout fails when a member already holds 3 active loans (1.140167ms)
+✔ checkout fails for unknown books and members (0.345625ms)
+✔ returnLoan charges 0.50 per late day, capped at 20.00 (1.027375ms)
+✔ returning a loan twice fails (0.378667ms)
+✔ listLoans filters by member and by overdue status (0.802875ms)
+✔ report aggregates the whole library (0.7745ms)
+✔ invalid dates are rejected (0.3255ms)
+✔ addMember assigns sequential ids (1.748292ms)
+✔ addMember requires a non-empty name (0.357583ms)
+✔ loadDb creates the file (and parent directory) on first use (1.700083ms)
+✔ saveDb persists data that the next load returns (0.349292ms)
+✔ availability is recomputed from active loans on load (0.224792ms)
+✔ nextId returns one past the highest id (0.055375ms)
+✔ syncAvailability never reports a negative count (0.053958ms)
+✔ resolveDataPath honours an explicit path over the environment (0.050208ms)
+✔ loadDb rejects a corrupt data file (0.310959ms)
+ℹ tests 33
+ℹ suites 0
+ℹ pass 33
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1461.375542

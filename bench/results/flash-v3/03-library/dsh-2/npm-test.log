@@ -1,0 +1,49 @@
+
+> library-system@0.1.0 test
+> node --test
+
+✔ addBook stores a book with defaults (3.078792ms)
+✔ addBook honours an explicit copies count (0.682875ms)
+✔ book ids are assigned in order, starting at 1 (0.652459ms)
+✔ listBooks returns every book by default (0.59125ms)
+✔ listBooks filters by availability (1.455833ms)
+✔ addBook validates its input (0.401042ms)
+✔ add-book prints the created book and creates the data file (48.873542ms)
+✔ add-book supports --copies and the --key=value form (47.299625ms)
+✔ add-member prints the created member (46.709833ms)
+✔ list-books honours --available (278.447875ms)
+✔ checkout and return flow produces the expected report (377.038458ms)
+✔ unknown command exits 1 with a JSON error on stderr (45.357875ms)
+✔ missing command exits 1 (46.643334ms)
+✔ missing required option exits 1 (45.013875ms)
+✔ missing option value exits 1 (46.983875ms)
+✔ unknown option exits 1 (48.080917ms)
+✔ runtime failures exit 2 (46.313042ms)
+✔ checking out an unavailable book exits 2 (187.152875ms)
+✔ --data may appear before other options (46.460209ms)
+✔ --data selects an independent file (93.770625ms)
+✔ checkout creates a loan with the default 14 day window (3.513875ms)
+✔ checkout accepts a custom window and today (0.6935ms)
+✔ checkout defaults today to the current date (0.626584ms)
+✔ checkout decrements available copies and reuses the book (0.824625ms)
+✔ checkout rejects unknown books and members (0.495458ms)
+✔ a member may hold at most three active loans (1.083ms)
+✔ returning on time charges no fine and restores the copy (0.501542ms)
+✔ returning late charges 0.50 per day (0.498958ms)
+✔ late fines are capped at 20.00 (0.51175ms)
+✔ a loan cannot be returned twice (0.480209ms)
+✔ returning an unknown loan fails (0.335375ms)
+✔ listLoans filters by member and overdue status (0.725583ms)
+✔ report summarises the library (0.654083ms)
+✔ report counts only returned loans in finesOwed (0.384791ms)
+✔ checkout validates ids, days and dates (0.364125ms)
+✔ addMember stores a member with an incremented id (2.270875ms)
+✔ addMember validates its input (0.345042ms)
+ℹ tests 37
+ℹ suites 0
+ℹ pass 37
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 1481.22975

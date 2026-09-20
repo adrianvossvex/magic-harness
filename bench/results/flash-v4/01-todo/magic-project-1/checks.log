@@ -1,0 +1,16 @@
+✔ toggle flips done and returns the item (0.553458ms)
+✔ toggle throws for an unknown id (0.157125ms)
+✔ remove deletes and returns true (0.490042ms)
+✔ remove returns false for an unknown id (0.050709ms)
+✔ count reflects adds and removes (0.0455ms)
+✔ add and list still work and list is a copy (0.034875ms)
+✔ README documents the API (2.39025ms)
+✔ the repository's own tests pass (197.707ms)
+ℹ tests 8
+ℹ suites 0
+ℹ pass 8
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 261.826542

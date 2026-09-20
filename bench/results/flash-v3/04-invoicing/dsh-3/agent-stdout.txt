@@ -1,0 +1,25 @@
+Done. The invoicing system is fully implemented and all tests pass (`npm test`, 39 tests).
+
+## What was built
+
+**Modules (`src/`)**
+- `money.js` — `parseMoney` (strict decimal→cents), `formatMoney` (cents→`"12.30"`), `roundCents` (half up), plus `toCents`.
+- `customers.js` — `addCustomer({name,email})`, email must contain `@`.
+- `products.js` — `addProduct({name,price,taxRate})`, price stored in cents, integer tax 0–100.
+- `invoices.js` — `createInvoice`, `addLine` (net/tax recompute), `issue` (`INV-<year>-<nnnn>` per-year counter), `pay` (partials, overpay guard, auto-`paid`), `voidInvoice`, `listInvoices`, `getInvoice`.
+- `report.js` — `aging` buckets and `revenue` by issue month.
+- `store.js` — single JSON file persistence, default `data/invoicing.json`, creates file/dir on first use, optional `data` path or in-memory `db`.
+- `util.js` — validation and UTC date arithmetic.
+- `serialize.js` — money-formatting JSON views and CSV export.
+
+**CLI (`bin/invoice.js`)** — all 12 commands, each accepting `--data <path>`:
+- success → one JSON value on stdout, exit 0, all money fields as formatted strings;
+- validation failure → `{"error":"..."}` on stderr, exit 2;
+- unknown command / missing required option / unknown option → usage on stderr, exit 1.
+- `export` emits the CSV text as a JSON string (required header, `\n`-separated, no trailing newline).
+
+**Tests (`test/`)** — `node:test` suites per module plus serializer and full CLI integration (workflow, exit codes, error output, CSV). **39 passing.**
+
+**Docs/config** — `README.md` documents every module, every command with examples, and the storage/money/date rules; `package.json` has `"test": "node --test"` and a `bin` entry; `.gitignore` ignores `data/`.
+
+Verified end-to-end manually as well: default path creation, `--data=path` form, year-boundary numbering (`INV-2024-0001`, `INV-2025-0001`, `INV-2025-0002`), and overdue filtering.

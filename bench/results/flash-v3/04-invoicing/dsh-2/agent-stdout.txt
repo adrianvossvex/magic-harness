@@ -1,0 +1,37 @@
+I built the complete invoicing system. Here's what was delivered:
+
+## Structure
+
+```
+src/money.js       parseMoney / formatMoney / roundCents (integer cents, half-up)
+src/store.js       single-JSON-file persistence, default data/invoicing.json, setDataFile
+src/dates.js       YYYY-MM-DD validation + UTC-safe date arithmetic
+src/customers.js   addCustomer (email must contain "@")
+src/products.js    addProduct (price in cents, taxRate integer 0-100 default 0)
+src/invoices.js    createInvoice / addLine / issue / pay / voidInvoice / listInvoices
+src/report.js      aging / revenue
+bin/invoice.js     CLI
+test/*.test.js     6 files, 41 tests via node:test
+README.md          modules, every command with examples, and the rules
+package.json       "test": "node --test", no dependencies, type: module
+```
+
+## Key behaviors verified
+
+- **Money**: integer cents internally, two-decimal strings on output, strict decimal input (`1.234`, `abc`, `-5`, `1.` rejected), half-up rounding.
+- **Invoices**: drafts with default terms 30; line totals recomputed (`net`, `tax`, `subtotal`, `total`, `balance`); only drafts accept lines; `INV-<year>-<nnnn>` with a per-year counter starting at `0001`; due = issue + terms; partial/full payments with overpayment rejected; void rules; overdue = issued and `due < today`.
+- **Reports**: aging buckets (`current`, `1-30`, `31-60`, `61-90`, `over90`, `total`) over issued balances; monthly revenue grouped by issue date and sorted, including across year boundaries.
+- **CLI**: one compact JSON value on stdout / exit 0; `{"error":...}` on stderr / exit 2; usage on stderr / exit 1 for unknown command or missing option; `export` prints the CSV as a JSON string with the exact header and no trailing newline; `--data` accepted anywhere.
+
+## Test results
+
+```
+npm test
+ℹ tests 41
+ℹ pass 41
+ℹ fail 0
+```
+
+Manual smoke runs confirmed the full README workflow, per-year numbering across separate invocations, directory creation for `--data` and the default path, and all exit-code paths.
+
+One judgment call worth flagging: the spec enumerates errors precisely but never lists a customer-not-found error for `createInvoice`, so I kept that function permissive (it normalizes `customerId` and stores it). Product lookup in `addLine` remains strict because the line's `description` is the product name. If you'd prefer referential integrity enforced for customers, it's a two-line change.

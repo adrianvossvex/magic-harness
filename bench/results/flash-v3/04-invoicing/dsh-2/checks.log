@@ -1,0 +1,20 @@
+✔ customers and products with validation (372.481334ms)
+✔ a draft invoice starts empty and rejects issuing without lines (91.79125ms)
+✔ lines compute net and tax with half-up rounding and discounts (185.468916ms)
+✔ issuing numbers the invoice per year and sets the due date (421.22225ms)
+✔ payments are partial, capped at the balance and flip the status when complete (278.894792ms)
+✔ void works on drafts and unpaid issued invoices only (232.518708ms)
+✔ show and list filters (278.650375ms)
+✔ aging report buckets balances by days past due (276.820083ms)
+✔ revenue report groups issued and paid invoices by issue month (45.551834ms)
+✔ export prints CSV of the lines as a JSON string (46.642375ms)
+✔ usage errors exit 1, the data file is JSON, and the README documents every command (95.3945ms)
+✔ the repository's own tests pass (1709.790625ms)
+ℹ tests 12
+ℹ suites 0
+ℹ pass 12
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 4094.473583
