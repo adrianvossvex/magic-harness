@@ -25,6 +25,10 @@
         <input id="session-search" type="search" placeholder="Search sessions" aria-label="Search sessions" data-i18n-placeholder="session.search" data-i18n-aria-label="session.search">
         <kbd aria-hidden="true">⌘ K</kbd>
       </label>
+      <button class="project-nav" id="open-project" type="button" hidden aria-pressed="false">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 6h16M4 12h10M4 18h7"/><circle cx="18" cy="16" r="3"/></svg>
+        <span class="project-nav-label"><strong data-i18n="project.title">Project</strong><span id="project-nav-status"></span></span>
+      </button>
       <div class="sidebar-heading" data-i18n="session.heading">Sessions</div>
       <nav id="sessions" aria-label="Select a session" data-i18n-aria-label="session.select"></nav>
       <button class="sidebar-footer" id="choose-workspace" type="button" aria-label="Choose the working folder" data-i18n-aria-label="workspace.choose" aria-haspopup="dialog" aria-controls="folder-dialog">
@@ -51,6 +55,22 @@
           <section class="welcome" id="empty">
             <h2 data-i18n="welcome.title">Start a new task</h2>
           </section>
+          <section class="project-panel" id="project-panel" hidden aria-live="polite">
+            <header class="project-header">
+              <div class="project-heading"><h2 data-i18n="project.title">Project</h2><span id="project-status" class="badge"></span></div>
+              <p id="project-goal" class="project-goal"></p>
+              <p id="project-counts" class="task-meta"></p>
+              <p id="project-note" class="project-note" hidden></p>
+              <div class="project-actions">
+                <button id="project-run" class="plan-approve" type="button" hidden></button>
+                <button id="project-stop" class="text-button" type="button" hidden data-i18n="project.stop">Stop</button>
+                <button id="project-planner" class="text-button" type="button" hidden data-i18n="project.planner">Open the planner session</button>
+              </div>
+            </header>
+            <p id="project-empty" class="project-empty" data-i18n="project.none">No project yet. Describe the goal below and send it: a planner session explores the repository, writes the design and submits a task tree for your approval.</p>
+            <div id="project-milestones" class="project-milestones"></div>
+            <div id="project-tasks" class="project-tasks"></div>
+          </section>
           <div id="timeline" role="log" aria-label="Chat messages" data-i18n-aria-label="timeline.label" aria-live="polite" aria-relevant="additions"></div>
         </div>
       </div>
@@ -63,7 +83,7 @@
           <textarea id="message" rows="2" maxlength="400000" placeholder="Message magic…" title="Enter to send, Shift + Enter for a new line" data-i18n-title="composer.title" aria-describedby="composer-hint"></textarea>
           <div class="composer-toolbar">
             <div class="composer-context">
-              <label class="mode-picker" title="Mode · /plan or /execute" data-i18n-title="mode.title"><span class="sr-only" data-i18n="mode.label">Mode</span><select id="mode"><option value="execute" data-i18n="mode.execute">Execute</option><option value="plan" data-i18n="mode.plan">Plan</option></select></label>
+              <label class="mode-picker" title="Mode · /plan, /execute or /project" data-i18n-title="mode.title"><span class="sr-only" data-i18n="mode.label">Mode</span><select id="mode"><option value="execute" data-i18n="mode.execute">Execute</option><option value="plan" data-i18n="mode.plan">Plan</option><option value="project" data-i18n="mode.project">Project</option></select></label>
               <button class="model-chip" id="choose-model" type="button" aria-haspopup="dialog" aria-controls="model-dialog" title="Choose a model · /model" data-i18n-title="model.chooseTitle"><span id="model-name">Model</span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m7 10 5 5 5-5"/></svg></button>
               <button class="icon-button settings-button" id="open-settings" type="button" aria-haspopup="dialog" aria-controls="settings-dialog" title="Settings · /settings" aria-label="Open settings" data-i18n-title="settings.openTitle" data-i18n-aria-label="settings.openLabel"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1Z"/></svg></button>
               <label class="effort-picker" id="effort-picker" title="Thinking effort · /effort · applies from the next turn"><span data-i18n="effort.label">Effort</span><select id="effort" aria-label="Thinking effort" data-i18n-aria-label="effort.select"><option value="default">Default</option></select></label>

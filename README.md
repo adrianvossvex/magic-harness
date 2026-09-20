@@ -41,7 +41,7 @@ magic is a local coding-agent harness built on one idea: the person at the keybo
 - Terminal chat and a local web UI (localhost only) sharing the same sessions
 - Sessions run in parallel: each session runs one task at a time, and any number of sessions can run at once
 - UI in English, 简体中文, 日本語, 한국어, Español, Português (Brasil), Deutsch and Français; switch it in settings or with `/language`
-- Projects (experimental): a planner session writes a design and a task tree, a deterministic dispatcher runs the tasks in their own sessions with file scopes and acceptance commands
+- Projects (experimental): a planner session writes a design and a task tree, a deterministic dispatcher runs the tasks in their own sessions with file scopes and acceptance commands; the terminal and the web page both drive it
 - Eight built-in tools plus your own, all switchable; Write and Edit stay inside the project folder
 - Five providers through one interface, with the Anthropic message format as the common ground and a translator for OpenAI's Responses API
 - Per-model thinking effort (default, low, medium, high, xhigh, max)
@@ -172,9 +172,11 @@ Three roles, one shared state:
 - **Dispatcher** (code, not a model): runs tasks whose dependencies are done, up to two at a time, never two with overlapping file scopes. Each task gets a fresh session with the brief, the design, the decisions so far and the reports of its dependencies. When the executor calls `task_report`, the dispatcher runs the acceptance commands; failures go back to the same session, up to the task's attempt budget and time limit. Milestones marked for user approval pause the project until you run it again. When tasks fail or report themselves blocked, the planner is asked for a revision; if that does not help, the project pauses and `/project run` retries the failed tasks.
 - **Executors** (ordinary sessions): Write and Edit are refused outside the task's file scope (symbolic links resolved), questions are off, and the turn ends with `task_report` (complete, or `blocked` with a reason), `task_split` for a task that turned out too large, or `task_note` for a decision worth recording. Stopping an executor session from the web page marks its task blocked until the next `/project run`; `/project stop` pauses everything and returns running tasks to the queue.
 
-Everything lives in `.magic/project/`: `project.json` (the tree and every attempt), `brief.md`, `design.md`, `decisions.md`, and `events.jsonl` with every dispatcher action. Executor sessions are normal sessions: they show up in the sidebar while they run and keep their full call log. The web API mirrors the commands: `GET /api/project` and `POST /api/project` with `{ action: "plan" | "run" | "stop" | "replan" }`.
+Everything lives in `.magic/project/`: `project.json` (the tree and every attempt), `brief.md`, `design.md`, `decisions.md`, and `events.jsonl` with every dispatcher action. Executor sessions are normal sessions: they show up in the sidebar while they run and keep their full call log.
 
-This is a test version: there is no project view in the web page yet, Bash commands are not confined to the file scope, review-only acceptance is accepted on the executor's word, and tasks run in the same working tree rather than in separate worktrees.
+In the web page, choose **Project** in the mode picker next to Execute and Plan (or click the Project entry in the sidebar, or open `/?view=project`). The transcript gives way to the task tree: the goal, the status, the milestones and every task with its attempts and a button to its session. The message box then starts a project from a goal, or sends a revision once one exists; the planner's session opens so its questions reach you; **Approve the plan and run**, **Continue** and **Stop** do what the terminal commands do, and `/project …` works in the message box too. The web API mirrors the commands: `GET /api/project` and `POST /api/project` with `{ action: "plan" | "run" | "stop" | "replan" }`. A finished project takes more work the same way: describe it, and the planner appends tasks (and can replace the design document) instead of starting over.
+
+This is a test version: Bash commands are not confined to the file scope, review-only acceptance is accepted on the executor's word, and tasks run in the same working tree rather than in separate worktrees.
 
 ## Compared with dsh
 

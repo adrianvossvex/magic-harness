@@ -363,3 +363,40 @@ pre:empty { display: none; }
 .settings-dl dd { margin: 0; }
 .settings-row select { font: inherit; color: #555; background: transparent; border: 1px solid var(--line); border-radius: 5px; padding: 4px 6px; }
 .model-group { padding: 12px 10px 4px; font-size: 11px; color: #888; }
+
+/* Project view: the task tree in place of a transcript, chosen with the mode picker or the sidebar entry. */
+.project-nav { display: flex; align-items: center; gap: 9px; width: 100%; margin: 4px 0 10px; padding: 8px 10px; border: 1px solid #e6e6e6; border-radius: 8px; background: #fff; color: #333; text-align: left; cursor: pointer; font: inherit; font-size: 12px; }
+.project-nav:hover { background: #f6f6f6; }
+.project-nav[aria-pressed="true"] { background: #f0f0f0; border-color: #d4d4d4; }
+.project-nav svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 1.6; flex-shrink: 0; }
+.project-nav-label { display: flex; flex-direction: column; gap: 1px; min-width: 0; }
+.project-nav-label span { font-size: 11px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.project-panel { padding: 8px 0 24px; }
+.project-heading { display: flex; align-items: center; gap: 10px; }
+.project-heading h2 { margin: 0; font-size: 18px; font-weight: 600; }
+.project-goal { margin: 8px 0 0; color: #444; font-size: 13px; white-space: pre-wrap; max-height: 7.5em; overflow: auto; }
+.project-note { margin: 8px 0 0; padding: 8px 10px; border-radius: 6px; background: #f6f1e4; color: #5b4a1a; font-size: 12px; }
+.project-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+.project-actions .text-button { padding: 8px 10px; }
+.project-empty { color: var(--muted); font-size: 13px; margin: 18px 0; }
+.project-milestones { display: flex; flex-wrap: wrap; gap: 6px; margin: 18px 0 10px; }
+.milestone { font-size: 11px; color: #555; border: 1px solid #e2e2e2; border-radius: 999px; padding: 3px 9px; background: #fafafa; }
+.milestone.done { color: #2e6b3a; border-color: #cfe3d3; background: #f0f8f2; }
+.milestone.current { color: #333; border-color: #bdbdbd; background: #f3f3f3; }
+.project-tasks { display: flex; flex-direction: column; gap: 4px; }
+.task-row { display: grid; grid-template-columns: 96px 1fr auto; gap: 10px; align-items: baseline; padding: 8px 10px; border: 1px solid #ececec; border-radius: 8px; background: #fff; font-size: 13px; }
+.task-row.running { border-color: #cfcfcf; background: #fbfbfb; }
+.task-row.failed, .task-row.blocked { border-color: #eacfcb; background: #fdf7f6; }
+.task-row.done { opacity: .75; }
+.task-row.cancelled { opacity: .5; text-decoration: line-through; }
+.task-status { font-size: 11px; color: var(--muted); white-space: nowrap; }
+.task-status.running::before { content: ""; display: inline-block; width: 5px; height: 5px; background: #555; border-radius: 50%; margin: 0 6px 1px 0; animation: pulse 1.5s infinite; }
+.task-status.failed, .task-status.blocked { color: #a25549; }
+.task-status.done { color: #2e6b3a; }
+.task-main { min-width: 0; }
+.task-title { display: block; }
+.task-meta { display: block; font-size: 11px; color: var(--muted); margin-top: 2px; }
+.task-note { display: block; font-size: 11px; color: #7a5b2d; margin-top: 3px; white-space: pre-wrap; }
+.task-session { font: inherit; font-size: 11px; color: #555; background: #f3f3f3; border: 0; border-radius: 5px; padding: 3px 8px; cursor: pointer; white-space: nowrap; }
+.task-session:hover { background: #e8e8e8; }
+.task-session:disabled { opacity: .5; cursor: default; }
