@@ -1,0 +1,27 @@
+Rewind is implemented end-to-end and `npm test` passes (80/80).
+
+## What changed
+
+**`src/game.js` — deterministic core**
+- `state.history` (array of pre-action snapshots, max 10) and `state.undo` (`history.length`, 0–10) are now part of the state, seeded in both level constructors.
+- `act()` captures a snapshot before anything changes and commits it only when the action costs a turn; non-turn actions leave nothing to undo.
+- Snapshots use `withoutHistory()` + JSON clone, so the bookkeeping fields never nest.
+- `undo(state, rng)` pops the newest snapshot back into the live state and re-seeds `rng.state` from the restored `rngState`. It works even when dead/won and reverts level/depth, monsters, items, HP, log, explored tiles, and RNG.
+- `game.undo()` is exposed on the wrapper and returns `true`/`false`.
+- `hash()` now hashes `withoutHistory(state)`, so it ignores `history`/`undo`; a pre-action hash equals the post-undo hash.
+- `applyKey(game, "z")` returns `["You rewind time."]` / `["Nothing to rewind."]`, so `runScript` accepts `z`.
+
+**`src/main.js` — page wiring**
+- The HUD shows `Undo <b>N</b>`.
+- `z`/`Z` triggers the action, calls `renderer.rewind()`, and works from the death/victory overlays; `checkEndScreen()` clears those overlays when a rewind returns the player to play.
+- Help/title docs and a rewind audio cue added.
+
+**`src/renderer.js` — immediate view + cue**
+- `sync({ snap })` supports snapping; `rewind()` snaps entities (via `snap: true`), flashes the player, and plays a brief screen tint. Tiles identity changes still rebuild (descent undo).
+- `update()`/`render()` decay and draw the cue.
+
+**Tests & docs**
+- New `test/undo.test.js` (12 tests) covers exact restoration, non-turn actions, descent undo, the 10-turn cap, serialize/load, hash exclusion, redo determinism, `applyKey`/`runScript`, death undo, and log/monster restoration. Updated the existing `applyKey` test.
+- README documents `z`, the `undo()`/history contract, state fields, hash behavior, and the renderer cue.
+
+Note: I attempted a headless-Chrome screenshot to verify the page visually, but Chrome cannot initialize its sandbox in this environment (`Failed to initialize sandbox`, even for the unmodified page), so that check wasn't possible here. All source files pass `node --check` and the full Node test suite.

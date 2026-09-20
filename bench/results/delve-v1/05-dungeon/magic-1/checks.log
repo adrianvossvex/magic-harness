@@ -1,0 +1,61 @@
+✔ rng is mulberry32 with int and pick (0.695209ms)
+✖ generated levels obey the constraints and are deterministic (3.968209ms)
+✔ field of view matches the specified Bresenham rule (0.707583ms)
+✔ paths are shortest, step over passable tiles and honour blocked tiles (4.859708ms)
+✔ a new game has the specified player, level and populated entities (0.801333ms)
+✔ movement, walls and turns (0.476041ms)
+✖ combat numbers, kills, xp and levels (0.571959ms)
+✔ monsters chase in sight, wander out of sight, never overlap or enter walls (1.348ms)
+✔ items: pickup, capacity, potions, equipment, drop, gold (0.829291ms)
+✔ stairs, depths, the amulet, death and the end of the game (2.404333ms)
+✔ keys, scripts, serialization, hashes and determinism (11.610042ms)
+✔ random play keeps every invariant (225.409792ms)
+✔ the page loads in headless Chrome without errors and shows the HUD (5973.451333ms)
+✔ source rules: no eval, vm, child processes or extra network; three.js from the pinned URL (2.347125ms)
+✔ the repository's own tests pass (381.183792ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 13
+ℹ fail 2
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6671.57075
+
+✖ failing tests:
+
+test at ../../../../../checks/05-dungeon.check.mjs:51:1
+✖ generated levels obey the constraints and are deterministic (3.968209ms)
+  AssertionError [ERR_ASSERTION]: stairs in the farthest room
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/05-dungeon.check.mjs:81:14)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async startSubtestAfterBootstrap (node:internal/test_runner/harness:385:3) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/05-dungeon.check.mjs:163:1
+✖ combat numbers, kills, xp and levels (0.571959ms)
+  AssertionError [ERR_ASSERTION]: You hit the skeleton for 3. | You kill the skeleton.
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/05-dungeon.check.mjs:187:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -8,10 +8,15 @@ import { BENCH_ROOT, run } from './lib.mjs';
 export const DSH_PREFIX = process.env.DSH_PREFIX ?? join(BENCH_ROOT, 'dsh');
 const SESSIONS = join(homedir(), '.dsh', 'sessions');
 
-export async function runDsh({ workspace, prompt, timeoutMs, onLine }) {
+export async function runDsh({ workspace, prompt, timeoutMs, onLine, checkpointMs, onCheckpoint }) {
   const cwd = await realpath(workspace);
   const started = Date.now();
-  const result = await run('npx', ['--prefix', DSH_PREFIX, 'dsh', '--profile', 'headless', prompt], { cwd, timeoutMs, onLine });
+  // Checkpoints on a timer while dsh works; a second phase is simply another headless run in the same folder.
+  let busy = false;
+  const timer = checkpointMs && onCheckpoint ? setInterval(async () => { if (busy) return; busy = true; try { await onCheckpoint('timer'); } catch { /* logged by the runner */ } finally { busy = false; } }, checkpointMs) : undefined;
+  let result;
+  try { result = await run('npx', ['--prefix', DSH_PREFIX, 'dsh', '--profile', 'headless', prompt], { cwd, timeoutMs, onLine }); }
+  finally { if (timer) clearInterval(timer); }
   const session = await findSession(cwd, started);
   const events = session ? await readSession(session) : [];
   return { ...result, session, metrics: summarize(events), events };

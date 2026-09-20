@@ -1,0 +1,22 @@
+DELVE is built and verified. Here's a summary.
+
+## What was built
+
+**Core (`src/`, pure JS, Node 22+, zero dependencies)**
+- `rng.js` — mulberry32 with readable/writable `state`; reproduces the seed-123 vectors exactly.
+- `map.js` — 60×30 levels, 6–12 non-touching rooms (w,h 3–10), L-corridors, reachability, farthest-room stairs, no `>` on depth 5.
+- `fov.js` — Euclidean radius + the exact Bresenham occlusion rule.
+- `path.js` — 8-directional BFS shortest path with `blocked` (target exempt).
+- `game.js` — full state, all actions, deterministic combat/leveling, monster AI (attack → chase with other monsters blocked → seeded wander), level population, descend, `serialize`/`loadGame`, sorted-key FNV-1a `hash`, `applyKey`/`runScript`.
+
+**Browser (`index.html`, `src/main.js`, `src/renderer.js`)**
+- Loads three.js 0.160.0 from exactly the required cdnjs URL (global `THREE`); only network request.
+- URL `seed`/`script`, title screen, HUD (`HP 30/30  Depth 1  Turn 0` + level/xp/gold), log, `i` inventory, arrows + `hjklyubn` + `R` + `?`, death/victory overlays, `window.game`.
+- three.js scene: instanced-style tiles with fog-of-war (unexplored hidden, explored dim, visible lit), walls with height, glowing stairs, distinct monster/player/item meshes with glyph sprites, player-following light, smooth above-and-behind camera, movement tweens, hit flashes, screen shake, kill particle bursts.
+
+**Tests/docs**
+- 68 `node:test` tests across all five core modules (`npm test` → 68 pass, exit 0).
+- `README.md` with how to play, controls, architecture, state shape, renderer data flow, and every judgment call.
+
+## Verification note
+The harness `screenshot` CLI couldn't launch under the file sandbox (Chrome needs `~/Library`/system temp access, and escalation had no approval channel). I verified equivalently by running headless Chrome confined to the workspace with SwiftShader and a throwaway local copy of three.js: the title screen, a live depth-1 game (combat, items, particles, log), and a forced four-descent run to depth 5 all rendered with **zero page console errors**. The throwaway artifacts were removed; the repo still points at the mandated CDN URL and contains no dependencies.

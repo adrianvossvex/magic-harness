@@ -25,6 +25,7 @@ sees. Every suite was validated against a hand-written reference solution before
 | `02-kv` | an empty package; build a key-value CLI with TTL, atomic writes, exit codes, tests and a README | 10 |
 | `03-library` | an empty package; build a library system: three modules, a JSON store, a seven-command CLI, fines, tests and a README | 15 |
 | `04-invoicing` | an empty package; build an invoicing system: money in cents with half-up rounding, per-year invoice numbers, statuses, partial payments, aging and revenue reports, CSV export, an eleven-command CLI, tests and a README | 12 (about 90 assertions) |
+| `05-dungeon` | an empty package with a screenshot tool; build DELVE, a turn-based roguelike with a deterministic core and a three.js renderer, then (phase 2) a ten-turn rewind | 15 + 6 |
 
 magic runs in two ways: one ordinary session, which is the like-for-like comparison with dsh, and the project system
 (planner, dispatcher, executors) for the tasks large enough to have structure.
@@ -41,9 +42,15 @@ tokens (uncached input, cached input, output) and the cost at DeepSeek's list pr
 export DEEPSEEK_API_KEY=…
 npm install --prefix bench/dsh @deepseek-ai/dsh      # or DSH_PREFIX=/where/it/is
 npm run build
-node bench/run.mjs --label mine --task 01-todo,02-kv,03-library --harness dsh,magic,magic-project --repeat 3
+node bench/run.mjs --label mine --task 01-todo,02-kv,03-library,04-invoicing --harness dsh,magic,magic-project --repeat 3
 node bench/summarize.mjs bench/results/mine
+node bench/run.mjs --label long --task 05-dungeon --harness magic-project --timeout-minutes 180 --checkpoint-minutes 5
+node bench/curve.mjs bench/results/long
 ```
+
+A task with a `<task>-phase2.md` prompt runs in two phases in the same workspace (magic continues its session or replans its
+project; dsh starts a second headless run); `--checkpoint-minutes` re-runs the hidden suites on a timer, and the project runner
+also runs them before approving each milestone. `bench/rescore.mjs` re-judges finished runs after a check file is corrected.
 
 Each run leaves `bench/results/<label>/<task>/<harness>-<n>/` with `result.json`, the agent's output, the hidden check log, the
 repository's own test log and the workspace itself (with magic's session logs, or a decoded copy of dsh's session). The
@@ -110,6 +117,70 @@ verification into the task's own tests. `flash-v4` is the project system with bo
 corrected after the first runs, in the agents' favour: one required the error JSON on a single line where the task only said
 "prints `{ "error": … }`", and one asserted a validation the task never asked for; every earlier run was re-scored with the
 corrected files (`bench/rescore.mjs`), which is how the `03-library` and `04-invoicing` rows became 3/3 for both harnesses.
+
+## The long run: DELVE, a 3D roguelike in two phases
+
+The four tasks above fit one session. `05-dungeon` is the tier built to run for hours: a turn-based roguelike with a
+deterministic core (seeded generator, room-and-corridor levels, a specified field-of-view rule, shortest paths, deterministic
+combat, items and equipment, five depths, save and load, a stable state hash, key scripts) and a three.js renderer, then a second
+phase that adds a ten-turn rewind touching every part of the state. The spec is `bench/tasks/05-dungeon.md` (2,400 words of
+contract); the hidden suites (`05-dungeon.check.mjs`, 15 tests, and `05-dungeon-phase2.check.mjs`, 6 tests) compare the core with
+reference algorithms, replay scripts for determinism, run random play against the invariants, load the page in headless Chrome
+and scan the sources for eval, vm, child processes and network use; both were validated on a hand-written reference first. The
+fixture ships a `screenshot` tool (headless Chrome with WebGL, returns the picture and the console) so the agent can see what it
+draws: magic's runs call it as a tool, dsh's as a command with its own image reader. The runner re-runs the hidden suites every
+five minutes and at every milestone, so each run leaves a curve, not just an end score.
+
+| | dsh, one session | magic, one session | magic, project |
+|---|---|---|---|
+| Round 1: game (15) + rewind (6) | 15 + 6 · 48 min · $0.37 | 13 + 6 · 79 min · $0.38 | 15 + 6 · 136 min · $1.68 |
+| Round 2: game (15) + rewind (6) | 15 + 6 · 45 min · $0.34 | 15 + 6 · 57 min · $0.31 | 12 + 6 · 99 min · $1.18 |
+| Model requests · tool calls (round 1) | 163 · 193 | 143 · 186 | 720 · 825 |
+| Screenshots looked at (round 1 / 2) | 8 / 8 | 37 / 25 | 85 / 104 |
+| Tests the agent wrote (round 1 / 2) | 80 / 83 | 79 / 92 | 211 / 132 |
+| Structure (round 1) | one session | one session, 240K tokens of context at the end | 19 tasks, 5 milestones, 42 sessions, 4 replans, 3 blocks |
+| Structure (round 2) | one session | one session | 14 tasks, 4 milestones, 27 sessions, 1 replan, no block |
+
+Labels `delve-v1` and `delve-v2`; round 2 ran after the planner rule about test ownership was added (nothing else changed for
+the single sessions). One run per cell per round, so a check or two is noise. The misses were contract details, not broken
+games: magic's round-1 session picked the stairs room by integer centres and did not return the level-up message; the round-2
+project build logged monster attacks and the death message but did not return them from `act()`, which cost three checks
+for one deviation.
+
+The curves (`node bench/curve.mjs bench/results/delve-v1`) tell the story better than the totals: the single sessions had 11
+or 12 of the 15 checks passing after ten minutes and crept up by one or two over the next half hour; the project system had
+nothing loadable for ten minutes, 8 at fifteen, 13 when its first milestone (the core) closed at minute 36, and all 15 from
+minute 60, and it held them while the renderer, the docs and the rewind were built on top. Its two dips (13 to 12 at minute
+35, 15 to 14 at minute 105) were tasks rewriting shared code, and both were gone by the next checkpoint. The first of them is
+the run's most useful event: the monsters task reported itself blocked because an earlier task's tests asserted the old
+behaviour and were outside its file scope, the planner widened the scope, and the second attempt passed. The same pattern
+caused every block in this run and in the library run (4 of 4), which is why the planner rules now say that a task owns the
+tests of the behaviour it changes; in round 2, with that rule, the project had no block, one replan instead of four, and took
+99 minutes instead of 136.
+
+<p align="center">
+  <img src="../assets/delve-dsh.png" width="300" alt="dsh's DELVE"> <img src="../assets/delve-magic.png" width="300" alt="magic's DELVE, one session"> <img src="../assets/delve-magic-project.png" width="300" alt="magic's DELVE, project mode">
+</p>
+<p align="center"><sub>Seed 11 after the same twelve moves: dsh's session, magic's session, magic's project system. The project build draws monsters outside the field of view, a renderer bug no check covers.</sub></p>
+
+What this tier says, honestly:
+
+- **At two hours, one session does not run out of structure yet.** With a million-token model and cheap cached input, one
+  session built the whole game and the rewind in 45 to 80 minutes for about $0.35, and three of the four single-session runs
+  passed everything. The premise that compaction loses structure did not bite at this length; it may at a day's length, which
+  this benchmark cannot yet run.
+- **The project system reached full marks once in two rounds, at three to four times the cost and about twice the time of a
+  session.** What the money bought is visible in the record rather than in the score: a 17 KB design document, 14 to 19 tasks
+  with acceptance commands, milestone checkpoints a user could have tried, 132 to 211 tests, a blocked task that explained
+  itself and a planner that fixed the plan, and every request in a session log. On this evidence the project system is the
+  way to get a verifiable, resumable build with a paper trail, not a cheaper or better one.
+- **Screenshots made the renderer real.** Every configuration used the picture; the project's executors took 85 and 104.
+  Some of the games still have visible defects the checks do not measure (the round-1 project build draws monsters outside
+  the field of view), so the numbers describe the contract, not the game's feel.
+- **Three checks were corrected after the run, all in the agents' favour** (a HUD capture that stopped at the first closing tag,
+  a comment that mentioned Math.random counted as a call, a rewind assertion that contradicted the spec's own hash rule);
+  every run was re-scored on its final workspace and the table shows the corrected numbers, while the curves show what the
+  checkpoints recorded at the time.
 
 ### Caveats
 

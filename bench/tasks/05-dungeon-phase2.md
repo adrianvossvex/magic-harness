@@ -1,0 +1,8 @@
+DELVE is complete; now add a rewind. Keep everything that exists working and extend the contract below exactly.
+
+- `game.undo()` reverts the most recent turn-costing action: afterwards the state is exactly what it was before that action, including the rng state, the log, the monsters, the level and the depth (an undo right after descending brings the previous level back). Actions that cost no turn leave nothing to undo. It returns `true` when a turn was undone and `false` when there is nothing to undo. Up to 10 turns can be undone in a row; older history is discarded.
+- `game.state.undo` holds the number of turns that can currently be undone (0 to 10) and is part of the state; the history itself is stored in the state as `game.state.history`, so `serialize()` and `loadGame()` preserve it. `hash()` ignores the `history` and `undo` fields (everything else is covered), so the hash describes the game itself, not how far it can rewind.
+- `game.hash()` taken before an action equals `game.hash()` after that action has been undone. Acting again after an undo behaves exactly as the first time (same rng, same result).
+- `applyKey(game, "z")` calls `undo()` and returns an array of messages: `["You rewind time."]` when a turn was undone, `["Nothing to rewind."]` otherwise. `runScript` accepts `z` like any other key.
+- The page: the `z` key rewinds, the HUD (`id="hud"`) shows `Undo N` with the current count, and the renderer shows the rewound state at once (positions, hp, log, level) with a brief visual cue.
+- Add tests for the rewind to the project's own test suite and document the feature in the README. npm test must pass.

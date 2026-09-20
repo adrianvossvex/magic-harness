@@ -1,0 +1,85 @@
+✔ rng is mulberry32 with int and pick (0.693042ms)
+✔ generated levels obey the constraints and are deterministic (16.628458ms)
+✔ field of view matches the specified Bresenham rule (0.675083ms)
+✔ paths are shortest, step over passable tiles and honour blocked tiles (4.502291ms)
+✔ a new game has the specified player, level and populated entities (0.877959ms)
+✔ movement, walls and turns (0.470083ms)
+✖ combat numbers, kills, xp and levels (3.681917ms)
+✔ monsters chase in sight, wander out of sight, never overlap or enter walls (1.346333ms)
+✖ items: pickup, capacity, potions, equipment, drop, gold (0.648959ms)
+✖ stairs, depths, the amulet, death and the end of the game (2.016125ms)
+✔ keys, scripts, serialization, hashes and determinism (10.364125ms)
+✔ random play keeps every invariant (210.5755ms)
+✔ the page loads in headless Chrome without errors and shows the HUD (7076.127917ms)
+✔ source rules: no eval, vm, child processes or extra network; three.js from the pinned URL (3.246625ms)
+✔ the repository's own tests pass (996.2495ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 12
+ℹ fail 3
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 8390.162166
+
+✖ failing tests:
+
+test at ../../../../../checks/05-dungeon.check.mjs:163:1
+✖ combat numbers, kills, xp and levels (3.681917ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(messages.includes('The goblin hits you for 2.'))
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/05-dungeon.check.mjs:178:10)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/05-dungeon.check.mjs:224:1
+✖ items: pickup, capacity, potions, equipment, drop, gold (0.648959ms)
+  AssertionError [ERR_ASSERTION]: You hit the goblin for 5.
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/05-dungeon.check.mjs:256:91)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: false,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }
+
+test at ../../../../../checks/05-dungeon.check.mjs:265:1
+✖ stairs, depths, the amulet, death and the end of the game (2.016125ms)
+  AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:
+  
+    assert.ok(last.includes('You die.'))
+  
+      at TestContext.<anonymous> (file:///Users/squirrel/Desktop/harness/bench/checks/05-dungeon.check.mjs:298:90)
+      at Test.runInAsyncScope (node:async_hooks:226:14)
+      at Test.run (node:internal/test_runner/test:1201:25)
+      at Test.processPendingSubtests (node:internal/test_runner/test:831:18)
+      at Test.postRun (node:internal/test_runner/test:1330:19)
+      at Test.run (node:internal/test_runner/test:1258:12)
+      at async Test.processPendingSubtests (node:internal/test_runner/test:831:7) {
+    generatedMessage: true,
+    code: 'ERR_ASSERTION',
+    actual: false,
+    expected: true,
+    operator: '==',
+    diff: 'simple'
+  }

@@ -1,0 +1,14 @@
+✔ undo restores the exact previous state, one turn at a time, up to ten (3.417ms)
+✔ actions that cost no turn leave nothing to undo; redoing an action after undo gives the same result (3.110792ms)
+✔ undo across descend restores the previous level, and history survives save and load (1.026791ms)
+✔ the z key rewinds with a message and runScript accepts it (0.720125ms)
+✔ the page shows the undo count and rewinds on z (5020.591875ms)
+✔ the repository's own tests pass (250.675666ms)
+ℹ tests 6
+ℹ suites 0
+ℹ pass 6
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 5338.64275

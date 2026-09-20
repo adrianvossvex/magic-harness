@@ -148,6 +148,7 @@ The contract:
 - `description`: what the tool does and returns, written for the model.
 - `parameters`: a JSON Schema object for the input (optional; no parameters when omitted). Required keys are checked before `execute` runs.
 - `execute(input, { cwd, signal, toolUseId })`: return any JSON value, or `{ content, isError }`; throw to report an error. `cwd` is the session's folder, `signal` fires when the user cancels.
+- A tool can also return `{ content, images: [{ mediaType: "image/png", data: "<base64>" }] }` (up to four images, PNG, JPEG, WebP or GIF). The model receives them as image blocks next to the text, so a tool that takes a screenshot lets the model see what it built, when the model can see images at all. The log stores each image once, with the tool result; the call log shows it; old screenshots are cleared first when the context is compacted.
 - `readOnly: true` keeps the tool available in Plan mode.
 - A module may export one definition or an array, as `default` or as `tools`. A project tool replaces a personal one with the same name. Restart magic after editing a tool file.
 
@@ -187,6 +188,20 @@ Same model, same tasks, different harness. [`bench/`](bench/README.md) runs four
 | `04-invoicing`: an invoicing system with money rules and reports (12 checks) | 3/3 passed · 5.6 min · $0.091 | 3/3 passed · 3.5 min · $0.060 |
 
 Both harnesses solved every task in every run. magic's session used fewer requests and tool calls on the larger tasks, so it finished sooner and cost less at the same pass rate; on the small tasks they are even. The project system (planner, dispatcher, executors) also took every task from goal to green, at four to five times the cost of one session: that is the price of a design document, a task tree and a fresh session per task, worth paying for work that does not fit one session and not for a ten-minute task. The benchmark also found and fixed a weakness in magic: a tool call whose JSON the model mangled used to end the turn; now it comes back to the model as an error that says where the brackets went wrong.
+
+The fifth task runs for hours: DELVE, a turn-based roguelike with a deterministic core, a three.js renderer and, in a second phase, a ten-turn rewind, specified in 2,400 words and judged by 21 hidden tests. DeepSeek V4.1 Flash built it three ways from the same text.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/adrianvossvex/magic-harness/main/assets/delve-project.gif" width="720" alt="DELVE as built by magic's project system: walking the dungeon, then rewinding three turns">
+</p>
+<p align="center"><sub>DELVE as built by the project system: 19 tasks, 5 milestones, 42 sessions, 136 minutes, $1.68, every request on record. Walking the first corridor, then pressing z three times.</sub></p>
+
+| Game (15 checks) + rewind (6 checks) | dsh, one session | magic, one session | magic, project |
+|---|---|---|---|
+| Round 1 | 15 + 6 · 48 min · $0.37 | 13 + 6 · 79 min · $0.38 | 15 + 6 · 136 min · $1.68 |
+| Round 2 | 15 + 6 · 45 min · $0.34 | 15 + 6 · 57 min · $0.31 | 12 + 6 · 99 min · $1.18 |
+
+The honest reading: at two hours, with a million-token model, a single session does not run out of structure yet, and the two harnesses' sessions are close. The project system reached full marks once in two rounds at three to four times the cost, and what that money bought is in the record rather than in the score: a design document, a task tree with acceptance commands, milestone checkpoints a user could have tried, a blocked task that explained itself and a planner that fixed the plan, and a curve of features passing over time. The misses on every side were contract details (a message not returned, a room chosen by a rounded centre), not broken games. The whole method, the per-run records and the curves are in [`bench/README.md`](bench/README.md).
 
 ## Providers and effort
 

@@ -1,0 +1,33 @@
+DELVE is complete. Here's what was built and verified.
+
+## Deliverables
+
+```
+index.html          page shell; loads the exact three.js CDN URL + ./src/main.js
+package.json        type:module, "test": "node --test", no dependencies
+README.md           how to play, controls, architecture, decisions
+src/rng.js          mulberry32 (seed 123 → 0.7872516233474016, … verified)
+src/map.js          generateLevel(seed, depth) — 60×30, 6–12 non-touching rooms
+src/fov.js          exact Bresenham line-of-sight FOV
+src/path.js         BFS 8-directional shortest paths
+src/game.js         full game core: state, act, combat, items, levels, hash, serialize
+src/renderer.js     three.js view (pure reader of game.state)
+src/main.js         browser wiring: input, HUD, log, inventory, overlays, loop
+test/*.test.js      5 suites, 68 tests
+```
+
+## Verification
+
+- **`npm test` → 68 pass, 0 fail.** Covers the RNG stream, room/non-touching/connectivity/stairs constraints across many seeds and all depths, FOV occlusion and Euclidean radius, minimal paths, combat math and equipment, items/pack limits/amulet, level-ups, descent, depth-5 semantics, serialization restore, and same-seed/same-script hash determinism.
+- **Page render verified with the project's own `screenshot` tool**: `"No page errors."` and the `DELVE seed 7` console log, after fixing a real first-frame camera bug (a negative `dt` flung the camera far away; `dt` is now clamped in both the loop and renderer).
+- Renderer checks confirmed all monster types, items, player glyph, lit/dim fog-of-war, movement tween, and action-driven state sync (monsters pathing toward the player) with zero console errors.
+
+## Notes on the environment
+
+The bundled `screenshot` tool initially failed here because headless Chrome can't create its own user-data dir or exit cleanly under the workspace sandbox. I made it work unchanged by pointing `CHROME_PATH` at a small wrapper that adds `--no-sandbox`, uses a workspace profile, polls for the screenshot, then kills Chrome. Chrome also cannot reach the CDN in this sandbox (it hangs), so the visual passes used a temporary local mirror of `three.min.js`; `index.html` itself still references the exact required CDN URL and nothing else.
+
+## Contract adherence highlights
+
+- The core is pure and deterministic — the only `Math.random` anywhere in `src/` is the new-game seed in `main.js`; the renderer carries its own tiny generator for particle/shake visuals.
+- Exact required messages (`You pick up N gold.`, `You found the Amulet…`, `Your pack is full.`, `Welcome to level N.`, `You descend to depth N.`, hit/kill/death/wall/nothing strings) are emitted verbatim.
+- Open decisions (grid-based rooms, population order, silent non-gold pickup, extra `rngState`/`stairs`/id-counter state fields, sorted `visible`) are documented in the README.

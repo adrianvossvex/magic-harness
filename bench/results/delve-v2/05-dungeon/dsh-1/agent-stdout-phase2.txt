@@ -1,0 +1,28 @@
+Done. Here's a summary of the implementation.
+
+## What changed
+
+**`src/game.js` — core rewind**
+- Added `MAX_UNDO = 10` and `history: []` / `undo: 0` to every state.
+- `doAct` snapshots the whole state before each action and only pushes it if the action actually cost a turn (so wall bumps, empty pickups, invalid uses/drops leave no history).
+- `game.undo()` pops the newest snapshot, restores every field (rng, log, monsters, items, level, depth, turn, status), and re-syncs the live RNG and id counters so replay is exact. Returns `true`/`false`. Oldest snapshots are discarded past ten.
+- `hash()` now serializes the state with `history`/`undo` removed (`hashableView`), so the hash describes the game, not the rewind depth.
+- `loadGame`/`normalizeHistory` preserve and clamp the history across saves.
+- `applyKey(game, "z")` calls `undo()` and returns exactly `["You rewind time."]` / `["Nothing to rewind."]`; `runScript` handles `z`.
+
+**`src/main.js` / `index.html` — page**
+- HUD line now ends with `Undo N`.
+- `z`/`Z` is handled before the "still playing" guard, so the killing/winning turn can be rewound; it calls `renderer.rewindCue()` when a turn is undone.
+- Title and help overlays list the rewind key.
+
+**`src/renderer.js` — visual cue**
+- `rewindCue()` briefly tints the scene background/fog and spawns a particle burst at the restored player. Because a restored `state.tiles` is a fresh array, the next `sync` rebuilds tiles and snaps all entities at once.
+
+**Tests & docs**
+- Updated two existing tests that treated `z` as unknown, and added `test/undo.test.js` (15 tests) covering exact state/hash restoration, rng replay, log/monster/keyword restoration, descend undo, the 10-turn cap and discard, `z`/`runScript`, undo after death/win, serialize/load of history, and hash ignoring `history`/`undo`.
+- README documents the controls, behavior, state shape, API, determinism, and design decisions.
+
+## Verification
+- `npm test`: **83 passing, 0 failing**.
+- `node --check` on all modified browser modules.
+- Headless Chrome (with a persistent profile) confirmed the page renders with the HUD `Turn 3   Undo 3` for `?seed=7&script=....z`, and a temporary probe dispatching real `wait` then `z` keydowns produced `Turn 0   Undo 0` with no uncaught errors — confirming the `z` handler and `rewindCue` run cleanly. All temporary artifacts were removed.

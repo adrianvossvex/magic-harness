@@ -1,0 +1,23 @@
+✔ rng is mulberry32 with int and pick (0.764834ms)
+✔ generated levels obey the constraints and are deterministic (17.03875ms)
+✔ field of view matches the specified Bresenham rule (0.609667ms)
+✔ paths are shortest, step over passable tiles and honour blocked tiles (5.050291ms)
+✔ a new game has the specified player, level and populated entities (0.930167ms)
+✔ movement, walls and turns (0.68375ms)
+✔ combat numbers, kills, xp and levels (0.669792ms)
+✔ monsters chase in sight, wander out of sight, never overlap or enter walls (1.580542ms)
+✔ items: pickup, capacity, potions, equipment, drop, gold (1.172583ms)
+✔ stairs, depths, the amulet, death and the end of the game (2.097625ms)
+✔ keys, scripts, serialization, hashes and determinism (11.034625ms)
+✔ random play keeps every invariant (270.892ms)
+✔ the page loads in headless Chrome without errors and shows the HUD (5873.295167ms)
+✔ source rules: no eval, vm, child processes or extra network; three.js from the pinned URL (2.327542ms)
+✔ the repository's own tests pass (245.426417ms)
+ℹ tests 15
+ℹ suites 0
+ℹ pass 15
+ℹ fail 0
+ℹ cancelled 0
+ℹ skipped 0
+ℹ todo 0
+ℹ duration_ms 6497.940875

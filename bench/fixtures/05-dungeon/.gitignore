@@ -1,0 +1,4 @@
+node_modules/
+.magic/sessions/
+.magic/settings.json
+.magic/project/

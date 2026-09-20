@@ -1,0 +1,25 @@
+Now the rewind. Starting with the core: history snapshots in the state, plus `undo()`.Now the hash exclusion, the exported method, `applyKey("z")` and load normalization.Now the test suite for rewind.The tests exposed my own miscounting (some keys bump walls). Let me fix them to be robust.The cap discards old history by design — my replay test compared raw history. Fixing the assertions.All 92 tests pass. Now the page: `z` key, HUD count, toast, and a renderer that snaps to the rewound state.Now the page shell (toast + help text) and main.js wiring.Let me verify the `z` key path and rewind cue in the browser with a temporary probe.The rewind works in the page: HUD reads `Undo 4`, the toast shows, the log rewound, and the ripple is visible. Removing the probe.Now documenting the rewind in the README.The rewind is in and everything still passes: **92 tests green** (70 before, 22 new), and the page renders clean in headless Chrome with zero console errors.
+
+## Core
+
+`game.undo()` pops a snapshot from `state.history`, copies it back **into the same state object** (so anything holding `game.state` keeps working), and restores the generator from the snapshot's `rngState`. It returns `true` when a turn was undone and `false` otherwise.
+
+- Every turn-costing action takes a deep snapshot of the state *before* it runs (excluding `history`/`undo`, so nothing nests); free actions — wall bumps, empty pickups, an invalid item index — throw their snapshot away and leave the window untouched. `state.history` holds up to ten, oldest first, and `state.undo` mirrors its length.
+- Because the snapshot carries tiles, monsters, items, log, depth, `turn`, `nextId` and `rngState`, an undo is exact: a rewind right after `>` puts the previous level, its monsters and its loot back.
+- `hash()` now serialises the state minus `history` and `undo`, so it describes the game, not the rewind window — hash before an action equals hash after undoing it, and replaying after a rewind reproduces the same monsters, messages and hash (verified four rounds deep on a generated level).
+- `applyKey(game, "z")` returns `["You rewind time."]` or `["Nothing to rewind."]` without touching the log, which is what keeps that hash equality honest. `runScript` picks it up for free.
+
+## Page
+
+`z` rewinds (it also works on the death screen, so a fatal turn can be taken back), the HUD reads `Undo N` next to hp/depth/turn/level/xp/gold, and the log and pack refresh from the rewound state. `renderer.rewind()` makes the next frame snap meshes and camera into place instead of sliding, adds a particle ripple at the player plus a short shake, and a "You rewind time." toast confirms it; a rewind that removes a whole level does not fire kill bursts. The help and title screens list the key.
+
+## Checks
+
+- `npm test` — 92 tests; the new `test/undo.test.js` covers exact state restoration (full deep-equal, plus the rng, log, monsters, loot, equipment and the level above), free actions leaving nothing, the rolling ten-turn window, hash equality before/after, identical replay after a rewind, history surviving `serialize`/`loadGame`, hand-built states without history, and the `z` key.
+- Screenshots: a scripted run ending in `zz` (HUD `Undo 10`, correct turn/hp after the rollback), and a temporary in-page probe that dispatched `z` after six moves — HUD showed `Undo 4`, the toast and ripple were visible, the log had rewound, and the console was clean. The probe is removed.
+
+## Documented in the README
+
+The rewind section covers the controls and the ten-turn window; the architecture section explains `history`/`undo` in the state, the in-place restore, and the hash exclusion. Two judgement calls are written down: `undo()` has no status condition (so it can take back the turn that killed you, while `act()` still refuses once the game is over), and `applyKey("z")` returns its message without logging it.
+
+Nothing is committed — the tree still has `README.md`, `index.html`, `src/` and `test/` untracked with `package.json` modified.

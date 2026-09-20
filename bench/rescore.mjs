@@ -25,7 +25,14 @@ for (const task of (await readdir(root)).filter(name => !name.includes('.')).sor
     const before = result.checks.pass + '/' + result.checks.total;
     result.checks = { pass: checks.pass, fail: checks.fail, total: checks.total };
     result.repoTests = { code: repo.code, pass: repo.pass, fail: repo.fail };
+    // A multi-phase run is judged on its final workspace with every suite it went through; the per-phase records stay.
+    if (result.phases?.length > 1) {
+      const suites = [...new Set(result.phases.flatMap(phase => Object.keys(phase.checks ?? {})))];
+      result.final = { checks: {}, repoTests: result.repoTests };
+      for (const suite of suites) { const r = await runChecks(suite, workspace); result.final.checks[suite] = { pass: r.pass, fail: r.fail, total: r.total }; await writeFile(join(folder, 'checks-' + suite + '.log'), r.output); }
+    }
     await writeFile(file, JSON.stringify(result, null, 2) + '\n');
-    console.log(task + ' / ' + run + ': ' + before + ' -> ' + checks.pass + '/' + checks.total + ', npm test ' + (repo.code === 0 ? 'green' : 'red'));
+    console.log(task + ' / ' + run + ': ' + before + ' -> ' + checks.pass + '/' + checks.total + ', npm test ' + (repo.code === 0 ? 'green' : 'red')
+      + (result.final ? ' | final: ' + Object.entries(result.final.checks).map(([suite, c]) => suite + ' ' + c.pass + '/' + c.total).join(', ') : ''));
   }
 }
